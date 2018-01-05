@@ -1,8 +1,12 @@
 package eu.openreq.milla.controllers;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -71,7 +75,7 @@ public class MillaController {
 		HttpEntity<String> entity = new HttpEntity<String>(data, headers);
 		
 		ResponseEntity<?> response = null;
-		
+		System.out.println("Lähetys Mulperille: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()));
 		try {
 			response = rt.postForEntity(completeAddress, entity, String.class);
 		} catch (HttpClientErrorException e) {
@@ -101,6 +105,8 @@ public class MillaController {
 	 * @param paths
 	 * @return
 	 * @throws JsonProcessingException
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
 	@ApiOperation(value = "Parse Jira",
 		    notes = "Generate a model from an array of Jira search queries (that return an array of issues)",
@@ -111,7 +117,7 @@ public class MillaController {
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs")}) 
 	@ResponseBody
 	@RequestMapping(value = "jira", method = RequestMethod.POST)
-	public ResponseEntity<?> loadFromJira(@RequestBody List<String> paths) throws JsonProcessingException {
+	public ResponseEntity<?> loadFromJira(@RequestBody List<String> paths) throws JsonProcessingException, InterruptedException, ExecutionException {
 		FormatTransformerService transformer = new FormatTransformerService();
 		
 		RestTemplate rt = new RestTemplate();
@@ -121,10 +127,13 @@ public class MillaController {
 		
 		ConcurrentHashMap<String, Jira> jiras = new ConcurrentHashMap<>();
 		
-		paths.parallelStream().forEach((url) -> {
-			ResponseEntity<Jira> jiraResponse = rt.getForEntity(url, Jira.class);
-			jiras.put(url, jiraResponse.getBody());
-		});
+		ForkJoinPool customThreadPool = new ForkJoinPool(8);
+	    customThreadPool.submit(
+	      () -> paths.parallelStream().forEach((url) -> {
+				ResponseEntity<Jira> jiraResponse = rt.getForEntity(url, Jira.class);
+				jiras.put(url, jiraResponse.getBody());
+			})
+	    ).get();
 		
 		Collection<Requirement> requirements = transformer.convertJirasToMulson(jiras.values());
 		
