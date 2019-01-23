@@ -8,6 +8,7 @@ This service was created as a result of the OpenReq project funded by the Europe
 Milla is an orchestrator (broker) service used in the Qt Jira trial of OpenReq. For further details, see the [swagger documentation](http://217.172.12.199:9203/swagger-ui.html).
 
 ## The following technologies are used:
+	Java
 	Spring Boot
 	Maven 
 	
@@ -17,11 +18,29 @@ The API is documented by using Swagger2: http://217.172.12.199:9203/swagger-ui.h
 
 ## How to Install
 
-Run the compiled jar file, e.g., nohup java -jar Milla-1.12.jar.
+Run the compiled jar file, e.g., nohup `java -jar Milla-1.12.jar`.
 
 Milla uses port 9203 that needs to be open to in order that the Swagger page can be accessed. Milla also connects to Qt Jira ja the Mallikas and Mulperi services of OpenReq.
 
 Milla requires at least Mallikas service to be running.
+
+## How to Use This Microservice
+
+The swagger page describes all endpoints. Below are examples of the key commands for command line usage:
+
+Milla fetches the relevant data from Qt Jira and stores (caches) the data to Mallikas' database to be more efficiently accessible and in order to be in OpenReq JSON format. qtjira endpoint is used with the project as a parameter.
+
+`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/qtjira'`
+
+A copy of the data in OpenReq JSON can be fetched  using the following command after the project has been stored in Mallikas (see above). 
+
+`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/requirementsInProject' > QTWB-OpenReq.json`
+
+
+A project can be sent to mulperi to be analyzed
+
+`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d $i  'http://217.172.12.199:9203/sendProjectToMulperi'` 
+
 
 ## How to Contribute
 See the OpenReq Contribution Guidelines [here](https://github.com/OpenReqEU/OpenReq/blob/master/CONTRIBUTING.md).
