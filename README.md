@@ -18,7 +18,7 @@ The API is documented by using Swagger2: http://217.172.12.199:9203/swagger-ui.h
 
 ## How to Install
 
-Run the compiled jar file, e.g., nohup `java -jar Milla-1.12.jar`.
+Run the compiled jar file, e.g., `java -jar Milla-1.12.jar`.
 
 Milla uses port 9203 that needs to be open to in order that the Swagger page can be accessed. Milla also connects to Qt Jira ja the Mallikas and Mulperi services of OpenReq.
 
