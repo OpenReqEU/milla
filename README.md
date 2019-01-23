@@ -2,15 +2,17 @@
 
 This service was created as a result of the OpenReq project funded by the European Union Horizon 2020 Research and Innovation programme under grant agreement No 732463.
 
+Milla is a service in the dependency engine of OpenReq infrastructure that primarily focuses on the contexts, which already contain a large number of existing and dependent requirements, such as large distributed open source projects or large systems engineering projects. For example, the Qt Company has about one hundred-thousand (100,000) issues in its Jira. The dependency engine focuses on the entire body of requirements as an interdepedent "requirements model".
 
-## Technical Description
+# Technical Description
 
 Milla is an orchestrator (broker) service used in the Qt Jira trial of OpenReq. For further details, see the [swagger documentation](http://217.172.12.199:9203/swagger-ui.html).
 
 ## The following technologies are used:
-	Java
-	Spring Boot
-	Maven 
+- Java
+- Spring Boot
+- Maven
+- GSON
 	
 ## Public APIs
 
@@ -42,9 +44,9 @@ A project can be sent to mulperi to be analyzed
 `curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/sendProjectToMulperi'` 
 
 
-## How to Contribute
+# How to Contribute
 See the OpenReq Contribution Guidelines [here](https://github.com/OpenReqEU/OpenReq/blob/master/CONTRIBUTING.md).
 
-## License
+# License
 
 Free use of this software is granted under the terms of the [EPL version 2 (EPL2.0)](https://www.eclipse.org/legal/epl-2.0/).
