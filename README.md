@@ -39,7 +39,7 @@ A copy of the data in OpenReq JSON can be fetched  using the following command a
 
 A project can be sent to mulperi to be analyzed
 
-`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d $i  'http://217.172.12.199:9203/sendProjectToMulperi'` 
+`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/sendProjectToMulperi'` 
 
 
 ## How to Contribute
