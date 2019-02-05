@@ -102,11 +102,11 @@ public class DetectionController {
 	 */
 	@ApiOperation(value = "Detect similarity between two requirements using UPC Similarity Detection",  
 	notes = "<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between two specified requirements to each other."
-	+ "<br><b>Precondition</b>: The project has been cached in Mallikas. TBD: Does this need caching?"
-	+ "<br><b>Postcondition</b>: TBD Does this store to Mallikas: After successfully detection, the potially detected similarity, given that it is above the treshold, is stored in Mallikas using the similarity dependency type and proposed status."
-	+ "<br><b>Notes:TBD: FIXME This is inefficient method since entire project is fetched from mallikas</b> ."
+	+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
+	+ "<br><b>Postcondition</b>: After successfully detection, the potially detected similarity, given that it is above the treshold, is stored in Mallikas using the similarity dependency type and proposed status."
+	+ "<br><b>Notes: This is inefficient method since entire project is fetched from mallikas</b> ."
 	+ "<br><b>Parameters:</b>"
-	+ "<br>compare: what fields are taken into accoung in comparison (Name-Text-Comments-All)."
+	+ "<br>compare: The fields that are taken into accoung in comparison (Name-Text-Comments-All)."
 	+ "<br>component: The component or algorithm used for comparison (e.g. DKPro)."
 	+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
 	+ "<br>reqId1: The id of the requirement that is compared to other requirement (reqId2) in the project."
