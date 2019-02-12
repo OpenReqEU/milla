@@ -197,7 +197,6 @@ public class FormatTransformerService {
 
 				addCommentsToReq(issue, req, person);
 				addDependencies(issue, req);
-
 				addAllRequirementParts(issue, req);
 				updateParentEpic(requirements, issue, req);
 				
@@ -209,7 +208,7 @@ public class FormatTransformerService {
 
 		return requirements.values();
 	}
-	
+
 	private void setPriorityForReq(Issue issue, Requirement req) {
 		int priority = Integer.parseInt(issue.getFields().getPriority().getId());
 		setRightPriority(req, priority);
@@ -384,6 +383,7 @@ public class FormatTransformerService {
 		setDependencyType(dependency, jiraType);
 		dependency.setId(reqFrom + "_" + reqTo + "_" + dependency.getDependency_type());
 		setStatusForDependency(dependency, "accepted");
+		dependency.setDependency_score(1.0);
 		dependency.setCreated_at(new Date().getTime());
 		ArrayList<String> descriptions = new ArrayList<String>();
 		descriptions.add(jiraType);
@@ -747,6 +747,7 @@ public class FormatTransformerService {
 		}
 		req.getRequirementParts().add(reqPart);
 	}
+	
 
 	/**
 	 * 
