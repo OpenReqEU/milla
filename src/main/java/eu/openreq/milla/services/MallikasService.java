@@ -1,6 +1,8 @@
 package eu.openreq.milla.services;
 
 import java.util.Collection;
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -11,6 +13,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.models.json.Requirement;
 
 @Service
@@ -70,6 +73,28 @@ public class MallikasService {
 		
 		try {
 			reqs= rt.postForObject(url, ids, String.class);
+		}
+		catch (HttpClientErrorException e) { 
+			System.out.println("Error " + e);
+			e.printStackTrace();
+		}
+		
+		return reqs;
+	}
+	
+	/**
+	 * Send request to Mallikas to get a List of Requirements and their Dependecies as a String (based on a List of selected Requirement IDs) 
+	 * @param ids List<String> containing selected Requirement IDs
+	 * @param url the address in Mallikas
+	 * @return
+	 */
+	public String getRequirementsSinceDateFromMallikas(Long date, String url) {
+		
+		RestTemplate rt = new RestTemplate();
+		String reqs = null;
+		
+		try {
+			reqs= rt.postForObject(url, date, String.class);
 		}
 		catch (HttpClientErrorException e) { 
 			System.out.println("Error " + e);
@@ -251,6 +276,18 @@ public class MallikasService {
 		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, Collection.class);
 		
 		return updatedRequirements;
+	}
+
+	public String getRequirementsByParamsFromMallikas(RequestParams params, String url) {
+		RestTemplate rt = new RestTemplate();	
+		String reqs = null;
+		try {
+			reqs = rt.postForObject(url, params, String.class);		
+		} catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
+		}
+		return reqs;
 	}
 
 }

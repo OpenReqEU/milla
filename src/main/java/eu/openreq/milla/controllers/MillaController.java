@@ -3,6 +3,7 @@ package eu.openreq.milla.controllers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import eu.openreq.milla.models.jira.Issue;
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.Person;
 import eu.openreq.milla.models.json.Project;
+import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.FormatTransformerService;
 import eu.openreq.milla.services.MallikasService;
@@ -357,6 +359,34 @@ public class MillaController {
 	}
 
 	/**
+	 * Fetch a List of Requirements created after the Date given from Mallikas
+	 * 
+	 * @param project
+	 *            Project received as a parameter
+	 * @return ResponseEntity<?>
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Fetch all requirements since a given date in OpenReq JSON format.", 
+	notes = "<b>Functionality</b>: Fetch requirements, including their dependencies that are cached in Mallikas database in the OpenReq JSON format."
+			+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
+			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
+			+ "<br><b>Parameter: </b>"
+			+ "<br>date: Date in proper format")
+	@ResponseBody
+	@PostMapping(value = "requirementsSinceDate")
+	public ResponseEntity<?> getRequirementsSinceDate(@RequestBody Date date) throws IOException {
+		String completeAddress = mallikasAddress + "reqsSinceDate";
+
+		String reqsWithDate = mallikasService.getRequirementsSinceDateFromMallikas(date.getTime(), completeAddress);
+
+		if (reqsWithDate == null || reqsWithDate.equals("")) {
+			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+		}
+		ResponseEntity<String> response = new ResponseEntity<>(reqsWithDate, HttpStatus.FOUND);
+		return response;
+	}
+	
+	/**
 	 * Fetch a list of requirements according to their type and/or status from the
 	 * database.
 	 * 
@@ -368,7 +398,7 @@ public class MillaController {
 	notes = "<b>Functionality</b>: Fetch requirements that have the selected requirement type and status that are cached in Mallikas database in the OpenReq JSON format."
 			+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-			+ "<br><b>Prarameter: </b>"
+			+ "<br><b>Parameter: </b>"
 			+ "<br>type: Requirement type in all caps, e.g. BUG"
 			+ "<br>status: Requirement status in all caps, e.g. NEW")
 	@ResponseBody
@@ -399,7 +429,7 @@ public class MillaController {
 			notes = "<b>Functionality</b>: Fetch requirements that have the selected resolution cached in Mallikas database in the OpenReq JSON format."
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-					+ "<br><b>Prarameter: </b>"
+					+ "<br><b>Parameter: </b>"
 					+ "<br>resolution: Resolution can be e.g. Duplicate, Unresolved etc. ")
 	@ResponseBody
 	@PostMapping(value = "requirementsWithResolution")
@@ -428,7 +458,7 @@ public class MillaController {
 			notes = "<b>Functionality</b>: Fetch requirements that have the selected dependency type and cached in Mallikas database in the OpenReq JSON format."
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-					+ "<br><b>Prarameter: </b>"
+					+ "<br><b>Parameter: </b>"
 					+ "<br>type: Dependency type can be e.g. DUPLICATES, REQUIRES etc.")
 	@ResponseBody
 	@PostMapping(value = "requirementsWithDependencyType")
@@ -438,6 +468,35 @@ public class MillaController {
 		String modifiedType = type.toUpperCase();
 
 		String reqsWithDependencyType = mallikasService.getAllRequirementsWithSearchedStringFromMallikas(modifiedType,
+				completeAddress);
+
+		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
+			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
+		}
+		ResponseEntity<String> response = new ResponseEntity<>(reqsWithDependencyType, HttpStatus.FOUND);
+		return response;
+	}
+	
+	/**
+	 * Fetch a list of requirements according to their dependency type from the
+	 * database.
+	 * 
+	 * @param type
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Fetch requirements that have the selected dependency type in OpenReq JSON format.", 
+			notes = "<b>Functionality</b>: Fetch requirements that have the selected dependency type and cached in Mallikas database in the OpenReq JSON format."
+					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
+					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
+					+ "<br><b>Parameter: </b>"
+					+ "<br>requestParams: Object containing various parameters")
+	@ResponseBody
+	@PostMapping(value = "requirementsByParams")
+	public ResponseEntity<?> getRequirementsByVariousParams(@RequestBody RequestParams params) throws IOException {
+		String completeAddress = mallikasAddress + "requirementsByParams";
+
+		String reqsWithDependencyType = mallikasService.getRequirementsByParamsFromMallikas(params,
 				completeAddress);
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
@@ -458,7 +517,7 @@ public class MillaController {
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 					+ "<br><b>Prarameter: </b>"
-					+ "<br>id: The id of the requirements, e.g. QTWB-30.")
+					+ "<br>id: The id of the requirement, e.g. QTWB-30.")
 	@ResponseBody
 	@PostMapping(value = "requirementAndDependents")
 	public ResponseEntity<?> getOneRequirementAndDependents(@RequestBody String id) throws IOException {

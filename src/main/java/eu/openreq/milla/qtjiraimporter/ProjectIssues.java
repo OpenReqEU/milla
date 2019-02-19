@@ -68,7 +68,13 @@ public class ProjectIssues {
 						}
 						if (responseJSON != null) {
 							JsonObject issueElement = issueJSON.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
-							issues.put(url, issueElement);
+							String urlId = url.substring(url.lastIndexOf("/") + 1);
+							String responseId = issueElement.get("key").getAsString();
+							if (urlId.equals(responseId)) {
+							issues.put(url, issueElement); 
+							} else {
+								System.out.println(urlId + " is different from " + responseId + " !!");
+							}
 							issueElement = null;
 						}
 			        })
