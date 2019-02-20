@@ -84,7 +84,7 @@ public class DetectionController {
 					+ "<b>Exception</b>: Not needed for DKPro."
 					+ "<br><b>Prarameter: </b>"
 					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "detectSimilarityAddReqs")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetection(@RequestBody String projectId)
 			throws IOException {
@@ -124,11 +124,18 @@ public class DetectionController {
 		
 		String content = new String(result.getBytes());
 
-		JSONObject responseObj = new JSONObject(content);
+		JSONObject responseObj;
+		try {
+			responseObj = new JSONObject(content);
+			System.out.println(responseObj.toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		if (!responseObj.isNull("error")) {
 //			System.out.println(responseObj.getString("error"));
 //		} else {
-		System.out.println(responseObj.toString());
+//		System.out.println(responseObj.toString());
 //		}
 			
 //		String key = obj.getString("id");
@@ -158,7 +165,7 @@ public class DetectionController {
 					+ "<br>compare: Whether text attribute is used in comparison"
 					+ "<br>projectId: The project id in Mallikas."
 					+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "detectSimilarityProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionProject(@RequestParam Boolean compare, 
 			@RequestParam String projectId, @RequestParam String threshold)
@@ -194,7 +201,7 @@ public class DetectionController {
 			+ "<br>projectId: The project id in Mallikas."
 			+ "<br>reqId: The id of the requirement that is compared to other requirements in the project."
 			+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "detectSimilarityReqProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
 			@RequestParam String projectId, @RequestParam String reqId, @RequestParam String threshold)
@@ -224,7 +231,7 @@ public class DetectionController {
 	+ "<br><b>Parameters:</b>"
 	+ "<br>reqId1: The id of the requirement that is compared to other requirement (reqId2)."
 	+ "<br>reqId2: The id of the requirement that is compared to other requirement (reqId1).")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "detectSimilarityReqReq")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, @RequestParam String reqId1, @RequestParam String reqId2)
 			throws IOException{
@@ -282,8 +289,8 @@ public class DetectionController {
 		RestTemplate rt = new RestTemplate();
 		String response = null;
 		ResponseEntity<?> entity = null;
+		String jsonString = "";
 		try {
-			String jsonString = "";
 			if (ids!=null) {
 				jsonString = getRequirementsFromMallikas(ids, mallikasAddress + "selectedRequirements");
 			} else {
@@ -304,10 +311,10 @@ public class DetectionController {
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		catch (JSONException e) {
-			e.printStackTrace();
-			return new ResponseEntity<>("Error in parsing JSON ", HttpStatus.NO_CONTENT);
-		}
+//		catch (JSONException e) {
+//			e.printStackTrace();
+//			return new ResponseEntity<>("Error in parsing JSON ", HttpStatus.NO_CONTENT);
+//		}
 		return entity;
 	}
 		
@@ -323,12 +330,14 @@ public class DetectionController {
 		String content = new String(result.getBytes());
 
 		System.out.println(content);
-		JSONParser.parseToOpenReqObjects(content);
-		List<Dependency> dependencies = JSONParser.dependencies;
+//		JSONParser.parseToOpenReqObjects(content);
+//		List<Dependency> dependencies = JSONParser.dependencies;
 		
 		ResponseEntity<?> entity = null;
 		
 		try {
+			JSONParser.parseToOpenReqObjects(content);
+			List<Dependency> dependencies = JSONParser.dependencies;
 			entity = millaController.postDependenciesToMallikas(dependencies);
 		
 		} catch (HttpClientErrorException e) {

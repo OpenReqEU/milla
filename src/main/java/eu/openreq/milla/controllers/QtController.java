@@ -56,7 +56,7 @@ public class QtController {
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas", notes = "Post a Project to Mallikas database and KeljuCaas")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "updateProject")
 	public ResponseEntity<?> updateWholeProject(@RequestBody String projectId) throws IOException {
 
@@ -86,7 +86,7 @@ public class QtController {
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "updateRecentInProject")
 	public ResponseEntity<?> updateTheMostRecentIssuesInProject(@RequestBody String projectId) throws IOException {
 

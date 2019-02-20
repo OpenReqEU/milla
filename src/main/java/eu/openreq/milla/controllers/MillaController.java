@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -41,7 +42,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @SpringBootApplication
-@Controller
+@RestController
 @RequestMapping(value = "/")
 public class MillaController {
 
@@ -70,7 +71,7 @@ public class MillaController {
 	 */
 	@ApiOperation(value = "OBSOLETE: Relay POST to Mulperi", 
 			notes = "OBSOLETE: Post a model or configuration request to Mulperi")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "data")
 	private ResponseEntity<?> postToMulperi(@RequestBody String data) throws IOException {
 
@@ -109,7 +110,7 @@ public class MillaController {
 			+ "<br><b>Prarameter: </b>"
 			+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
 
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "sendProjectToMulperi")
 	public ResponseEntity<?> sendProjectToMulperi(@RequestBody String projectId) throws IOException {
 
@@ -138,7 +139,7 @@ public class MillaController {
 			+ "<br><b>Note: </b> The project needs to be updated separately to contain references to the new requirements."
 			+ "<br><b>Prarameter: </b>"
 			+ "<br>requirements: An array of requirements in OpenReq JSON.")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirements")
 	private ResponseEntity<?> postRequirementsToMallikas(@RequestBody Collection<Requirement> requirements)
 			throws IOException {
@@ -173,7 +174,7 @@ public class MillaController {
 					+ "<br><b>Postcondition</b>: The dependencies are added or updated to the existing requirements in Mallikas. If a dependency exist, it is updated."
 					+ "<br><b>Prarameter: </b>"
 					+ "<br>dependencies: An array of dependencies in OpenReq JSON format. ")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "dependencies")
 	public ResponseEntity<?> postDependenciesToMallikas(@RequestBody Collection<Dependency> dependencies)
 			throws IOException {
@@ -209,7 +210,7 @@ public class MillaController {
 			+ "<br><b>Exception</b>: TBD: What is a requirement is removed from a project, does this remove it?"
 			+ "<br><b>Prarameter: </b>"
 			+ "<br>project: A project in OpenReq JSON.")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "project")
 	private ResponseEntity<?> postProjectToMallikas(@RequestBody Project project) throws IOException {
 
@@ -241,7 +242,7 @@ public class MillaController {
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "OBSOLETE? Post updated dependencies to Mallikas", notes = "Post updated dependencies as a String list to Mallikas database")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "updateDependencies")
 	public ResponseEntity<?> postUpdatedDependenciesToMallikas(@RequestBody String dependencies) throws IOException {
 
@@ -260,7 +261,7 @@ public class MillaController {
 	}
 
 	@ApiOperation(value = "OBSOLETE? Post updated requirements to Mallikas", notes = "Post updated requirements as a String list to Mallikas database")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "updateRequirements")
 	public ResponseEntity<?> postUpdatedRequirementsToMallikas(@RequestBody String requirements) throws IOException {
 
@@ -316,7 +317,7 @@ public class MillaController {
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the project including requirements and dependencies is produced."
 					+ "<br><b>Prarameter: </b>"
 					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementsInProject")
 	public ResponseEntity<?> getRequirementsInProject(@RequestBody String projectId) throws IOException {
 		String completeAddress = mallikasAddress + "projectRequirements";
@@ -344,7 +345,7 @@ public class MillaController {
 			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 			+ "<br><b>Prarameter: </b>"
 			+ "<br>ids: ids as a String array, e.g. [\"QTWB-1\", \"QTWB-2\"] ")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementsWithIds")
 	public ResponseEntity<?> getRequirementsWithIds(@RequestBody Collection<String> ids) throws IOException {
 		String completeAddress = mallikasAddress + "selectedReqs";
@@ -372,7 +373,7 @@ public class MillaController {
 			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 			+ "<br><b>Parameter: </b>"
 			+ "<br>date: Date in proper format")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementsSinceDate")
 	public ResponseEntity<?> getRequirementsSinceDate(@RequestBody Date date) throws IOException {
 		String completeAddress = mallikasAddress + "reqsSinceDate";
@@ -401,7 +402,7 @@ public class MillaController {
 			+ "<br><b>Parameter: </b>"
 			+ "<br>type: Requirement type in all caps, e.g. BUG"
 			+ "<br>status: Requirement status in all caps, e.g. NEW")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementsWithTypeAndStatus")
 	public ResponseEntity<?> getRequirementsWithTypeAndStatus(@RequestParam String type, @RequestParam String status)
 			throws IOException {
@@ -431,7 +432,7 @@ public class MillaController {
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 					+ "<br><b>Parameter: </b>"
 					+ "<br>resolution: Resolution can be e.g. Duplicate, Unresolved etc. ")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementsWithResolution")
 	public ResponseEntity<?> getRequirementsWithResolution(@RequestParam String resolution) throws IOException {
 		String completeAddress = mallikasAddress + "reqsWithResolution";
@@ -460,7 +461,7 @@ public class MillaController {
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 					+ "<br><b>Parameter: </b>"
 					+ "<br>type: Dependency type can be e.g. DUPLICATES, REQUIRES etc.")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementsWithDependencyType")
 	public ResponseEntity<?> getRequirementsWithDependencyType(@RequestBody String type) throws IOException {
 		String completeAddress = mallikasAddress + "reqsWithDependencyType";
@@ -491,7 +492,7 @@ public class MillaController {
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 					+ "<br><b>Parameter: </b>"
 					+ "<br>requestParams: Object containing various parameters")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementsByParams")
 	public ResponseEntity<?> getRequirementsByVariousParams(@RequestBody RequestParams params) throws IOException {
 		String completeAddress = mallikasAddress + "requirementsByParams";
@@ -518,7 +519,7 @@ public class MillaController {
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 					+ "<br><b>Prarameter: </b>"
 					+ "<br>id: The id of the requirement, e.g. QTWB-30.")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "requirementAndDependents")
 	public ResponseEntity<?> getOneRequirementAndDependents(@RequestBody String id) throws IOException {
 
@@ -555,7 +556,7 @@ public class MillaController {
 	@ApiResponses(value = { @ApiResponse(code = 201, message = "Success, all requirements and dependencies downloaded"),
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "qtjira")
 	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException {
 
@@ -645,7 +646,7 @@ public class MillaController {
 					+ "In Swagger, the data might get too large to be shown in the response field"
 			+ "<br><b>Precondition</b>: There is at least one project and requirement cached in Mallikas.<br>"
 			+ "<b>Postcondition</b>: An OpenReq JSON is produced.<br>")
-	@ResponseBody
+	//@ResponseBody
 	@RequestMapping(value = "allRequirements", method = RequestMethod.GET)
 	public ResponseEntity<?> getAllRequirements() throws IOException {
 
@@ -683,7 +684,7 @@ public class MillaController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success, all updated requirements and dependencies downloaded"),
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "qtjiraUpdated")
 	public ResponseEntity<?> importUpdatedFromQtJira(@RequestBody String projectId) throws IOException {
 		

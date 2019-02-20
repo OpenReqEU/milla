@@ -27,3 +27,6 @@ nbdist/
 .DS_Store
 **/.DS_Store
 bin/
+
+**/logs/spring.log
+*.log 
