@@ -1,6 +1,7 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,12 +19,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import eu.openreq.milla.models.json.Project;
+import eu.openreq.milla.models.json.RequestParams;
+import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.MallikasService;
 
 import io.swagger.annotations.ApiOperation;
@@ -126,6 +130,36 @@ public class QtController {
 		catch (Exception e) {
 			return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
+
+	}
+	
+	@ApiOperation(value = "Get the dependencies of a requirement",
+			response = String.class)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Success, returns JSON model"),
+			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
+			@ApiResponse(code = 409, message = "Conflict")}) 
+	@RequestMapping(value = "/getDependenciesOfARequirement", method = RequestMethod.POST)
+	public ResponseEntity<?> getDependenciesOfARequirement(@RequestParam String requirementId, 
+			@RequestParam(required = false) Double treshold, @RequestParam(required = false) Integer limit) throws IOException {
+		
+		RequestParams params = new RequestParams();
+		List<String> reqIds = new ArrayList<String>();
+		reqIds.add(requirementId);
+		params.setRequirementIds(reqIds);
+		params.setTreshold(treshold);
+		params.setMaxDependencies(limit);
+		
+		String completeAddress = mallikasAddress + "requirementsByParams";
+
+		String reqsWithDependencyType = mallikasService.getRequirementsByParamsFromMallikas(params,
+				completeAddress);
+
+		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
+			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
+		}
+		ResponseEntity<String> response = new ResponseEntity<>(reqsWithDependencyType, HttpStatus.FOUND);
+		return response;
 
 	}
 

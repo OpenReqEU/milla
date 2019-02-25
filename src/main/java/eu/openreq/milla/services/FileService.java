@@ -21,17 +21,17 @@ public class FileService {
 	
 	
 	public Map<String, Integer> readFixVersionsFromFile(String projectId) {
-		List<ComparableVersion> fixVersions = new ArrayList<ComparableVersion>();
+		List<String> fixVersions = new ArrayList<String>();
 		Map<String, Integer> versionsMap = new HashMap<String, Integer>();
 		try (BufferedReader reader = new BufferedReader(new FileReader("FixVersions/"+projectId+".txt"))) {
 		    String line;
 		    while ((line = reader.readLine()) != null) {
-		       fixVersions.add(new ComparableVersion(line));
+		       fixVersions.add(line);
 		    }
-			Collections.sort(fixVersions);
+			Collections.reverse(fixVersions);
 
 			for (int i = fixVersions.size()-1; i >=0; i--) {
-				versionsMap.put(fixVersions.get(i).toString(), i);
+				versionsMap.put(fixVersions.get(i), i);
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block

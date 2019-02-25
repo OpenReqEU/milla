@@ -199,18 +199,18 @@ public class DetectionController {
 			+ "<br><b>Parameters:</b>"
 			+ "<br>compare: Whether the text attribute is used in comparison"
 			+ "<br>projectId: The project id in Mallikas."
-			+ "<br>reqId: The id of the requirement that is compared to other requirements in the project."
+			+ "<br>reqIds: The ids of the requirements that are to be compared to other requirements in the project."
 			+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
 	//@ResponseBody
 	@PostMapping(value = "detectSimilarityReqProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
-			@RequestParam String projectId, @RequestParam String reqId, @RequestParam String threshold)
+			@RequestParam String projectId, @RequestParam List<String> reqIds, @RequestParam String threshold)
 			throws IOException{
 		
 		String thisAddress = "http://localhost:9203/receiveSimilarities";
 		
 		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqProject?compare=" + 
-		compare + "&project=" + projectId + "&req=" + reqId + "&threshold=" + threshold + "&url=" + thisAddress;
+		compare + "&project=" + projectId + "&req=" + reqIds + "&threshold=" + threshold + "&url=" + thisAddress;
 
 		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
 		return entity;

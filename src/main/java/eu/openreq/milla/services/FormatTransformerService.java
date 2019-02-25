@@ -5,11 +5,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -819,17 +821,27 @@ public class FormatTransformerService {
 		reqPart.setName("FixVersion");
 		if (fixVersion != null) {
 			try {
-
-				int number = fixVersions.get(fixVersion.getName()); // This number tells the "release number (or id)" of
-																	// the fix version
-				reqPart.setId(req.getId() + "_" + fixVersion.getId() + "_" + number);
+				if (fixVersions!=null && fixVersions.containsKey(fixVersion.getName())) {
+					int number = fixVersions.get(fixVersion.getName()); // This number tells the "release number (or id)" of
+																		// the fix version
+					System.out.println(number);
+					
+					reqPart.setId(req.getId() + "_" + fixVersion.getId() + "_" + number); 
+				} else {
+					reqPart.setId(req.getId() + "_" + fixVersion.getId());
+				}
 				String versionString = fixVersion.getDescription();
+				//String versionString = fixVersion.getName();
+				System.out.println("Requirement ID: " + req.getId());
+				System.out.println("FixVersion ID: " + fixVersion.getId());
+				System.out.println("FixVersion version: " + fixVersion.getDescription());
+				System.out.println("FixVersion name: " + fixVersion.getName());
 				reqPart.setText(versionString);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else {
-			reqPart.setId(req.getId() + "_FixVersion");
+			reqPart.setId(req.getId() + "_FIXVERSION");
 			reqPart.setText("No FixVersion");
 		}
 		req.getRequirementParts().add(reqPart);
@@ -842,24 +854,21 @@ public class FormatTransformerService {
 	 * @return
 	 */
 	private FixVersion getLatestFixVersion(Issue issue) {
-		if (fixVersions == null) {
-			return null;
-		}
-		FixVersion fixVersion = null;
-		long latest = 0;
-		int newest = fixVersions.size();
-		if (issue.getFields().getFixVersions() != null && !issue.getFields().getFixVersions().isEmpty()) {
-			System.out.println(issue.getFields().getFixVersions());
-			for (FixVersion fixVersion2 : issue.getFields().getFixVersions()) {
-				if (fixVersions.containsKey(fixVersion2.getName())) {
-					if (newest > fixVersions.get(fixVersion2.getName())) {
-						newest = fixVersions.get(fixVersion2.getName());
-						fixVersion = fixVersion2;
-					}
-				}
+		FixVersion newest = null;
+		if (issue.getFields().getFixVersions() != null && !issue.getFields().getFixVersions().isEmpty()) {	
+			List<ComparableVersion> versions = new ArrayList<ComparableVersion>();
+			HashMap<String, FixVersion> fixVerMap = new HashMap<String, FixVersion>();	
+			
+			for (FixVersion fixVer : issue.getFields().getFixVersions()) {
+				System.out.println(fixVer.getName());
+				versions.add(new ComparableVersion(fixVer.getName()));
+				fixVerMap.put(fixVer.getName(), fixVer);
 			}
+			
+			Collections.sort(versions);
+			newest = fixVerMap.get(versions.get(versions.size()-1).toString());
 		}
-		return fixVersion;
+		return newest;
 	}
 
 	/**

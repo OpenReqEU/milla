@@ -479,15 +479,14 @@ public class MillaController {
 	}
 	
 	/**
-	 * Fetch a list of requirements according to their dependency type from the
-	 * database.
+	 * Fetch a list of requirements from the database based on a list of various parameters.
 	 * 
 	 * @param type
 	 * @return
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Fetch requirements that have the selected dependency type in OpenReq JSON format.", 
-			notes = "<b>Functionality</b>: Fetch requirements that have the selected dependency type and cached in Mallikas database in the OpenReq JSON format."
+	@ApiOperation(value = "Fetch requirements based on various parameters given in JSON format.", 
+			notes = "<b>Functionality</b>: Fetch requirements based on various parameters given in JSON format."
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 					+ "<br><b>Parameter: </b>"
@@ -517,7 +516,7 @@ public class MillaController {
 			notes = "<b>Functionality</b>: Fetch the specied requirement and its dependendenct requirements including the dependency objects from Mallikas in OpenReq JSON format. "
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-					+ "<br><b>Prarameter: </b>"
+					+ "<br><b>Parameter: </b>"
 					+ "<br>id: The id of the requirement, e.g. QTWB-30.")
 	//@ResponseBody
 	@PostMapping(value = "requirementAndDependents")
@@ -550,7 +549,7 @@ public class MillaController {
 					+ "<br><b>Postcondition</b>: The selected project is cached in Mallikas to be managed in the OpenReq infrastructure. "
 					+ "The same project name (id) is used in Qt Jira and Mallikas."
 					+ "<br><b>Note:</b> For update rather than full import, see \"qtjiraUpdated\", which is  more effiecient for large projects.</b>"
-					+ "<br><b>Prarameter: </b>"
+					+ "<br><b>Parameter: </b>"
 					+ "<br>projectId: The project id in Qt Jira, which is then used also in Mallikas (e.g., QTWB).", 
 					response = String.class)
 	@ApiResponses(value = { @ApiResponse(code = 201, message = "Success, all requirements and dependencies downloaded"),
@@ -700,6 +699,11 @@ public class MillaController {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
+	}
+	
+	@PostMapping(value = "receiveDependencyVerdict")
+	public ResponseEntity<?> receiveDependency(@RequestBody Dependency dependency, @RequestParam boolean verdict) throws IOException {
+		return new ResponseEntity<>("Not implemented", HttpStatus.NOT_IMPLEMENTED);
 	}
 	 
 }

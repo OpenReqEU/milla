@@ -12,6 +12,9 @@ public class RequestParams {
 	    private String type;
 	    private String status;
 	    private String resolution;
+	    private Integer maxDependencies;
+	    private Double treshold;
+	    private Boolean includeProposed;
 	    
 	    
 		public String getProjectId() {
@@ -56,7 +59,24 @@ public class RequestParams {
 		public void setResolution(String resolution) {
 			this.resolution = resolution;
 		}
-	    
+		public Integer getMaxDependencies() {
+			return maxDependencies;
+		}
+		public void setMaxDependencies(Integer maxDependencies) {
+			this.maxDependencies = maxDependencies;
+		}
+		public Double getTreshold() {
+			return treshold;
+		}
+		public void setTreshold(Double treshold) {
+			this.treshold = treshold;
+		}
+		public Boolean getIncludeProposed() {
+			return includeProposed;
+		}
+		public void setIncludeProposed(Boolean includeProposed) {
+			this.includeProposed = includeProposed;
+		}
 	    
 	
 }
