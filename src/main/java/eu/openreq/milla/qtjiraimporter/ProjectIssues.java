@@ -72,9 +72,10 @@ public class ProjectIssues {
 							String responseId = issueElement.get("key").getAsString();
 							if (urlId.equals(responseId)) {
 							issues.put(url, issueElement); 
-							} else {
-								System.out.println(urlId + " is different from " + responseId + " !!");
-							}
+							} 
+//							else {
+//								System.out.println(urlId + " is different from " + responseId + " !!");
+//							}
 							issueElement = null;
 						}
 			        })
