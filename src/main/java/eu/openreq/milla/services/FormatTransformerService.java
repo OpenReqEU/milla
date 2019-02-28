@@ -824,18 +824,16 @@ public class FormatTransformerService {
 				if (fixVersions!=null && fixVersions.containsKey(fixVersion.getName())) {
 					int number = fixVersions.get(fixVersion.getName()); // This number tells the "release number (or id)" of
 																		// the fix version
-					System.out.println(number);
-					
 					reqPart.setId(req.getId() + "_" + fixVersion.getId() + "_" + number); 
 				} else {
 					reqPart.setId(req.getId() + "_" + fixVersion.getId());
 				}
-				String versionString = fixVersion.getDescription();
-				//String versionString = fixVersion.getName();
-				System.out.println("Requirement ID: " + req.getId());
-				System.out.println("FixVersion ID: " + fixVersion.getId());
-				System.out.println("FixVersion version: " + fixVersion.getDescription());
-				System.out.println("FixVersion name: " + fixVersion.getName());
+				String versionString = fixVersion.getName();
+//				String versionString = fixVersion.getDescription();
+//				System.out.println("Requirement ID: " + req.getId());
+//				System.out.println("FixVersion ID: " + fixVersion.getId());
+//				System.out.println("FixVersion version: " + fixVersion.getDescription());
+//				System.out.println("FixVersion name: " + fixVersion.getName());
 				reqPart.setText(versionString);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -858,9 +856,7 @@ public class FormatTransformerService {
 		if (issue.getFields().getFixVersions() != null && !issue.getFields().getFixVersions().isEmpty()) {	
 			List<ComparableVersion> versions = new ArrayList<ComparableVersion>();
 			HashMap<String, FixVersion> fixVerMap = new HashMap<String, FixVersion>();	
-			
 			for (FixVersion fixVer : issue.getFields().getFixVersions()) {
-				System.out.println(fixVer.getName());
 				versions.add(new ComparableVersion(fixVer.getName()));
 				fixVerMap.put(fixVer.getName(), fixVer);
 			}

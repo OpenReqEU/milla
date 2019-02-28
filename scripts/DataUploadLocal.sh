@@ -25,7 +25,7 @@ echo "**************************************************************************
 # The projects array. EDIT HERE THE DESIRED PROJECTS
 #
 # For testing this script, use for simplicity only QTWB, which is the smallest project.
-projects=("QBS")
+projects=("QBS" "QTCREATORBUG")
 
 
 echo -e "\nThis script uploads the following projects. To change the projects, change the projects array in the script."

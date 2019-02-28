@@ -15,6 +15,7 @@ public class RequestParams {
 	    private Integer maxDependencies;
 	    private Double treshold;
 	    private Boolean includeProposed;
+	    private Boolean proposedOnly;
 	    
 	    
 		public String getProjectId() {
@@ -76,6 +77,12 @@ public class RequestParams {
 		}
 		public void setIncludeProposed(Boolean includeProposed) {
 			this.includeProposed = includeProposed;
+		}
+		public Boolean getProposedOnly() {
+			return proposedOnly;
+		}
+		public void setProposedOnly(Boolean proposedOnly) {
+			this.proposedOnly = proposedOnly;
 		}
 	    
 	

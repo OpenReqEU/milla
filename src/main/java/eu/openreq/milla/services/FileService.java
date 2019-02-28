@@ -2,15 +2,22 @@ package eu.openreq.milla.services;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.springframework.stereotype.Service;
+
+import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.models.json.Dependency_status;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +52,30 @@ public class FileService {
 		}
 		
 		return versionsMap;
+	}
+	
+	public void logDependencies(Collection<Dependency> dependencies) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter("logs/proposedDependencyUpdates.log", true))) {
+			for (Dependency dep : dependencies) {
+				if (dep.getStatus().equals(Dependency_status.ACCEPTED)) {
+					writer.append(dep.getId() + " ACCEPTED " + dep.getDependency_type() + "\n");
+				} 
+				if (dep.getStatus().equals(Dependency_status.REJECTED)) {
+					writer.append(dep.getId() + " REJECTED \n");
+				}
+			}
+			writer.close();
+		    
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Log file not found");
+			//e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+
+		}
+
 	}
 
 }

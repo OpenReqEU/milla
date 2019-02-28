@@ -69,10 +69,10 @@ public class MillaController {
 	 * @return
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "OBSOLETE: Relay POST to Mulperi", 
-			notes = "OBSOLETE: Post a model or configuration request to Mulperi")
-	//@ResponseBody
-	@PostMapping(value = "data")
+//	@ApiOperation(value = "OBSOLETE: Relay POST to Mulperi", 
+//			notes = "OBSOLETE: Post a model or configuration request to Mulperi")
+//	//@ResponseBody
+//	@PostMapping(value = "data")
 	private ResponseEntity<?> postToMulperi(@RequestBody String data) throws IOException {
 
 		RestTemplate rt = new RestTemplate();
@@ -96,6 +96,40 @@ public class MillaController {
 	}
 
 	/**
+	 * Fetch Requirements by params given from Mallikas, and send
+	 * to Mulperi
+	 * 
+	 * @param
+	 * @return ResponseEntity<?>
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Construct a transitive closure by sending all requirements of the selected project to Mulperi", 
+	notes = "<b>Functionality</b>: All requirements in the same project are fetched from Mallikas database and send to Mulperi to construct a transitive closure."
+			+ "<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br>"
+			+ "<b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br>"
+			+ "<br><b>Prarameter: </b>"
+			+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
+
+	//@ResponseBody
+	@PostMapping(value = "sendProjectToMulperiWithParams")
+	public ResponseEntity<?> sendProjectToMulperiWithParams(@RequestParam String projectId, @RequestParam boolean includeProposedDependencies) throws IOException {
+
+		String completeAddress = mallikasAddress + "requirementsByParams";
+
+		RequestParams params = new RequestParams();
+		
+		params.setProjectId(projectId);
+		params.setIncludeProposed(includeProposedDependencies);
+		
+		String reqsInProject = mallikasService.getRequirementsByParamsFromMallikas(params, completeAddress);
+
+		if (reqsInProject == null) {
+			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+		}
+		return this.postToMulperi(reqsInProject);
+	}
+	
+	/**
 	 * Fetch Requirements that are in the selected Project from Mallikas, and send
 	 * to Mulperi
 	 * 
@@ -112,10 +146,11 @@ public class MillaController {
 
 	//@ResponseBody
 	@PostMapping(value = "sendProjectToMulperi")
-	public ResponseEntity<?> sendProjectToMulperi(@RequestBody String projectId) throws IOException {
+	public ResponseEntity<?> sendProjectToMulperi(@RequestParam String projectId) throws IOException {
 
 		String completeAddress = mallikasAddress + "projectRequirements";
 
+		
 		String reqsInProject = mallikasService.getAllRequirementsInProjectFromMallikas(projectId, completeAddress);
 
 		if (reqsInProject == null) {
@@ -133,14 +168,14 @@ public class MillaController {
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Store (TBD or update?) requirements to mallikas.", 
-	notes = "<b>Functionality</b>: Add or update an array of requirements in OpenReq JSON format in Mallikas database. "
-			+ "<br><b>Postcondition</b>: Requirements are stored in Mallikas."
-			+ "<br><b>Note: </b> The project needs to be updated separately to contain references to the new requirements."
-			+ "<br><b>Prarameter: </b>"
-			+ "<br>requirements: An array of requirements in OpenReq JSON.")
-	//@ResponseBody
-	@PostMapping(value = "requirements")
+//	@ApiOperation(value = "Store (TBD or update?) requirements to mallikas.", 
+//	notes = "<b>Functionality</b>: Add or update an array of requirements in OpenReq JSON format in Mallikas database. "
+//			+ "<br><b>Postcondition</b>: Requirements are stored in Mallikas."
+//			+ "<br><b>Note: </b> The project needs to be updated separately to contain references to the new requirements."
+//			+ "<br><b>Prarameter: </b>"
+//			+ "<br>requirements: An array of requirements in OpenReq JSON.")
+//	//@ResponseBody
+//	@PostMapping(value = "requirements")
 	private ResponseEntity<?> postRequirementsToMallikas(@RequestBody Collection<Requirement> requirements)
 			throws IOException {
 
@@ -203,15 +238,15 @@ public class MillaController {
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Store a project in Mallikas", 
-			notes = "<br><b>Functionality</b>: Add or update a project in Mallikas. The project is in OpenReq JSON format primarily containing the IDs of requirements in the project. "
-			+ "If the projects already exist in Mallikas, the existing data is updated."
-			+ "<br><b>Postcondition</b>: The project is added or updated in Mallikas."
-			+ "<br><b>Exception</b>: TBD: What is a requirement is removed from a project, does this remove it?"
-			+ "<br><b>Prarameter: </b>"
-			+ "<br>project: A project in OpenReq JSON.")
-	//@ResponseBody
-	@PostMapping(value = "project")
+//	@ApiOperation(value = "Store a project in Mallikas", 
+//			notes = "<br><b>Functionality</b>: Add or update a project in Mallikas. The project is in OpenReq JSON format primarily containing the IDs of requirements in the project. "
+//			+ "If the projects already exist in Mallikas, the existing data is updated."
+//			+ "<br><b>Postcondition</b>: The project is added or updated in Mallikas."
+//			+ "<br><b>Exception</b>: TBD: What is a requirement is removed from a project, does this remove it?"
+//			+ "<br><b>Prarameter: </b>"
+//			+ "<br>project: A project in OpenReq JSON.")
+//	//@ResponseBody
+//	@PostMapping(value = "project")
 	private ResponseEntity<?> postProjectToMallikas(@RequestBody Project project) throws IOException {
 
 		RestTemplate rt = new RestTemplate();
@@ -251,7 +286,7 @@ public class MillaController {
 		String updated = null;
 
 		try {
-			updated = mallikasService.updateSelectedDependencies(dependencies, completeAddress);
+			updated = mallikasService.updateSelectedDependencies(dependencies, completeAddress, false);
 
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
@@ -699,11 +734,6 @@ public class MillaController {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
-	}
-	
-	@PostMapping(value = "receiveDependencyVerdict")
-	public ResponseEntity<?> receiveDependency(@RequestBody Dependency dependency, @RequestParam boolean verdict) throws IOException {
-		return new ResponseEntity<>("Not implemented", HttpStatus.NOT_IMPLEMENTED);
 	}
 	 
 }

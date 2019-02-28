@@ -2,6 +2,7 @@ package eu.openreq.milla.services;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -11,6 +12,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.RequestParams;
@@ -189,15 +192,20 @@ public class MallikasService {
 	 * @param url
 	 * @return
 	 */
-	public String updateSelectedDependencies(String dependencies, String url) {
+	public String updateSelectedDependencies(String dependencies, String url, Boolean proposed) {
 		RestTemplate rt = new RestTemplate();	
 		Collection<Dependency> updatedDependencies = parseStringToDependencies(dependencies);
+		
+		if (proposed) {
+			FileService fs = new FileService();
+			fs.logDependencies(updatedDependencies);
+		}
 
 		String response = null;
 
 		try {
 			response = rt.postForObject(url, updatedDependencies, String.class);
-			return response;
+			return "Update successful";
 
 		} catch (HttpClientErrorException e) {
 			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " "+ e.getStatusCode();
@@ -256,8 +264,9 @@ public class MallikasService {
 		JsonParser parser = new JsonParser();
 		JsonElement dependencyElement = parser.parse(dependencies);
 		JsonArray dependenciesJSON = dependencyElement.getAsJsonArray();
+		Type listType = new TypeToken<List<Dependency>>(){}.getType();
 		
-		Collection<Dependency> updatedDependencies = gson.fromJson(dependenciesJSON, Collection.class);
+		Collection<Dependency> updatedDependencies = gson.fromJson(dependenciesJSON, listType);
 		
 		return updatedDependencies;
 	}
@@ -272,12 +281,19 @@ public class MallikasService {
 		JsonParser parser = new JsonParser();
 		JsonElement reqElement = parser.parse(requirements);
 		JsonArray requirementsJSON = reqElement.getAsJsonArray();
+		Type listType = new TypeToken<List<Dependency>>(){}.getType();
 		
-		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, Collection.class);
+		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, listType);
 		
 		return updatedRequirements;
 	}
 
+	/**
+	 * Send a request to Mallikas contained within a RequestParams object
+	 * @param params
+	 * @param url
+	 * @return
+	 */
 	public String getRequirementsByParamsFromMallikas(RequestParams params, String url) {
 		RestTemplate rt = new RestTemplate();	
 		String reqs = null;

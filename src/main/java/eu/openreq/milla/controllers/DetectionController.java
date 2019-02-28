@@ -97,7 +97,7 @@ public class DetectionController {
 
 		String requirements = mallikasService.getAllRequirementsInProjectFromMallikas(projectId,
 				mallikasAddress + "projectRequirements");
-		String receiveAddress = "http://localhost:9203/receiveAddReqResponse";
+		String receiveAddress = millaAddress + "receiveAddReqResponse";
 		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/DB/AddReqs?url=" + receiveAddress;
 		
 		HttpEntity<String> entity = new HttpEntity<String>(requirements, headers);
@@ -171,7 +171,7 @@ public class DetectionController {
 			@RequestParam String projectId, @RequestParam String threshold)
 			throws IOException {
 		
-		String thisAddress = "http://localhost:9203/receiveSimilarities";
+		String thisAddress = millaAddress + "receiveSimilarities";
 		
 		String completeAddress = upcSimilarityAddress
 				+ "upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
@@ -207,11 +207,19 @@ public class DetectionController {
 			@RequestParam String projectId, @RequestParam List<String> reqIds, @RequestParam String threshold)
 			throws IOException{
 		
-		String thisAddress = "http://localhost:9203/receiveSimilarities";
+		String thisAddress = millaAddress + "receiveSimilarities";
+		
+		String reqsString = "";
+		
+		for (String reqId : reqIds) {
+			reqsString = reqsString + "&req=" + reqId;
+		}
 		
 		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqProject?compare=" + 
-		compare + "&project=" + projectId + "&req=" + reqIds + "&threshold=" + threshold + "&url=" + thisAddress;
-
+		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress;
+		
+		System.out.println(completeAddress);
+		
 		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
 		return entity;
 	}	
@@ -236,7 +244,7 @@ public class DetectionController {
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, @RequestParam String reqId1, @RequestParam String reqId2)
 			throws IOException{
 
-		String thisAddress = "http://localhost:9203/receiveSimilarities";
+		String thisAddress = millaAddress + "receiveSimilarities";
 		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqReq?compare=" + compare + 
 				"&req1=" + reqId1 + "&req2=" + reqId2 + "&url=" + thisAddress;
 		

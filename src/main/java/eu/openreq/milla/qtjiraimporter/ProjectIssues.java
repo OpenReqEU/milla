@@ -71,10 +71,8 @@ public class ProjectIssues {
 							String urlId = url.substring(url.lastIndexOf("/") + 1);
 							String responseId = issueElement.get("key").getAsString();
 							if (urlId.equals(responseId)) {
-							issues.put(url, issueElement); 
-							} else {
-								System.out.println(urlId + " is different from " + responseId + " !!");
-							}
+								issues.put(url, issueElement); 
+							} 
 							issueElement = null;
 						}
 			        })
