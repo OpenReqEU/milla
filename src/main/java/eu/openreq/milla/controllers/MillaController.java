@@ -121,7 +121,7 @@ public class MillaController {
 		params.setProjectId(projectId);
 		params.setIncludeProposed(includeProposedDependencies);
 		
-		String reqsInProject = mallikasService.getRequirementsByParamsFromMallikas(params, completeAddress);
+		String reqsInProject = mallikasService.sendRequestWithParamsToMallikas(params, completeAddress);
 
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
@@ -531,7 +531,7 @@ public class MillaController {
 	public ResponseEntity<?> getRequirementsByVariousParams(@RequestBody RequestParams params) throws IOException {
 		String completeAddress = mallikasAddress + "requirementsByParams";
 
-		String reqsWithDependencyType = mallikasService.getRequirementsByParamsFromMallikas(params,
+		String reqsWithDependencyType = mallikasService.sendRequestWithParamsToMallikas(params,
 				completeAddress);
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {

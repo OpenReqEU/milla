@@ -152,9 +152,9 @@ public class QtController {
 		params.setTreshold(treshold);
 		params.setMaxDependencies(maxResults);
 		
-		String completeAddress = mallikasAddress + "requirementsByParams";
+		String completeAddress = mallikasAddress + "onlyDependenciesByParams";
 
-		String reqsWithDependencyType = mallikasService.getRequirementsByParamsFromMallikas(params,
+		String reqsWithDependencyType = mallikasService.sendRequestWithParamsToMallikas(params,
 				completeAddress);
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
@@ -201,7 +201,7 @@ public class QtController {
 	@RequestMapping(value = "/getTopProposedDependenciesOfRequirement", method = RequestMethod.POST)
 	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam String requirementId, @RequestParam Integer maxResults) throws IOException {
 		
-		String completeAddress = mallikasAddress + "requirementsByParams";
+		String completeAddress = mallikasAddress + "onlyDependenciesByParams";
 		
 		RequestParams params = new RequestParams();
 		List<String> reqIds = new ArrayList<String>();
@@ -210,7 +210,7 @@ public class QtController {
 		params.setProposedOnly(true);
 		params.setMaxDependencies(maxResults);
 		
-		String reqWithTopProposed = mallikasService.getRequirementsByParamsFromMallikas(params,
+		String reqWithTopProposed = mallikasService.sendRequestWithParamsToMallikas(params,
 				completeAddress);
 
 		if (reqWithTopProposed == null || reqWithTopProposed.equals("")) {

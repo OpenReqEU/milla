@@ -294,7 +294,7 @@ public class MallikasService {
 	 * @param url
 	 * @return
 	 */
-	public String getRequirementsByParamsFromMallikas(RequestParams params, String url) {
+	public String sendRequestWithParamsToMallikas(RequestParams params, String url) {
 		RestTemplate rt = new RestTemplate();	
 		String reqs = null;
 		try {
