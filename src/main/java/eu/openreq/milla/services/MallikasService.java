@@ -1,6 +1,9 @@
 package eu.openreq.milla.services;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -9,8 +12,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 
 import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.models.json.Requirement;
 
 @Service
@@ -30,7 +36,7 @@ public class MallikasService {
 		try {
 			reqsAndDependencies=rt.getForObject(url, String.class);
 		}
-		catch (HttpClientErrorException e) { //Probably a different exception here? 
+		catch (HttpClientErrorException e) {
 			e.printStackTrace();
 		}
 		
@@ -50,7 +56,7 @@ public class MallikasService {
 		try {
 			req = rt.postForObject(url, id, String.class);	
 		}
-		catch (HttpClientErrorException e) { //Probably a different exception here? 
+		catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
 		}
@@ -65,13 +71,35 @@ public class MallikasService {
 	 */
 	public String getSelectedRequirementsFromMallikas(Collection<String> ids, String url) {
 		
-		RestTemplate rt = new RestTemplate();	//Same line of code in every method, perhaps create a constructor?
+		RestTemplate rt = new RestTemplate();
 		String reqs = null;
 		
 		try {
 			reqs= rt.postForObject(url, ids, String.class);
 		}
-		catch (HttpClientErrorException e) { //Probably a different exception here? 
+		catch (HttpClientErrorException e) { 
+			System.out.println("Error " + e);
+			e.printStackTrace();
+		}
+		
+		return reqs;
+	}
+	
+	/**
+	 * Send request to Mallikas to get a List of Requirements and their Dependecies as a String (based on a List of selected Requirement IDs) 
+	 * @param ids List<String> containing selected Requirement IDs
+	 * @param url the address in Mallikas
+	 * @return
+	 */
+	public String getRequirementsSinceDateFromMallikas(Long date, String url) {
+		
+		RestTemplate rt = new RestTemplate();
+		String reqs = null;
+		
+		try {
+			reqs= rt.postForObject(url, date, String.class);
+		}
+		catch (HttpClientErrorException e) { 
 			System.out.println("Error " + e);
 			e.printStackTrace();
 		}
@@ -90,33 +118,12 @@ public class MallikasService {
 		String reqs = null;
 		try {
 			reqs = rt.postForObject(url, projectId, String.class);		
-		} catch (HttpClientErrorException e) { //Probably a different exception here? 
+		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
 		}
 		return reqs;
 	}
-	
-//	/**
-//	 * Send request to Mallikas to get a String (List of Requirements that share the same classifier (so they belong to the same Qt Jira component) and their Dependencies)
-//	 * @param classifierId id of the Component/Classifier
-//	 * @param url the address in Mallikas
-//	 * @return String containing all requirements and their dependencies in the same component
-//	 */
-//	public String getAllRequirementsWithClassifierFromMallikas(String classifierId, String url) {
-//
-//		RestTemplate rt = new RestTemplate();	
-//		String reqs = null;
-//		
-//		try {
-//			reqs = rt.postForObject(url, classifierId, String.class);
-//			
-//		} catch (HttpClientErrorException e) { //Probably a different exception here? 
-//			System.out.println("Error " + e);
-//			e.printStackTrace();
-//		}
-//		return reqs;
-//	}
 		
 	/**
 	 * Post the searched type and status to Mallikas
@@ -135,33 +142,26 @@ public class MallikasService {
 		try {	
 			reqs = rt.postForObject(url, whole, String.class);
 			
-		} catch (HttpClientErrorException e) { //Probably a different exception here? 
+		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
 		}
 		return reqs;
 	}
-	
-	public String getAllRequirementsWithResolutionFromMallikas(String resolution, String url) {
+
+	/**
+	 * Can be used to search requirements with a certain Resolution or Dependency type
+	 * @param searched
+	 * @param url
+	 * @return
+	 */
+	public String getAllRequirementsWithSearchedStringFromMallikas(String searched, String url) {
 		RestTemplate rt = new RestTemplate();	
 		String reqs = null;
 		try {	
-			reqs = rt.postForObject(url, resolution, String.class);
+			reqs = rt.postForObject(url, searched, String.class);
 			
-		} catch (HttpClientErrorException e) { //Probably a different exception here? 
-			System.out.println("Error " + e);
-			e.printStackTrace();
-		}
-		return reqs;
-	}
-	
-	public String getAllRequirementsWithDependencyTypeFromMallikas(String type, String url) {
-		RestTemplate rt = new RestTemplate();	
-		String reqs = null;
-		try {	
-			reqs = rt.postForObject(url, type, String.class);
-			
-		} catch (HttpClientErrorException e) { //Probably a different exception here? 
+		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
 		}
@@ -192,15 +192,20 @@ public class MallikasService {
 	 * @param url
 	 * @return
 	 */
-	public String updateSelectedDependencies(String dependencies, String url) {
+	public String updateSelectedDependencies(String dependencies, String url, Boolean proposed) {
 		RestTemplate rt = new RestTemplate();	
 		Collection<Dependency> updatedDependencies = parseStringToDependencies(dependencies);
+		
+		if (proposed) {
+			FileService fs = new FileService();
+			fs.logDependencies(updatedDependencies);
+		}
 
 		String response = null;
 
 		try {
 			response = rt.postForObject(url, updatedDependencies, String.class);
-			return response;
+			return "Update successful";
 
 		} catch (HttpClientErrorException e) {
 			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " "+ e.getStatusCode();
@@ -259,8 +264,9 @@ public class MallikasService {
 		JsonParser parser = new JsonParser();
 		JsonElement dependencyElement = parser.parse(dependencies);
 		JsonArray dependenciesJSON = dependencyElement.getAsJsonArray();
+		Type listType = new TypeToken<List<Dependency>>(){}.getType();
 		
-		Collection<Dependency> updatedDependencies = gson.fromJson(dependenciesJSON, Collection.class);
+		Collection<Dependency> updatedDependencies = gson.fromJson(dependenciesJSON, listType);
 		
 		return updatedDependencies;
 	}
@@ -275,10 +281,29 @@ public class MallikasService {
 		JsonParser parser = new JsonParser();
 		JsonElement reqElement = parser.parse(requirements);
 		JsonArray requirementsJSON = reqElement.getAsJsonArray();
+		Type listType = new TypeToken<List<Dependency>>(){}.getType();
 		
-		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, Collection.class);
+		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, listType);
 		
 		return updatedRequirements;
+	}
+
+	/**
+	 * Send a request to Mallikas contained within a RequestParams object
+	 * @param params
+	 * @param url
+	 * @return
+	 */
+	public String sendRequestWithParamsToMallikas(RequestParams params, String url) {
+		RestTemplate rt = new RestTemplate();	
+		String reqs = null;
+		try {
+			reqs = rt.postForObject(url, params, String.class);		
+		} catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
+		}
+		return reqs;
 	}
 
 }

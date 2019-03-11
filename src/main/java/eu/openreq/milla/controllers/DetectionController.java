@@ -1,10 +1,23 @@
 package eu.openreq.milla.controllers;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,8 +34,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import eu.openreq.milla.services.MallikasService;
+import groovy.util.logging.Log;
 import eu.openreq.milla.services.JSONParser;
 import io.swagger.annotations.ApiOperation; 
 //import io.swagger.annotations.*;
@@ -32,6 +47,9 @@ import eu.openreq.milla.models.json.*;
 @RestController
 public class DetectionController {
 
+	@Value("${milla.ownAddress}")
+	private String millaAddress;
+	
 	@Value("${milla.mallikasAddress}")
 	private String mallikasAddress;
 
@@ -40,12 +58,16 @@ public class DetectionController {
 	
 	@Value("${milla.upcCrossReferrenceAddress}")
 	private String upcCrossReferenceAddress;
+	
+	private List<String> requestIds;
 
 	@Autowired
 	MallikasService mallikasService;
 	
 	@Autowired
 	MillaController millaController;
+	
+	
 
 	/**
 	 * Post a Collection of OpenReq JSON Requirements to UPC for Similarity
@@ -62,7 +84,7 @@ public class DetectionController {
 					+ "<b>Exception</b>: Not needed for DKPro."
 					+ "<br><b>Prarameter: </b>"
 					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
-	@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "detectSimilarityAddReqs")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetection(@RequestBody String projectId)
 			throws IOException {
@@ -70,12 +92,13 @@ public class DetectionController {
 		RestTemplate rt = new RestTemplate();
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
 		String requirements = mallikasService.getAllRequirementsInProjectFromMallikas(projectId,
 				mallikasAddress + "projectRequirements");
-
-		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/DB/AddReqs";
+		String receiveAddress = millaAddress + "receiveAddReqResponse";
+		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/DB/AddReqs?url=" + receiveAddress;
 		
 		HttpEntity<String> entity = new HttpEntity<String>(requirements, headers);
 
@@ -83,150 +106,204 @@ public class DetectionController {
 
 		try {
 			response = rt.postForEntity(completeAddress, entity, String.class);
-
+			if (requestIds==null) {
+				requestIds = new ArrayList<String>();
+			}
+			requestIds.add(response.getBody().toString());
+			System.out.println(response.getBody());
+			
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 		return response;
 	}
-
-	/**
-	 * Post a Collection of OpenReq JSON Requirements and Dependencies to UPC for
-	 * comparing two requirements.
-	 * @param projectId
-	 * @param reqId1
-	 * @param reqId2
-	 * @param component
-	 * @return
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Detect similarity between two requirements using UPC Similarity Detection",  
-	notes = "<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between two specified requirements to each other."
-	+ "<br><b>Precondition</b>: The project has been cached in Mallikas. TBD: Does this need caching?"
-	+ "<br><b>Postcondition</b>: TBD Does this store to Mallikas: After successfully detection, the potially detected similarity, given that it is above the treshold, is stored in Mallikas using the similarity dependency type and proposed status."
-	+ "<br><b>Notes:TBD: FIXME This is inefficient method since entire project is fetched from mallikas</b> ."
-	+ "<br><b>Parameters:</b>"
-	+ "<br>compare: what fields are taken into accoung in comparison (Name-Text-Comments-All)."
-	+ "<br>component: The component or algorithm used for comparison (e.g. DKPro)."
-	+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
-	+ "<br>reqId1: The id of the requirement that is compared to other requirement (reqId2) in the project."
-	+ "<br>reqId2: The id of the requirement that is compared to other requirement (reqId1) in the project.")
-	@ResponseBody
-	@PostMapping(value = "detectSimilarityReqReq")
-	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam String compare, @RequestParam String projectId,
-			@RequestParam String reqId1, @RequestParam String reqId2, @RequestParam String component)
+	
+	@PostMapping(value = "receiveAddReqResponse")
+	public void receiveAddReqResponse(@RequestParam MultipartFile result)
 			throws IOException{
+		
+		String content = new String(result.getBytes());
 
-		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqReq?compare=" +compare+ "&component=" + component +"req1=" + reqId1 + "&req2=" + reqId2;
-
-		ResponseEntity<?> entity = receiveDependenciesAndSendToMallikas(projectId, completeAddress);
-		return entity;
+		JSONObject responseObj;
+		try {
+			responseObj = new JSONObject(content);
+			System.out.println(responseObj.toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		if (!responseObj.isNull("error")) {
+//			System.out.println(responseObj.getString("error"));
+//		} else {
+//		System.out.println(responseObj.toString());
+//		}
+			
+//		String key = obj.getString("id");
+//		if (!requestIds.contains(key)) {
+//			return new ResponseEntity<>("Unknown request key: " + key, HttpStatus.EXPECTATION_FAILED);
+//		}
+//		requestIds.remove(key);
+		
 	}
 	
 	/**
+	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project 
+	 * to UPC for Similarity detection.
+	 * @param compare
+	 * @param projectId
+	 * @param threshold
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Detect similarity between all requirements of a project using UPC Similarity Detection", 
+			notes = "<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection "
+					+ "in order to detect similarity between all requirements. "
+					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
+					+ "<br><b>Postcondition</b>: After successful detection, the detected new similarities are "
+					+ "stored in Mallikas using the similarity dependency type and proposed status."
+					+ "<br><b>Parameters:</b>"
+					+ "<br>compare: Whether text attribute is used in comparison"
+					+ "<br>projectId: The project id in Mallikas."
+					+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
+	//@ResponseBody
+	@PostMapping(value = "detectSimilarityProject")
+	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionProject(@RequestParam Boolean compare, 
+			@RequestParam String projectId, @RequestParam String threshold)
+			throws IOException {
+		
+		String thisAddress = millaAddress + "receiveSimilarities";
+		
+		String completeAddress = upcSimilarityAddress
+				+ "upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
+				"&threshold=" + threshold + "&url=" + thisAddress;
+		
+		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
+		
+		return entity;
+	}	
+	
+	/**
 	 * 
-	 * @param component
-	 * @param elements
+	 * @param compare
 	 * @param projectId
 	 * @param reqId
 	 * @param threshold
 	 * @return
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Detect similarity of one requirement againsta all other requirements of a project using UPC Similarity Detection",  
+	@ApiOperation(value = "Detect similarity of one requirement against all other requirements of a project using UPC Similarity Detection",  
 			notes = "<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between one specified requirements in to project to all other requirements. "
-			+ "<br><b>Precondition</b>: The project has been cached in Mallikas. For other than DKPro, the project needs to be cache in UPC, see \"detectSimilarityAddReqs\""
-			+ "<br><b>Postcondition</b>: After successfully detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status."
+			+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
+			+ "<br><b>Postcondition</b>: After successful detection, the detected new similarities are stored"
+			+ " in Mallikas using the similarity dependency type and proposed status."
 			+ "<br><b>Parameters:</b>"
-			+ "<br>compare: what fields are taken into accoung in comparison (Name-Text-Comments-All)."
-			+ "<br>component: The component or algorithm used for comparison (e.g. DKPro)."
-			+ "<br>elements: the maximum number of detected dependencies (e.g. 5)."
+			+ "<br>compare: Whether the text attribute is used in comparison"
 			+ "<br>projectId: The project id in Mallikas."
-			+ "<br>reqId: The id of the requirement that is compared to other requirements in the project."
+			+ "<br>reqIds: The ids of the requirements that are to be compared to other requirements in the project."
 			+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
-@ResponseBody
+	//@ResponseBody
 	@PostMapping(value = "detectSimilarityReqProject")
-	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam String compare, @RequestParam String component, @RequestParam String elements, @RequestParam String projectId, @RequestParam String reqId, @RequestParam String threshold)
+	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
+			@RequestParam String projectId, @RequestParam List<String> reqIds, @RequestParam String threshold)
+			throws IOException{
+		
+		String thisAddress = millaAddress + "receiveSimilarities";
+		
+		String reqsString = "";
+		
+		for (String reqId : reqIds) {
+			reqsString = reqsString + "&req=" + reqId;
+		}
+		
+		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqProject?compare=" + 
+		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress;
+		
+		System.out.println(completeAddress);
+		
+		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
+		return entity;
+	}	
+	
+	/**
+	 * Post a Collection of OpenReq JSON Requirements and Dependencies to UPC for
+	 * comparing two requirements.
+	 * @param reqId1
+	 * @param reqId2
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Detect similarity between two requirements using UPC Similarity Detection",  
+	notes = "<b>Functionality</b>: Two given requirements are posted to UPC Similarity Detection in order to detect similarity between them."
+	+ "<br><b>Precondition</b>: The two requirements have been cached in Mallikas."
+	+ "<br><b>Postcondition</b>: After successful detection, the similarity, if above treshold, is stored in Mallikas using the similarity dependency type and proposed status."
+	+ "<br><b>Parameters:</b>"
+	+ "<br>reqId1: The id of the requirement that is compared to other requirement (reqId2)."
+	+ "<br>reqId2: The id of the requirement that is compared to other requirement (reqId1).")
+	//@ResponseBody
+	@PostMapping(value = "detectSimilarityReqReq")
+	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, @RequestParam String reqId1, @RequestParam String reqId2)
 			throws IOException{
 
-		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqProject?compare=" + compare +"&component=" + component + "&num_elements="+elements + "&project="+ projectId  + "&req=" + reqId+ "&threshold="+threshold;
-
-		ResponseEntity<?> entity = receiveDependenciesAndSendToMallikas(projectId, completeAddress);
-		return entity;
-	}
-
-	/**
-	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project to UPC for Similarity
-	 * detection.
-	 * 
-	 * @param projectId
-	 * @param component
-	 * @param threshold
-	 * @param elements
-	 * @return
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Detect similarity between all requirements of a project using UPC Similarity Detection", 
-			notes = "<b>Functionality</b>: All requirements of a given project are posted  to UPC Similarity Detection in order to detect similarity between all requirements. "
-					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
-					+ "<br><b>Postcondition</b>: After successfully detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status."
-					+ "<br><b>Parameters:</b>"
-					+ "<br>compare: What fields of a requirement are taken into accoung in comparison (Name-Text-Comments-All)."
-					+ "<br>component: The component or algorithm used for comparison (e.g. DKPro)."
-					+ "<br>elements: The maximum number of detected dependencies (e.g. 5)."
-					+ "<br>projectId: The project id in Mallikas."
-					+ "<br>threshold: The minimum score for similarity (e.g. 0.3).")
-	@ResponseBody
-	@PostMapping(value = "detectSimilarityProject")
-	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionProject(@RequestParam String compare, @RequestParam String component, @RequestParam String elements, @RequestParam String projectId, @RequestParam String threshold)
-			throws IOException {
-		String completeAddress = upcSimilarityAddress
-				+ "upc/similarity-detection/Project?compare=" + compare +"&component="  + component + "&num_elements="+elements + "&project="+ projectId  + "&threshold="+threshold;
-		ResponseEntity<?> entity = receiveDependenciesAndSendToMallikas(projectId, completeAddress);
+		String thisAddress = millaAddress + "receiveSimilarities";
+		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqReq?compare=" + compare + 
+				"&req1=" + reqId1 + "&req2=" + reqId2 + "&url=" + thisAddress;
+		
+		List<String> ids = Arrays.asList(reqId1, reqId2);
+				
+		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(null, ids, completeAddress);
+		
 		return entity;
 	}
 	
 	
+//	/**
+//	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project to UPC for Cross-Reference
+//	 * detection.
+//	 * 
+//	 * @param projectId
+//	 * @return ResponseEntity<?>
+//	 * @throws IOException
+//	 */
+//	@ApiOperation(value = "Detect cross-references in all requirements of a project using UPC Cross-Reference Detection", 
+//			notes = "<b>Functionality</b>: Post all requirements and dependencies in a project as a String to UPC for Cross-Reference Detection. Requires projectId <br>"
+//					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
+//					+ "<b>Postcondition</b>: After successful detection, detected cross references "
+//					+ "are stored in Mallikas as proposed dependencies."
+//					+ "<br><b>Prarameter: </b>"
+//					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
+//	@ResponseBody
+//	@PostMapping(value = "detectCrossReferenceProject")
+//	public ResponseEntity<?> postRequirementsToUPCCrossReferenceDetectionProject(@RequestParam String projectId)
+//			throws IOException {
+//
+//		String completeAddress = upcCrossReferenceAddress
+//				+ "upc/cross-reference-detection/json/"+ projectId;
+//
+//		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
+//		return entity;
+//	}
 	
 	/**
-	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project to UPC for Cross-Reference
-	 * detection.
-	 * 
+	 * Retrieve the requirements from Mallikas based either on the given requirement IDs or project ID,
+	 * then send them to the similarity detection server. A URL has to be provided for 
+	 * the server to send the dependencies calculated. (Here the response only tells whether the sending was successful)
 	 * @param projectId
-	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Detect cross-references in all requirements of a project using UPC Cross-Reference Detection", 
-			notes = "<b>Functionality</b>: Post all requirements and dependencies in a project as a String to UPC for Cross-Reference Detection. Requires projectId <br>"
-					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
-					+ "<b>Postcondition</b>: After successfully detection, detected cross references are stored in Mallikas as proposed dependencies."
-					+ "<br><b>Prarameter: </b>"
-					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
-	@ResponseBody
-	@PostMapping(value = "detectCrossReferenceProject")
-	public ResponseEntity<?> postRequirementsToUPCCrossReferenceDetectionProject(@RequestParam String projectId )
-			throws IOException {
-
-		String completeAddress = upcCrossReferenceAddress
-				+ "upc/cross-reference-detection/json/"+ projectId;
-
-		ResponseEntity<?> entity = receiveDependenciesAndSendToMallikas(projectId, completeAddress);
-		return entity;
-	}
-	
-	/**
-	 * Method that sends requirements and dependencies to UPC services, parses the response and sends received dependencies (new ones have status "proposed" to Mallikas)
-	 * @param projectId
+	 * @param ids
 	 * @param url
-	 * @return
+	 * @return Response from the server, which contains the id of the request if successful. 
 	 * @throws IOException
 	 */
-	private ResponseEntity<?> receiveDependenciesAndSendToMallikas(String projectId, String url) throws IOException {
+	private ResponseEntity<?> sendRequirementsForSimilarityDetection(String projectId, Collection<String> ids, String url) throws IOException {
 		RestTemplate rt = new RestTemplate();
 		String response = null;
 		ResponseEntity<?> entity = null;
+		String jsonString = "";
 		try {
-			String jsonString = getProjectRequirementsFromMallikas(projectId, mallikasAddress + "projectRequirements");
+			if (ids!=null) {
+				jsonString = getRequirementsFromMallikas(ids, mallikasAddress + "selectedRequirements");
+			} else {
+				jsonString = getProjectRequirementsFromMallikas(projectId, mallikasAddress + "projectRequirements");
+			}
 			if(jsonString!=null) {
 				HttpHeaders headers = new HttpHeaders();
 				headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
@@ -234,21 +311,52 @@ public class DetectionController {
 				
 				HttpEntity<String> entity2 = new HttpEntity<String>(jsonString, headers);
 				response = rt.postForObject(url, entity2, String.class);
-			if(response!=null) {
-				JSONParser.parseToOpenReqObjects(response);
-				List<Dependency> dependencies = JSONParser.dependencies;
-				entity = millaController.postDependenciesToMallikas(dependencies);
-			}		
+				if(response!=null) {
+					return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+				}		
 			}
 
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
+//		catch (JSONException e) {
+//			e.printStackTrace();
+//			return new ResponseEntity<>("Error in parsing JSON ", HttpStatus.NO_CONTENT);
+//		}
+		return entity;
+	}
+		
+	/**
+	 * Receives the dependencies from similarity detection
+	 * @param result
+	 * @throws IOException
+	 */
+	@PostMapping(value = "receiveSimilarities")
+	public void addDependenciesToMallikas(@RequestParam MultipartFile result)
+			throws IOException{
+		
+		String content = new String(result.getBytes());
+
+		System.out.println(content);
+//		JSONParser.parseToOpenReqObjects(content);
+//		List<Dependency> dependencies = JSONParser.dependencies;
+		
+		ResponseEntity<?> entity = null;
+		
+		try {
+			JSONParser.parseToOpenReqObjects(content);
+			List<Dependency> dependencies = JSONParser.dependencies;
+			entity = millaController.postDependenciesToMallikas(dependencies);
+		
+		} catch (HttpClientErrorException e) {
+			System.out.println("UPC error:\n\n" + e.getResponseBodyAsString() + " " + e.getStatusCode());
+		}
 		catch (JSONException e) {
 			e.printStackTrace();
-			return new ResponseEntity<>("Error in parsing JSON ", HttpStatus.NO_CONTENT);
+			System.out.println("Error in parsing JSON " + HttpStatus.NO_CONTENT);
 		}
-		return entity;
+
+		System.out.println("Successfully posted dependencies to Mallikas!\n" + entity);
 	}
 	
 	/**
@@ -260,6 +368,23 @@ public class DetectionController {
 	private String getProjectRequirementsFromMallikas(String projectId, String url) {
 		try {
 			String requirements = mallikasService.getAllRequirementsInProjectFromMallikas(projectId, url);
+			return requirements;
+		}
+		catch (HttpClientErrorException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * Fetches requirements for the IDs provided from Mallikas
+	 * @param ids
+	 * @param url
+	 * @return
+	 */
+	private String getRequirementsFromMallikas(Collection<String> ids, String url) {
+		try {
+			String requirements = mallikasService.getSelectedRequirementsFromMallikas(ids, url);
 			return requirements;
 		}
 		catch (HttpClientErrorException e) {

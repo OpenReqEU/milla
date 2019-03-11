@@ -27,15 +27,12 @@ public class ProjectIssues {
 	private int _maxProjectIssues;
 	// the REST API URI
 	private String _PROJECT_ISSUES_URL;
-	//List for the Jira issues as JsonElements
-	private List<JsonElement> projectIssues;
 
 	public ProjectIssues(String project) throws IOException {
 		_project = project;
 		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project);
 		_maxProjectIssues = numberOfIssues.getNumberOfIssues();
 		_PROJECT_ISSUES_URL = "https://bugreports.qt.io/rest/api/2/issue/" + _project + "-%d";
-		projectIssues = new ArrayList<JsonElement>();
 	}
 	
 	/**
@@ -67,12 +64,15 @@ public class ProjectIssues {
 						try {
 							responseJSON = run.run(url, client);
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						if (responseJSON != null) {
 							JsonObject issueElement = issueJSON.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
-							issues.put(url, issueElement);
+							String urlId = url.substring(url.lastIndexOf("/") + 1);
+							String responseId = issueElement.get("key").getAsString();
+							if (urlId.equals(responseId)) {
+								issues.put(url, issueElement); 
+							} 
 							issueElement = null;
 						}
 			        })
@@ -82,55 +82,8 @@ public class ProjectIssues {
 			e.printStackTrace();
 		}
 		paths.clear();
-
-//	//	int j = 1;
-//	//	int perc10 = end / 10;
-//
-//		for (int i = start; i <= end; i++) {
-//			// access the issue JSONs
-//			String requestURL = String.format(_PROJECT_ISSUES_URL, i);
-//			String responseJSON = run.run(requestURL, client);
-//			
-//			if (responseJSON != null) {
-//				JsonObject issueElement = issueJSON.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
-//				projectIssues.add(issueElement);
-//				issueElement = null;
-//			}
-////			if (i % perc10 == 0) {
-////				printProgress(i, j, perc10);
-////				j++;
-////			}
-//			requestURL = null;
-//			responseJSON = null;
-//		}
-		
-//		return projectIssues;
 		return issues.values();
 	
-	}
-
-	/**
-	 * Method for monitoring the progress of a project import, prints the stage of the import into console. 
-	 * @param i
-	 * @param j
-	 * @param perc10
-	 */
-	private void printProgress(long i, int j, int perc10) {
-		int k = j * 10;
-		System.out.print("[");
-		for (int n = 1; n <= j; n++) {
-			System.out.print("/");
-		}
-		for (int m = 10; m > j; m--) {
-			System.out.print(" ");
-		}
-		System.out.print("] ");
-		System.out.println(k + "% are done");
-
-	}
-
-	public List<JsonElement> getProjectIssues() {
-		return projectIssues;
 	}
 	
 	public int getNumberOfIssues() {

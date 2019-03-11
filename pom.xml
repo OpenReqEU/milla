@@ -55,6 +55,13 @@
 			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- For comparing release versions --> 
+		<dependency>
+		<groupId>org.apache.maven</groupId>
+			<artifactId>maven-artifact</artifactId>
+			<version>3.6.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -85,17 +92,18 @@
 			<version>20180130</version>
 		</dependency>
 
-		<!-- database features -->
+		<!-- database features 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-jdbc</artifactId> 
-			</dependency> -->
+		 <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-jdbc</artifactId> 
+			</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 		</dependency>
+		-->
 
 		<!-- Swagger -->
 		<dependency>

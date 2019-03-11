@@ -19,9 +19,6 @@ public class UpdatedIssues {
 	private HashMap<String, JsonElement> _projectIssues;
 	// name of the project
 	private String _project;
-//	// the REST API URI
-//	private String _PROJECT_ISSUES_URL;
-
 	private String singleIssueUrl;
 
 	private String projectIssuesUrl;
@@ -29,15 +26,7 @@ public class UpdatedIssues {
 	public UpdatedIssues(String project) throws IOException {
 		_projectIssues = new HashMap<String, JsonElement>();
 		_project = project;
-//		_PROJECT_ISSUES_URL = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project
-//				+ "&orderBy=-created&maxResults=1000&startAt=";
-//		singleIssueUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project
-//				+ "&orderBy=-updated&maxResults=1&startAt=";
 		singleIssueUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project + "+order+by+updated+DESC&maxResults=1&startAt=";
-//		projectIssuesUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project
-//				+ "&orderBy=-updated&maxResults=1&startAt=";
-//		projectIssuesUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project + "+order+by+updated+DESC&maxResults=100&startAt=";
-		// "https://bugreports.qt.io/rest/api/2/search?jql=project=QTBUG&orderBy=-updated&maxResults=1000&startAt=1000"
 	}
 
 	/**
@@ -95,10 +84,4 @@ public class UpdatedIssues {
 	public Collection<JsonElement> getProjectIssues() {
 		return _projectIssues.values();
 	}
-
-	// public HashMap<String, JsonElement> getProjectIssues()
-	// {
-	// return _projectIssues;
-	// }
-
 }

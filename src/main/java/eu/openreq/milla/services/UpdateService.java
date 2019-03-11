@@ -52,7 +52,6 @@ public class UpdateService {
 	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person) throws Exception {
 		updatedIssues = new UpdatedIssues(projectId);
 		transformer.readFixVersionsToHashMap(projectId);
-		//RestTemplate rt = new RestTemplate();
 		ResponseEntity<?> response = null;
 		try {
 			int amount = getNumberOfUpdatedIssues(projectId, person);

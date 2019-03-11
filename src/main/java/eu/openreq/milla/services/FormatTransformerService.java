@@ -5,11 +5,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -102,36 +104,64 @@ public class FormatTransformerService {
 
 			JsonObject issueJSON = element.getAsJsonObject();
 			Issue issue = gson.fromJson(issueJSON, Issue.class);
-			issue.getFields().setCustomfield10400(issueJSON.getAsJsonObject("fields").get("customfield_10400")); 
+			addFieldsToIssue(issues, issue, gson, issueJSON);
 			
-			if(issueJSON.getAsJsonObject("fields").get("customfield_11100")!=null && !issueJSON.getAsJsonObject("fields").get("customfield_11100").isJsonNull() ) {
-			JsonArray array = gson.fromJson(issueJSON.getAsJsonObject("fields").get("customfield_11100"), JsonArray.class);
-			List<Platform> plats = new ArrayList<Platform>();
-			for(JsonElement elem : array) {
-				JsonObject platJSON = elem.getAsJsonObject();
-				Platform platform = gson.fromJson(platJSON, Platform.class);
-				plats.add(platform);
-			}
-			Platform[] plats2 = new Platform[plats.size()];
-			for(int j = 0; j < plats.size(); j++) {
-				plats2[j] = plats.get(j);
-			}
-			Platforms platforms = new Platforms();
-			platforms.setplatforms(plats2);
-			issue.getFields().setCustomfield11100(platforms);
-			}
-			issues.add(issue);
 			element = null;
 			issue = null;
 		}
 		long end = System.nanoTime();
-		long durationSec = (end - start) / 1000000000;
-		double durationMin = durationSec / 60.0;
-		System.out.println("Lists done, it took " + durationSec + " second(s) or " + durationMin + " minute(s).");
+		printProgress(start, end);
 
 		return issues;
 	}
+	
+	/**
+	 * Adds certain customfields to Jira Issue, without this the fields would be null
+	 * @param issue
+	 * @param gson
+	 * @param issueJSON
+	 */
+	private void addFieldsToIssue(List<Issue> issues, Issue issue, Gson gson, JsonObject issueJSON) {
+		issue.getFields().setCustomfield10400(issueJSON.getAsJsonObject("fields").get("customfield_10400"));
 
+		if (issueJSON.getAsJsonObject("fields").get("customfield_11100") != null
+				&& !issueJSON.getAsJsonObject("fields").get("customfield_11100").isJsonNull()) {
+			addPlatformsToIssue(gson, issueJSON, issue);
+		}
+		issues.add(issue);
+	}
+	
+	/**
+	 * Issue's Platforms do not serialize properly without adding them explicitly to issue's fields
+	 * @param gson
+	 * @param issueJSON
+	 * @param issue
+	 */
+	private void addPlatformsToIssue(Gson gson, JsonObject issueJSON, Issue issue) {
+		JsonArray array = gson.fromJson(issueJSON.getAsJsonObject("fields").get("customfield_11100"),
+				JsonArray.class);
+		List<Platform> plats = new ArrayList<Platform>();
+		for (JsonElement elem : array) {
+			JsonObject platJSON = elem.getAsJsonObject();
+			Platform platform = gson.fromJson(platJSON, Platform.class);
+			plats.add(platform);
+		}
+		Platform[] plats2 = new Platform[plats.size()];
+		for (int j = 0; j < plats.size(); j++) {
+			plats2[j] = plats.get(j);
+		}
+		Platforms platforms = new Platforms();
+		platforms.setplatforms(plats2);
+		issue.getFields().setCustomfield11100(platforms);
+	}
+
+	
+	private void printProgress(long start, long end) {
+		long durationSec = (end - start) / 1000000000;
+		double durationMin = durationSec / 60.0;
+		System.out.println("Lists done, it took " + durationSec + " second(s) or " + durationMin + " minute(s).");
+	}
+	
 	/**
 	 * Converts a List of Jira Issues into OpenReq Json Requirements, and creates a
 	 * List of Requirement Ids (as Strings) that will be given to a Project.
@@ -155,50 +185,80 @@ public class FormatTransformerService {
 		for (Issue issue : issues) {
 			try {
 				Requirement req = new Requirement();
-				req.setId(issue.getKey()); // Murmeli doesn't mind hyphens, hopefully?
-				String name = fixSpecialCharacters(issue.getFields().getSummary());
-				req.setName(name);
-				String text = fixSpecialCharacters(issue.getFields().getDescription());
-				if (text != null && !text.equals("")) {
-					req.setText(text);
-				}
+				req.setId(issue.getKey());
+				setNameAndTextForReq(issue, req);
+				
 				requirements.put(req.getId(), req);
 				requirementIds.add(req.getId());
-				int priority = Integer.parseInt(issue.getFields().getPriority().getId());
 
-				setRightPriority(req, priority);
-
+				setPriorityForReq(issue, req);
 				setStatusForReq(req, issue.getFields().getStatus().getName());
 				setRequirementType(req, issue.getFields().getIssuetype().getName());
 
-				req.setCreated_at(setCreatedDate(issue.getFields().getCreated()));
-				req.setModified_at(setCreatedDate(issue.getFields().getUpdated()));
+				setDatesToReq(issue, req);
 
 				addCommentsToReq(issue, req, person);
 				addDependencies(issue, req);
-
-				addResolutionToRequirementParts(issue, req);
-				addEnvironmentToRequirementParts(issue, req);
-				addLabelsToRequirementParts(issue, req);
-				addVersionsToRequirementParts(issue, req);
-				addPlatformsToRequirementParts(issue, req);
-				addFixVersionsToRequirementParts(issue, req);
-				addComponentsToRequirementParts(issue, req);
+				addAllRequirementParts(issue, req);
 				updateParentEpic(requirements, issue, req);
-
-				List<Subtask> subtasks = issue.getFields().getSubtasks();
-				if (subtasks != null && !subtasks.isEmpty()) {
-					for (Subtask subtask : subtasks) {
-						addSubtask(req, subtask);
-					}
-				}
+				
+				manageSubtasks(issue, req);
 			} catch (Exception e) {
-				// System.out.println("Error in requirement creation: " + e);
 				e.printStackTrace();
 			}
 		}
 
 		return requirements.values();
+	}
+
+	private void setPriorityForReq(Issue issue, Requirement req) {
+		int priority = Integer.parseInt(issue.getFields().getPriority().getId());
+		setRightPriority(req, priority);
+	}
+	
+	private void setNameAndTextForReq(Issue issue, Requirement req) {
+		String name = fixSpecialCharacters(issue.getFields().getSummary());
+		req.setName(name);
+		String text = fixSpecialCharacters(issue.getFields().getDescription());
+		if (text != null && !text.equals("")) {
+			req.setText(text);
+		}
+	}
+	
+	private void setDatesToReq(Issue issue, Requirement req) {
+		req.setCreated_at(setCreatedDate(issue.getFields().getCreated()));
+		req.setModified_at(setCreatedDate(issue.getFields().getUpdated()));
+	}
+
+	/**
+	 * Add information stored in RequirementParts to the requirements
+	 * RequirementParts-list
+	 * 
+	 * @param issue
+	 * @param req
+	 */
+	private void addAllRequirementParts(Issue issue, Requirement req) {
+		addResolutionToRequirementParts(issue, req);
+		addEnvironmentToRequirementParts(issue, req);
+		addLabelsToRequirementParts(issue, req);
+		addVersionsToRequirementParts(issue, req);
+		addPlatformsToRequirementParts(issue, req);
+		addFixVersionsToRequirementParts(issue, req);
+		addComponentsToRequirementParts(issue, req);
+	}
+	
+	/**
+	 * Add information on issue's subtasks to requirement's dependencies
+	 * @param issue
+	 * @param req
+	 */
+	private void manageSubtasks(Issue issue, Requirement req) {
+		List<Subtask> subtasks = issue.getFields().getSubtasks();
+		if (subtasks != null && !subtasks.isEmpty()) {
+			for (Subtask subtask : subtasks) {
+				addSubtask(req, subtask);
+			}
+		}
 	}
 
 	/**
@@ -250,7 +310,6 @@ public class FormatTransformerService {
 				jsonComment.setId(comment.getId());
 				jsonComment.setText(comment.getBody());
 				jsonComment.setCommentDoneBy(person);
-				// System.out.println(jsonComment.getCommentDoneBy().getUsername());
 				String date = String.valueOf(comment.getCreated());
 				long created = setCreatedDate(date);
 				jsonComment.setCreated_at(created);
@@ -326,6 +385,7 @@ public class FormatTransformerService {
 		setDependencyType(dependency, jiraType);
 		dependency.setId(reqFrom + "_" + reqTo + "_" + dependency.getDependency_type());
 		setStatusForDependency(dependency, "accepted");
+		dependency.setDependency_score(1.0);
 		dependency.setCreated_at(new Date().getTime());
 		ArrayList<String> descriptions = new ArrayList<String>();
 		descriptions.add(jiraType);
@@ -628,7 +688,6 @@ public class FormatTransformerService {
 			String environmentString;
 			try {
 				environmentString = mapper.writeValueAsString(issue.getFields().getEnvironment());
-			//	System.out.println(environmentString);
 			} catch (JsonProcessingException e) {
 				environmentString = "";
 				e.printStackTrace();
@@ -675,16 +734,13 @@ public class FormatTransformerService {
 		if (issue.getFields().getVersions() != null && !issue.getFields().getVersions().isEmpty()) {
 			List<Version> versions = issue.getFields().getVersions();
 			List<String> names = new ArrayList<String>();
-			for(Version version : versions) {
+			for (Version version : versions) {
 				names.add(version.getName());
 			}
-		//	System.out.println(issue.getFields().getVersions().get(0).getName());
 			ObjectMapper mapper = new ObjectMapper();
 			String versionsString;
 			try {
 				versionsString = mapper.writeValueAsString(names);
-				//System.out.println(versionsString);
-				//versionsString = mapper.writeValueAsString(issue.getFields().getVersions());
 			} catch (JsonProcessingException e) {
 				versionsString = "";
 				e.printStackTrace();
@@ -693,6 +749,7 @@ public class FormatTransformerService {
 		}
 		req.getRequirementParts().add(reqPart);
 	}
+	
 
 	/**
 	 * 
@@ -707,15 +764,13 @@ public class FormatTransformerService {
 		if (issue.getFields().getComponents() != null && !issue.getFields().getComponents().isEmpty()) {
 			List<Component> components = issue.getFields().getComponents();
 			List<String> names = new ArrayList<String>();
-			for(Component component : components) {
+			for (Component component : components) {
 				names.add(component.getName());
 			}
 			ObjectMapper mapper = new ObjectMapper();
 			String componentsString;
 			try {
-			//	componentsString = mapper.writeValueAsString(issue.getFields().getComponents());
 				componentsString = mapper.writeValueAsString(names);
-			//	System.out.println(componentsString);
 			} catch (JsonProcessingException e) {
 				componentsString = "";
 				e.printStackTrace();
@@ -739,7 +794,7 @@ public class FormatTransformerService {
 			ObjectMapper mapper = new ObjectMapper();
 			Platforms platforms = issue.getFields().getCustomfield11100();
 			List<String> labels = new ArrayList<String>();
-			for(Platform platform : platforms.getplatforms()) {
+			for (Platform platform : platforms.getplatforms()) {
 				labels.add(platform.getLabel());
 			}
 			String platformsString;
@@ -766,21 +821,25 @@ public class FormatTransformerService {
 		reqPart.setName("FixVersion");
 		if (fixVersion != null) {
 			try {
-
-				int number = fixVersions.get(fixVersion.getName()); // This number tells the "release number (or id)" of
-																	// the fix version
-				reqPart.setId(req.getId() + "_" + fixVersion.getId() + "_" + number);
-				// reqPart.setName("FixVersion");
-			//	ObjectMapper mapper = new ObjectMapper();
-			//	String versionString = mapper.writeValueAsString(fixVersion.getDescription());
-				String versionString = fixVersion.getDescription();
+				if (fixVersions!=null && fixVersions.containsKey(fixVersion.getName())) {
+					int number = fixVersions.get(fixVersion.getName()); // This number tells the "release number (or id)" of
+																		// the fix version
+					reqPart.setId(req.getId() + "_" + fixVersion.getId() + "_" + number); 
+				} else {
+					reqPart.setId(req.getId() + "_" + fixVersion.getId());
+				}
+				String versionString = fixVersion.getName();
+//				String versionString = fixVersion.getDescription();
+//				System.out.println("Requirement ID: " + req.getId());
+//				System.out.println("FixVersion ID: " + fixVersion.getId());
+//				System.out.println("FixVersion version: " + fixVersion.getDescription());
+//				System.out.println("FixVersion name: " + fixVersion.getName());
 				reqPart.setText(versionString);
-//				req.getRequirementParts().add(reqPart);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else {
-			reqPart.setId(req.getId() + "_FixVersion");
+			reqPart.setId(req.getId() + "_FIXVERSION");
 			reqPart.setText("No FixVersion");
 		}
 		req.getRequirementParts().add(reqPart);
@@ -793,23 +852,19 @@ public class FormatTransformerService {
 	 * @return
 	 */
 	private FixVersion getLatestFixVersion(Issue issue) {
-		if (fixVersions == null) {
-			return null;
-		}
-		FixVersion fixVersion = null;
-		long latest = 0;
-		int newest = fixVersions.size();
-		if (issue.getFields().getFixVersions() != null && !issue.getFields().getFixVersions().isEmpty()) {
-			for (FixVersion fixVersion2 : issue.getFields().getFixVersions()) {
-				if (fixVersions.containsKey(fixVersion2.getName())) {
-					if (newest > fixVersions.get(fixVersion2.getName())) {
-						newest = fixVersions.get(fixVersion2.getName());
-						fixVersion = fixVersion2;
-					}
-				}
+		FixVersion newest = null;
+		if (issue.getFields().getFixVersions() != null && !issue.getFields().getFixVersions().isEmpty()) {	
+			List<ComparableVersion> versions = new ArrayList<ComparableVersion>();
+			HashMap<String, FixVersion> fixVerMap = new HashMap<String, FixVersion>();	
+			for (FixVersion fixVer : issue.getFields().getFixVersions()) {
+				versions.add(new ComparableVersion(fixVer.getName()));
+				fixVerMap.put(fixVer.getName(), fixVer);
 			}
+			
+			Collections.sort(versions);
+			newest = fixVerMap.get(versions.get(versions.size()-1).toString());
 		}
-		return fixVersion;
+		return newest;
 	}
 
 	/**
