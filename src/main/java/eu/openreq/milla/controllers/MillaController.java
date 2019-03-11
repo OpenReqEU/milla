@@ -204,13 +204,13 @@ public class MillaController {
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Store (TBD or update?) dependencies to Mallikas", 
-			notes = "<br><b>Functionality</b>: Add or update a set of dependencies as an array of dependencies in OpenReq JSON format. The dependencies are for the existing requirements in the Mallikas database."
-					+ "<br><b>Postcondition</b>: The dependencies are added or updated to the existing requirements in Mallikas. If a dependency exist, it is updated."
-					+ "<br><b>Prarameter: </b>"
-					+ "<br>dependencies: An array of dependencies in OpenReq JSON format. ")
-	//@ResponseBody
-	@PostMapping(value = "dependencies")
+//	@ApiOperation(value = "Store (TBD or update?) dependencies to Mallikas", 
+//			notes = "<br><b>Functionality</b>: Add or update a set of dependencies as an array of dependencies in OpenReq JSON format. The dependencies are for the existing requirements in the Mallikas database."
+//					+ "<br><b>Postcondition</b>: The dependencies are added or updated to the existing requirements in Mallikas. If a dependency exist, it is updated."
+//					+ "<br><b>Prarameter: </b>"
+//					+ "<br>dependencies: An array of dependencies in OpenReq JSON format. ")
+//	//@ResponseBody
+//	@PostMapping(value = "dependencies")
 	public ResponseEntity<?> postDependenciesToMallikas(@RequestBody Collection<Dependency> dependencies)
 			throws IOException {
 

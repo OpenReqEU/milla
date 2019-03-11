@@ -117,7 +117,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@RequestMapping(value = "/getTransitiveClosureOfRequirement", method = RequestMethod.POST)
-	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestBody String requirementId) throws IOException {
+	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam String requirementId) throws IOException {
 		RestTemplate rt = new RestTemplate();
 
 		String completeAddress = mulperiAddress + "models/findTransitiveClosureOfRequirement";
