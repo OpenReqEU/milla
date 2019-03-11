@@ -403,11 +403,11 @@ public class MillaController {
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch all requirements since a given date in OpenReq JSON format.", 
-	notes = "<b>Functionality</b>: Fetch requirements, including their dependencies that are cached in Mallikas database in the OpenReq JSON format."
+	notes = "<b>Functionality</b>: Fetch requirements, including their dependencies that are cached in Mallikas database in the OpenReq JSON format from any project."
 			+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 			+ "<br><b>Parameter: </b>"
-			+ "<br>date: Date in proper format")
+			+ "<br>date: Date in proper format such as \"2019-03-05T11:13:39.529Z\"")
 	//@ResponseBody
 	@PostMapping(value = "requirementsSinceDate")
 	public ResponseEntity<?> getRequirementsSinceDate(@RequestBody Date date) throws IOException {
@@ -548,9 +548,10 @@ public class MillaController {
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch one selected requirement and requirements dependent on it from the database", 
-			notes = "<b>Functionality</b>: Fetch the specied requirement and its dependendenct requirements including the dependency objects from Mallikas in OpenReq JSON format. "
+			notes = "<b>Functionality</b>: Fetch the specified requirement and its dependent requirements including the dependency objects from Mallikas in OpenReq JSON format. "
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
-					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
+					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requested requirement and an array of dependent requirements "
+					+ "and dependencies are produced."
 					+ "<br><b>Parameter: </b>"
 					+ "<br>id: The id of the requirement, e.g. QTWB-30.")
 	//@ResponseBody
@@ -675,11 +676,13 @@ public class MillaController {
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch all requirements including their dependencies from the Mallikas database in OpenReq JSON format.", 
-			notes = "<b>Functionality</b>: Fetch all requirements from Mallikas database in OpenReq JSON format. "
+			notes = "<b>Functionality</b>: Fetch all requirements from Mallikas database in OpenReq JSON requirement and dependency format. "
+					+ "Project object is not included."
 					+ "This is practically an export of the entire database and, thus, dataset. "
-					+ "In Swagger, the data might get too large to be shown in the response field"
+					+ "In Swagger, the data might get too large to be shown in the response field."
+					+ "For large database, Milla and Mallikas java VM need extra memory."
 			+ "<br><b>Precondition</b>: There is at least one project and requirement cached in Mallikas.<br>"
-			+ "<b>Postcondition</b>: An OpenReq JSON is produced.<br>")
+			+ "<b>Postcondition</b>: Requirements and dependencies in OpenReq JSON is produced.<br>")
 	//@ResponseBody
 	@RequestMapping(value = "allRequirements", method = RequestMethod.GET)
 	public ResponseEntity<?> getAllRequirements() throws IOException {
