@@ -115,7 +115,7 @@ public class UpdateService {
 	 * @return
 	 */
 	private Requirement getOldRequirementFromMallikas(String id) {
-		String url = mallikasAddress + "one";
+		String url = mallikasAddress + "/one";
 		String requirementString = mallikasService.getOneRequirementFromMallikas(url, id);
 		if (requirementString != null) {
 			try {
@@ -150,7 +150,7 @@ public class UpdateService {
 		RestTemplate rt = new RestTemplate();
 		ResponseEntity<?> response = null;
 		try {	
-			response = rt.postForEntity(mallikasAddress + "updateRequirements", requirements, Collection.class);
+			response = rt.postForEntity(mallikasAddress + "/updateRequirements", requirements, Collection.class);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
@@ -162,7 +162,7 @@ public class UpdateService {
 		RestTemplate rt = new RestTemplate();
 		ResponseEntity<?> response = null;
 		try {	
-			response = rt.postForEntity(mallikasAddress + "updateDependencies", dependencies, Collection.class);
+			response = rt.postForEntity(mallikasAddress + "/updateDependencies", dependencies, Collection.class);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
@@ -183,7 +183,7 @@ public class UpdateService {
 		updatedReqs.put(projectId, reqIds);
 		
 		try {	
-			response = rt.postForEntity(mallikasAddress + "updateProjectSpecifiedRequirements/"+projectId, updatedReqs, Map.class);
+			response = rt.postForEntity(mallikasAddress + "/updateProjectSpecifiedRequirements/"+projectId, updatedReqs, Map.class);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}

@@ -80,7 +80,7 @@ public class MillaController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		String actualPath = "models/requirementsToChoco";
+		String actualPath = "/models/requirementsToChoco";
 
 		String completeAddress = mulperiAddress + actualPath;
 
@@ -114,7 +114,7 @@ public class MillaController {
 	@PostMapping(value = "sendProjectToMulperiWithParams")
 	public ResponseEntity<?> sendProjectToMulperiWithParams(@RequestParam String projectId, @RequestParam boolean includeProposedDependencies) throws IOException {
 
-		String completeAddress = mallikasAddress + "requirementsByParams";
+		String completeAddress = mallikasAddress + "/requirementsByParams";
 
 		RequestParams params = new RequestParams();
 		
@@ -148,7 +148,7 @@ public class MillaController {
 	@PostMapping(value = "sendProjectToMulperi")
 	public ResponseEntity<?> sendProjectToMulperi(@RequestParam String projectId) throws IOException {
 
-		String completeAddress = mallikasAddress + "projectRequirements";
+		String completeAddress = mallikasAddress + "/projectRequirements";
 
 		
 		String reqsInProject = mallikasService.getAllRequirementsInProjectFromMallikas(projectId, completeAddress);
@@ -181,7 +181,7 @@ public class MillaController {
 
 		RestTemplate rt = new RestTemplate();
 
-		String completeAddress = mallikasAddress + "updateRequirements";
+		String completeAddress = mallikasAddress + "/updateRequirements";
 
 		Collection<Requirement> issueList = requirements;
 		ResponseEntity<?> response = null;
@@ -216,7 +216,7 @@ public class MillaController {
 
 		RestTemplate rt = new RestTemplate();
 
-		String completeAddress = mallikasAddress + "updateDependencies";
+		String completeAddress = mallikasAddress + "/updateDependencies";
 
 		Collection<Dependency> dependencyList = dependencies;
 		ResponseEntity<?> response = null;
@@ -251,7 +251,7 @@ public class MillaController {
 
 		RestTemplate rt = new RestTemplate();
 
-		String completeAddress = mallikasAddress + "project";
+		String completeAddress = mallikasAddress + "/project";
 
 		ResponseEntity<?> response = null;
 
@@ -281,7 +281,7 @@ public class MillaController {
 	@PostMapping(value = "updateDependencies")
 	public ResponseEntity<?> postUpdatedDependenciesToMallikas(@RequestBody String dependencies) throws IOException {
 
-		String completeAddress = mallikasAddress + "updateDependencies";
+		String completeAddress = mallikasAddress + "/updateDependencies";
 
 		String updated = null;
 
@@ -300,7 +300,7 @@ public class MillaController {
 	@PostMapping(value = "updateRequirements")
 	public ResponseEntity<?> postUpdatedRequirementsToMallikas(@RequestBody String requirements) throws IOException {
 
-		String completeAddress = mallikasAddress + "updateRequirements";
+		String completeAddress = mallikasAddress + "/updateRequirements";
 
 		String updated = null;
 
@@ -355,7 +355,7 @@ public class MillaController {
 	//@ResponseBody
 	@PostMapping(value = "requirementsInProject")
 	public ResponseEntity<?> getRequirementsInProject(@RequestBody String projectId) throws IOException {
-		String completeAddress = mallikasAddress + "projectRequirements";
+		String completeAddress = mallikasAddress + "/projectRequirements";
 
 		String reqsInProject = mallikasService.getAllRequirementsInProjectFromMallikas(projectId, completeAddress);
 
@@ -383,7 +383,7 @@ public class MillaController {
 	//@ResponseBody
 	@PostMapping(value = "requirementsWithIds")
 	public ResponseEntity<?> getRequirementsWithIds(@RequestBody Collection<String> ids) throws IOException {
-		String completeAddress = mallikasAddress + "selectedReqs";
+		String completeAddress = mallikasAddress + "/selectedReqs";
 
 		String reqsWithIds = mallikasService.getSelectedRequirementsFromMallikas(ids, completeAddress);
 
@@ -411,7 +411,7 @@ public class MillaController {
 	//@ResponseBody
 	@PostMapping(value = "requirementsSinceDate")
 	public ResponseEntity<?> getRequirementsSinceDate(@RequestBody Date date) throws IOException {
-		String completeAddress = mallikasAddress + "reqsSinceDate";
+		String completeAddress = mallikasAddress + "/reqsSinceDate";
 
 		String reqsWithDate = mallikasService.getRequirementsSinceDateFromMallikas(date.getTime(), completeAddress);
 
@@ -441,7 +441,7 @@ public class MillaController {
 	@PostMapping(value = "requirementsWithTypeAndStatus")
 	public ResponseEntity<?> getRequirementsWithTypeAndStatus(@RequestParam String type, @RequestParam String status)
 			throws IOException {
-		String completeAddress = mallikasAddress + "reqsWithType";
+		String completeAddress = mallikasAddress + "/reqsWithType";
 
 		String reqsWithType = mallikasService.getAllRequirementsWithTypeAndStatusFromMallikas(type, status,
 				completeAddress);
@@ -470,7 +470,7 @@ public class MillaController {
 	//@ResponseBody
 	@PostMapping(value = "requirementsWithResolution")
 	public ResponseEntity<?> getRequirementsWithResolution(@RequestParam String resolution) throws IOException {
-		String completeAddress = mallikasAddress + "reqsWithResolution";
+		String completeAddress = mallikasAddress + "/reqsWithResolution";
 
 		String reqsWithResolution = mallikasService.getAllRequirementsWithSearchedStringFromMallikas(resolution,
 				completeAddress);
@@ -499,7 +499,7 @@ public class MillaController {
 	//@ResponseBody
 	@PostMapping(value = "requirementsWithDependencyType")
 	public ResponseEntity<?> getRequirementsWithDependencyType(@RequestBody String type) throws IOException {
-		String completeAddress = mallikasAddress + "reqsWithDependencyType";
+		String completeAddress = mallikasAddress + "/reqsWithDependencyType";
 		
 		String modifiedType = type.toUpperCase();
 
@@ -529,7 +529,7 @@ public class MillaController {
 	//@ResponseBody
 	@PostMapping(value = "requirementsByParams")
 	public ResponseEntity<?> getRequirementsByVariousParams(@RequestBody RequestParams params) throws IOException {
-		String completeAddress = mallikasAddress + "requirementsByParams";
+		String completeAddress = mallikasAddress + "/requirementsByParams";
 
 		String reqsWithDependencyType = mallikasService.sendRequestWithParamsToMallikas(params,
 				completeAddress);
@@ -558,7 +558,7 @@ public class MillaController {
 	@PostMapping(value = "requirementAndDependents")
 	public ResponseEntity<?> getOneRequirementAndDependents(@RequestBody String id) throws IOException {
 
-		String completeAddress = mallikasAddress + "dependents";
+		String completeAddress = mallikasAddress + "/dependents";
 		String requirement = mallikasService.getOneRequirementFromMallikas(completeAddress, id);
 
 		if (requirement == null || requirement.equals("")) {
@@ -688,7 +688,7 @@ public class MillaController {
 	public ResponseEntity<?> getAllRequirements() throws IOException {
 
 		System.out.println("getAllRequirements called");
-		String completeAddress = mallikasAddress + "allRequirements";
+		String completeAddress = mallikasAddress + "/allRequirements";
 
 		String allRequirements = mallikasService.getAllRequirementsFromMallikas(completeAddress);
 

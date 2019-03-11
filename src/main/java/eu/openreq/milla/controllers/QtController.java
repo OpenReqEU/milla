@@ -120,7 +120,7 @@ public class QtController {
 	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam String requirementId) throws IOException {
 		RestTemplate rt = new RestTemplate();
 
-		String completeAddress = mulperiAddress + "models/findTransitiveClosureOfRequirement";
+		String completeAddress = mulperiAddress + "/models/findTransitiveClosureOfRequirement";
 		
 		String response = null;
 		try {
@@ -152,7 +152,7 @@ public class QtController {
 		params.setTreshold(treshold);
 		params.setMaxDependencies(maxResults);
 		
-		String completeAddress = mallikasAddress + "onlyDependenciesByParams";
+		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";
 
 		String reqsWithDependencyType = mallikasService.sendRequestWithParamsToMallikas(params,
 				completeAddress);
@@ -176,7 +176,7 @@ public class QtController {
 		
 		RestTemplate rt = new RestTemplate();
 		
-		String completeAddress = mulperiAddress + "models/consistencyCheckForTransitiveClosure";
+		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure";
 
 		String response = null;
 		try {
@@ -201,7 +201,7 @@ public class QtController {
 	@RequestMapping(value = "/getTopProposedDependenciesOfRequirement", method = RequestMethod.POST)
 	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam String requirementId, @RequestParam Integer maxResults) throws IOException {
 		
-		String completeAddress = mallikasAddress + "onlyDependenciesByParams";
+		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";
 		
 		RequestParams params = new RequestParams();
 		List<String> reqIds = new ArrayList<String>();
@@ -229,7 +229,7 @@ public class QtController {
 	@PostMapping(value = "updateProposedDependencies")
 	public ResponseEntity<?> updateProposedDependencies(@RequestBody String dependencies) throws IOException {
 		
-		String completeAddress = mallikasAddress + "updateDependencies";
+		String completeAddress = mallikasAddress + "/updateDependencies";
 
 		String updated = null;
 		
