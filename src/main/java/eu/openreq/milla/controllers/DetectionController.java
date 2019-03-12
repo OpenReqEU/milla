@@ -56,7 +56,7 @@ public class DetectionController {
 	@Value("${milla.upcSimilarityAddress}")
 	private String upcSimilarityAddress;
 	
-	@Value("${milla.upcCrossReferrenceAddress}")
+	@Value("${milla.upcCrossReferenceAddress}")
 	private String upcCrossReferenceAddress;
 	
 	private List<String> requestIds;
