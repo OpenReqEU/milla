@@ -122,10 +122,10 @@ public class FormatTransformerServiceTest {
 	    		System.out.println(reqp.getText());
 	    	}
     	}
-    	assertEquals(reqList.get(2).getRequirementParts().get(6).getText(), "4.9.0 Beta 1"); 	
-    	assertEquals(reqList.get(3).getRequirementParts().get(6).getText(), "4.9.0 Beta 1"); 	
-//    	assertEquals(reqList.get(2).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0-beta1"); 	
-//    	assertEquals(reqList.get(3).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0 (4.9 branch)"); 	
+//    	assertEquals(reqList.get(2).getRequirementParts().get(6).getText(), "4.9.0 Beta 1"); 	
+//    	assertEquals(reqList.get(3).getRequirementParts().get(6).getText(), "4.9.0 Beta 1"); 	
+    	assertEquals(reqList.get(2).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0-beta1"); 	
+    	assertEquals(reqList.get(3).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0 (4.9 branch)"); 	
 
     }
     
