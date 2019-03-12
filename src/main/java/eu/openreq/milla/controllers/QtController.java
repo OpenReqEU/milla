@@ -143,13 +143,13 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@RequestMapping(value = "/getDependenciesOfRequirement", method = RequestMethod.POST)
 	public ResponseEntity<?> getDependenciesOfRequirement(@RequestParam String requirementId, 
-			@RequestParam(required = false) Double treshold, @RequestParam(required = false) Integer maxResults) throws IOException {
+			@RequestParam(required = false) Double scoreTreshold, @RequestParam(required = false) Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
 		List<String> reqIds = new ArrayList<String>();
 		reqIds.add(requirementId);
 		params.setRequirementIds(reqIds);
-		params.setTreshold(treshold);
+		params.setScoreTreshold(scoreTreshold);
 		params.setMaxDependencies(maxResults);
 		
 		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";
@@ -199,14 +199,12 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@RequestMapping(value = "/getTopProposedDependenciesOfRequirement", method = RequestMethod.POST)
-	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam String requirementId, @RequestParam Integer maxResults) throws IOException {
+	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam List<String> requirementIds, @RequestParam Integer maxResults) throws IOException {
 		
 		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";
 		
 		RequestParams params = new RequestParams();
-		List<String> reqIds = new ArrayList<String>();
-		reqIds.add(requirementId);
-		params.setRequirementIds(reqIds);
+		params.setRequirementIds(requirementIds);
 		params.setProposedOnly(true);
 		params.setMaxDependencies(maxResults);
 		
@@ -229,7 +227,7 @@ public class QtController {
 	@PostMapping(value = "updateProposedDependencies")
 	public ResponseEntity<?> updateProposedDependencies(@RequestBody String dependencies) throws IOException {
 		
-		String completeAddress = mallikasAddress + "/updateDependencies";
+		String completeAddress = mallikasAddress + "/updateDependencies?userInput=true";
 
 		String updated = null;
 		
