@@ -39,13 +39,13 @@ date
 
 for i in "${projects[@]}"
 do
-	# # 1)
-	# # Get data from Jira to Mallikas
-	# echo -e "\nUploading $i from Jira to Mallikas"
-	# start=`date +%s`
-	# curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d $i 'http://217.172.12.199:9203/qtjira' 
-	# end=`date +%s`
-	# echo -e "\nRuntime = $((end-start)) seconds"
+	# 1)
+	# Get data from Jira to Mallikas
+	echo -e "\nUploading $i from Jira to Mallikas"
+	start=`date +%s`
+	curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d $i 'http://217.172.12.199:9203/qtjira' 
+	end=`date +%s`
+	echo -e "\nRuntime = $((end-start)) seconds"
 	
 	# # 2)
 	# # THIS IS NOW OUT-COMMENTED BECAUSE ACCIDENTIALLY DOING THIS FOR QTBUG OR QTCREATORBUG MIGHT BE TOO EXPENSIVE COMPUTATIONALLY TAKING EVEN DAYS TO COMPUTE.
