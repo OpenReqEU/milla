@@ -96,9 +96,9 @@ public class DetectionController {
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
 		String requirements = mallikasService.getAllRequirementsInProjectFromMallikas(projectId,
-				mallikasAddress + "projectRequirements");
-		String receiveAddress = millaAddress + "receiveAddReqResponse";
-		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/DB/AddReqs?url=" + receiveAddress;
+				mallikasAddress + "/projectRequirements");
+		String receiveAddress = millaAddress + "/receiveAddReqResponse";
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/DB/AddReqs?url=" + receiveAddress;
 		
 		HttpEntity<String> entity = new HttpEntity<String>(requirements, headers);
 
@@ -171,10 +171,10 @@ public class DetectionController {
 			@RequestParam String projectId, @RequestParam String threshold)
 			throws IOException {
 		
-		String thisAddress = millaAddress + "receiveSimilarities";
+		String thisAddress = millaAddress + "/receiveSimilarities";
 		
 		String completeAddress = upcSimilarityAddress
-				+ "upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
+				+ "/upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
 				"&threshold=" + threshold + "&url=" + thisAddress;
 		
 		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
@@ -207,7 +207,7 @@ public class DetectionController {
 			@RequestParam String projectId, @RequestParam List<String> reqIds, @RequestParam String threshold)
 			throws IOException{
 		
-		String thisAddress = millaAddress + "receiveSimilarities";
+		String thisAddress = millaAddress + "/receiveSimilarities";
 		
 		String reqsString = "";
 		
@@ -215,7 +215,7 @@ public class DetectionController {
 			reqsString = reqsString + "&req=" + reqId;
 		}
 		
-		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqProject?compare=" + 
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 
 		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress;
 		
 		System.out.println(completeAddress);
@@ -244,8 +244,8 @@ public class DetectionController {
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, @RequestParam String reqId1, @RequestParam String reqId2)
 			throws IOException{
 
-		String thisAddress = millaAddress + "receiveSimilarities";
-		String completeAddress = upcSimilarityAddress + "upc/similarity-detection/ReqReq?compare=" + compare + 
+		String thisAddress = millaAddress + "/receiveSimilarities";
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqReq?compare=" + compare + 
 				"&req1=" + reqId1 + "&req2=" + reqId2 + "&url=" + thisAddress;
 		
 		List<String> ids = Arrays.asList(reqId1, reqId2);
@@ -300,9 +300,9 @@ public class DetectionController {
 		String jsonString = "";
 		try {
 			if (ids!=null) {
-				jsonString = getRequirementsFromMallikas(ids, mallikasAddress + "selectedRequirements");
+				jsonString = getRequirementsFromMallikas(ids, mallikasAddress + "/selectedRequirements");
 			} else {
-				jsonString = getProjectRequirementsFromMallikas(projectId, mallikasAddress + "projectRequirements");
+				jsonString = getProjectRequirementsFromMallikas(projectId, mallikasAddress + "/projectRequirements");
 			}
 			if(jsonString!=null) {
 				HttpHeaders headers = new HttpHeaders();

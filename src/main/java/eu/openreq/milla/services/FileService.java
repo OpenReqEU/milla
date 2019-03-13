@@ -61,7 +61,7 @@ public class FileService {
 					writer.append("ACCEPTED " + dep.getId() + " " + dep.getDependency_type() + "\n");
 				} 
 				if (dep.getStatus()!=null && dep.getStatus().equals(Dependency_status.REJECTED)) {
-					writer.append("REJECTED " + dep.getId() + "\n");
+					writer.append("REJECTED " + dep.getId() + " " + dep.getDependency_type() + "\n");
 				}
 			}
 			writer.close();
