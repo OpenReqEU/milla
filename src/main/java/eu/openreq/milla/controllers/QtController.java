@@ -133,12 +133,12 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTopProposedDependenciesOfRequirement")
-	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam List<String> requirementIds, @RequestParam Integer maxResults) throws IOException {
+	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, @RequestParam Integer maxResults) throws IOException {
 		
 		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";
 		
 		RequestParams params = new RequestParams();
-		params.setRequirementIds(requirementIds);
+		params.setRequirementIds(requirementId);
 		params.setProposedOnly(true);
 		params.setMaxDependencies(maxResults);
 		
