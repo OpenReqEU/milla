@@ -16,6 +16,7 @@ public class RequestParams {
 	    private Double scoreThreshold;
 	    private Boolean includeProposed;
 	    private Boolean proposedOnly;
+	    private Boolean includeRejected;
 	    
 	    
 		public String getProjectId() {
@@ -83,6 +84,12 @@ public class RequestParams {
 		}
 		public void setProposedOnly(Boolean proposedOnly) {
 			this.proposedOnly = proposedOnly;
+		}
+		public Boolean getIncludeRejected() {
+			return includeRejected;
+		}
+		public void setIncludeRejected(Boolean includeRejected) {
+			this.includeRejected = includeRejected;
 		}
 	    
 	

@@ -1,7 +1,5 @@
 package eu.openreq.milla.services;
 
-import java.io.IOException;
-
 import java.util.*;
 
 import org.json.JSONException;

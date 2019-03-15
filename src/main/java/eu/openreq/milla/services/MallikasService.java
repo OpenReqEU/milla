@@ -1,7 +1,6 @@
 package eu.openreq.milla.services;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -201,11 +200,9 @@ public class MallikasService {
 			fs.logDependencies(updatedDependencies);
 		}
 
-		String response = null;
-
 		try {
-			response = rt.postForObject(url, updatedDependencies, String.class);
-			return "Update successful";
+			String response = rt.postForObject(url, updatedDependencies, String.class);
+			return "Update successful! " + response;
 
 		} catch (HttpClientErrorException e) {
 			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " "+ e.getStatusCode();

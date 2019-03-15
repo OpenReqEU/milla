@@ -1,8 +1,6 @@
 package eu.openreq.milla.qtjiraimporter;
 
 import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * gets the Number of Issues from the website by fetching the newest issue and it's id

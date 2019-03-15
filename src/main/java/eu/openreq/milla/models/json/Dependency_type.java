@@ -1,6 +1,5 @@
 package eu.openreq.milla.models.json;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 
 public enum Dependency_type {

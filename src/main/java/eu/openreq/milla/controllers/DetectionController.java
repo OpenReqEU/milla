@@ -1,27 +1,18 @@
 package eu.openreq.milla.controllers;
 
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.tomcat.util.http.fileupload.IOUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,14 +21,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import eu.openreq.milla.services.MallikasService;
-import groovy.util.logging.Log;
 import eu.openreq.milla.services.JSONParser;
 import io.swagger.annotations.ApiOperation; 
 //import io.swagger.annotations.*;
@@ -214,8 +203,6 @@ public class DetectionController {
 		
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 
 		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress;
-		
-		System.out.println(completeAddress);
 		
 		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
 		return entity;
