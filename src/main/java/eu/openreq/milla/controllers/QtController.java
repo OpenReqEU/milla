@@ -77,13 +77,13 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getDependenciesOfRequirement")
 	public ResponseEntity<?> getDependenciesOfRequirement(@RequestParam String requirementId, 
-			@RequestParam(required = false) Double scoreTreshold, @RequestParam(required = false) Integer maxResults) throws IOException {
+			@RequestParam(required = false) Double scoreThreshold, @RequestParam(required = false) Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
 		List<String> reqIds = new ArrayList<String>();
 		reqIds.add(requirementId);
 		params.setRequirementIds(reqIds);
-		params.setScoreTreshold(scoreTreshold);
+		params.setScoreThreshold(scoreThreshold);
 		params.setMaxDependencies(maxResults);
 		
 		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";

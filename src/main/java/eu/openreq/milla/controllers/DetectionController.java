@@ -84,7 +84,6 @@ public class DetectionController {
 					+ "<b>Exception</b>: Not needed for DKPro."
 					+ "<br><b>Prarameter: </b>"
 					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
-	//@ResponseBody
 	@PostMapping(value = "detectSimilarityAddReqs")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetection(@RequestBody String projectId)
 			throws IOException {
@@ -165,7 +164,6 @@ public class DetectionController {
 					+ "<br>compare: Whether text attribute is used in comparison"
 					+ "<br>projectId: The project id in Mallikas."
 					+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
-	//@ResponseBody
 	@PostMapping(value = "detectSimilarityProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionProject(@RequestParam Boolean compare, 
 			@RequestParam String projectId, @RequestParam String threshold)
@@ -201,18 +199,17 @@ public class DetectionController {
 			+ "<br>projectId: The project id in Mallikas."
 			+ "<br>reqIds: The ids of the requirements that are to be compared to other requirements in the project."
 			+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
-	//@ResponseBody
 	@PostMapping(value = "detectSimilarityReqProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
-			@RequestParam String projectId, @RequestParam List<String> reqIds, @RequestParam String threshold)
+			@RequestParam String projectId, @RequestParam List<String> reqId, @RequestParam String threshold)
 			throws IOException{
 		
 		String thisAddress = millaAddress + "/receiveSimilarities";
 		
 		String reqsString = "";
 		
-		for (String reqId : reqIds) {
-			reqsString = reqsString + "&req=" + reqId;
+		for (String id : reqId) {
+			reqsString = reqsString + "&req=" + id;
 		}
 		
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 

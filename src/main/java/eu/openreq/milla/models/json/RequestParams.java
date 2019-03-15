@@ -13,7 +13,7 @@ public class RequestParams {
 	    private String status;
 	    private String resolution;
 	    private Integer maxDependencies;
-	    private Double scoreTreshold;
+	    private Double scoreThreshold;
 	    private Boolean includeProposed;
 	    private Boolean proposedOnly;
 	    
@@ -66,11 +66,11 @@ public class RequestParams {
 		public void setMaxDependencies(Integer maxDependencies) {
 			this.maxDependencies = maxDependencies;
 		}
-		public Double getScoreTreshold() {
-			return scoreTreshold;
+		public Double getScoreThreshold() {
+			return scoreThreshold;
 		}
-		public void setScoreTreshold(Double scoreTreshold) {
-			this.scoreTreshold = scoreTreshold;
+		public void setScoreThreshold(Double scoreThreshold) {
+			this.scoreThreshold = scoreThreshold;
 		}
 		public Boolean getIncludeProposed() {
 			return includeProposed;
