@@ -99,13 +99,11 @@ public class FormatTransformerService {
 		List<Issue> issues = new ArrayList<>();
 
 		List<JsonElement> elements = new ArrayList<>(jsonElements);
-		for (int i = 0; i < jsonElements.size(); i++) {
+		for (int i = 0; i < jsonElements.size()-1; i++) {
 			JsonElement element = elements.get(i);
-
 			JsonObject issueJSON = element.getAsJsonObject();
 			Issue issue = gson.fromJson(issueJSON, Issue.class);
 			addFieldsToIssue(issues, issue, gson, issueJSON);
-			
 			element = null;
 			issue = null;
 		}

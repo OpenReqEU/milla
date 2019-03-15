@@ -190,14 +190,14 @@ public class DetectionController {
 			+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
 	@PostMapping(value = "detectSimilarityReqProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
-			@RequestParam String projectId, @RequestParam List<String> reqId, @RequestParam String threshold)
+			@RequestParam String projectId, @RequestParam List<String> requirementId, @RequestParam String threshold)
 			throws IOException{
 		
 		String thisAddress = millaAddress + "/receiveSimilarities";
 		
 		String reqsString = "";
 		
-		for (String id : reqId) {
+		for (String id : requirementId) {
 			reqsString = reqsString + "&req=" + id;
 		}
 		
@@ -225,14 +225,15 @@ public class DetectionController {
 	+ "<br>reqId2: The id of the requirement that is compared to other requirement (reqId1).")
 	//@ResponseBody
 	@PostMapping(value = "detectSimilarityReqReq")
-	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, @RequestParam String reqId1, @RequestParam String reqId2)
+	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, @RequestParam String requirementId1, 
+			@RequestParam String requirementId2)
 			throws IOException{
 
 		String thisAddress = millaAddress + "/receiveSimilarities";
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqReq?compare=" + compare + 
-				"&req1=" + reqId1 + "&req2=" + reqId2 + "&url=" + thisAddress;
+				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress;
 		
-		List<String> ids = Arrays.asList(reqId1, reqId2);
+		List<String> ids = Arrays.asList(requirementId1, requirementId2);
 				
 		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(null, ids, completeAddress);
 		

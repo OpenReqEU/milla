@@ -49,7 +49,9 @@ public class UpdatedIssues {
 			projectJSON = gson.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
 			JsonArray issuesInProjectJSON = projectJSON.getAsJsonArray("issues");
 			System.out.println("issuesInProjectJSON.size is " + issuesInProjectJSON.size());
-			element = issuesInProjectJSON.get(0);
+			if (issuesInProjectJSON.size()>0) {
+				element = issuesInProjectJSON.get(0);
+			}
 		}
 		return element;
 	}

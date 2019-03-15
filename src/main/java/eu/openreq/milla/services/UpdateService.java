@@ -55,11 +55,16 @@ public class UpdateService {
 			int amount = getNumberOfUpdatedIssues(projectId, person);
 			updatedIssues.collectAllUpdatedIssues(projectId, amount);
 			Collection<Requirement> requirements = processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
+			if (requirements!=null && !requirements.isEmpty()) {
 			this.postRequirementsToMallikas(requirements);
+			}
+			if (dependencies!=null && !dependencies.isEmpty()) {
 			this.postDependenciesToMallikas(dependencies);
+			}
+			if (reqIds!=null && !reqIds.isEmpty()) {
 			this.postReqIdsToMallikas(reqIds, projectId);
-			
-			response = new ResponseEntity<>("All updated requirements and dependencies downloaded", HttpStatus.OK);
+			}
+			response = new ResponseEntity<>(amount + " updated requirements downloaded along with dependencies", HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
@@ -77,9 +82,15 @@ public class UpdateService {
 		int sum = 0;
 		while (number != 0) {
 			JsonElement element = updatedIssues.getTheLatestUpdatedIssue(start);
+			if (element==null) {
+				break;
+			}
 			List<JsonElement> elements = new ArrayList<>();
 			elements.add(element);
 			List<Requirement> reqs = new ArrayList<Requirement>(processJsonElementsToRequirements(elements, projectId, person));
+			if (reqs.isEmpty()) { 
+				break;
+			}
 			number = compareUpdatedIssueWithTheIssueInMallikas(reqs.get(0));
 			sum++;
 			System.out.println("Sum (how many times 100 updated issues must be fetched): " + sum);
@@ -137,10 +148,13 @@ public class UpdateService {
 	 */
 	private Collection<Requirement> processJsonElementsToRequirements(Collection<JsonElement> elements,
 			String projectId, Person person) throws Exception {
-		List<Issue> issues = transformer.convertJsonElementsToIssues(elements);
-		Collection<Requirement> requirements = transformer.convertIssuesToJson(issues, projectId, person);
-		reqIds = transformer.getRequirementIds();
-		dependencies = transformer.getDependencies();
+		Collection<Requirement> requirements = new ArrayList<Requirement>();
+		if (!elements.isEmpty()) {
+			List<Issue> issues = transformer.convertJsonElementsToIssues(elements);
+			requirements = transformer.convertIssuesToJson(issues, projectId, person);
+			reqIds = transformer.getRequirementIds();
+			dependencies = transformer.getDependencies();
+		}
 		return requirements;
 	}
 	
