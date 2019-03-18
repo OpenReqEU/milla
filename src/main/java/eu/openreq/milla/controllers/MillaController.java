@@ -209,12 +209,17 @@ public class MillaController {
 //					+ "<br>dependencies: An array of dependencies in OpenReq JSON format. ")
 //	//@ResponseBody
 //	@PostMapping(value = "dependencies")
-	public ResponseEntity<?> postDependenciesToMallikas(@RequestBody Collection<Dependency> dependencies)
+	public ResponseEntity<?> postDependenciesToMallikas(@RequestBody Collection<Dependency> dependencies, 
+			@RequestParam(required = false) boolean isProposed)
 			throws IOException {
 
 		RestTemplate rt = new RestTemplate();
-
+		
 		String completeAddress = mallikasAddress + "/updateDependencies";
+		
+		if (isProposed) {
+			completeAddress += "?isProposed=true";
+		}
 
 		Collection<Dependency> dependencyList = dependencies;
 		ResponseEntity<?> response = null;
@@ -634,7 +639,7 @@ public class MillaController {
 				// subtaskCount = subtaskCount + transformer.getSubtaskCount();
 				requirementIds.addAll(transformer.getRequirementIds());
 				this.postRequirementsToMallikas(requirements);
-				this.postDependenciesToMallikas(dependencies);
+				this.postDependenciesToMallikas(dependencies, false);
 				projectIssuesAsJson.clear();
 				issues.clear();
 				requirements.clear();

@@ -331,7 +331,7 @@ public class DetectionController {
 		try {
 			JSONParser.parseToOpenReqObjects(content);
 			List<Dependency> dependencies = JSONParser.dependencies;
-			entity = millaController.postDependenciesToMallikas(dependencies);
+			entity = millaController.postDependenciesToMallikas(dependencies, true);
 		
 		} catch (HttpClientErrorException e) {
 			System.out.println("UPC error:\n\n" + e.getResponseBodyAsString() + " " + e.getStatusCode());

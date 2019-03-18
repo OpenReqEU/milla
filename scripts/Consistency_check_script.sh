@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # author Mikko Raatikainen mikko.raatikainen@helsinki.fi March 6, 2019
 #
 # This script loops through a set of issue IDs stored in OpenReq infra (Milla/Mallikas) from Qt Jira and 
@@ -6,7 +6,7 @@
 #
 
 # Regexp all IDs
-projectIDstring=`curl -s -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTCREATORBUG' 'http://localhost:9203/requirementsInProject' | grep -o -P "\"id\":\"[A-Z][A-Z]*-[0-9][0-9]*\"" | grep -o -P "[A-Z][A-Z]*-[0-9][0-9]*"`
+projectIDstring=`curl -s -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QBS' 'http://localhost:9203/requirementsInProject' | grep -o -P "\"id\":\"[A-Z][A-Z]*-[0-9][0-9]*\"" | grep -o -P "[A-Z][A-Z]*-[0-9][0-9]*"`
 
 # Make an array of IDs for looping
 projectID=($(echo $projectIDstring))
@@ -20,7 +20,7 @@ start=`date +%s`
 # Loop through all IDs to check consistency for all of them
 for i in "${projectID[@]}"
 do
-	JSONresp=`curl -s -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' 'http://localhost:9203/getConsistencyCheckForRequirement?requirementId='$i`
+	JSONresp=`curl -s -X GET --header 'Content-Type: application/json' --header 'Accept: text/plain' 'http://localhost:9203/getConsistencyCheckForRequirement?requirementId='$i`
 	# Does it result in a diagnosis part? If yes, it's incosistent
 	if [[ $JSONresp == *"\"AnalysisVersion\": \"reqreldiag\""* ]]; then
 		# output with tab for easier inport to excel whatnot

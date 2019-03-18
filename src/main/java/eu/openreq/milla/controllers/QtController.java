@@ -194,7 +194,7 @@ public class QtController {
 	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the "
 			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
-	public ResponseEntity<?> updateTheMostRecentIssuesInProject(@RequestBody String projectId) throws IOException {
+	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestBody String projectId) throws IOException {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);

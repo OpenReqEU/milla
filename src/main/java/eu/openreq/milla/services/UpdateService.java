@@ -56,13 +56,13 @@ public class UpdateService {
 			updatedIssues.collectAllUpdatedIssues(projectId, amount);
 			Collection<Requirement> requirements = processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
 			if (requirements!=null && !requirements.isEmpty()) {
-			this.postRequirementsToMallikas(requirements);
+				this.postRequirementsToMallikas(requirements);
 			}
 			if (dependencies!=null && !dependencies.isEmpty()) {
-			this.postDependenciesToMallikas(dependencies);
+				this.postDependenciesToMallikas(dependencies);
 			}
 			if (reqIds!=null && !reqIds.isEmpty()) {
-			this.postReqIdsToMallikas(reqIds, projectId);
+				this.postReqIdsToMallikas(reqIds, projectId);
 			}
 			response = new ResponseEntity<>(amount + " updated requirements downloaded along with dependencies", HttpStatus.OK);
 		} catch (HttpClientErrorException e) {

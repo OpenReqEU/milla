@@ -43,6 +43,13 @@ A project can be sent to mulperi to be analyzed
 
 `curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/sendProjectToMulperi'` 
 
+## Notes for Developers
+
+None at the moment.
+
+## Sources
+
+None
 
 # How to Contribute
 See the OpenReq Contribution Guidelines [here](https://github.com/OpenReqEU/OpenReq/blob/master/CONTRIBUTING.md).
