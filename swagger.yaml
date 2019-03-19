@@ -1,0 +1,1003 @@
+swagger: '2.0'
+info:
+  description: "Milla is mostly Qt Jira-specific orchestrator service for the OpenReq Qt trial that operates between Qt Jira and the OpenReq infrastructure. Milla has five main functionalities divided into three different controllers. <br>\r\n<b>Milla controller:</b><br>1) Milla fetches all or updated data from Qt Jira and stores in a caching manner the data in the Mallikas database service.  <br>\r\n2) Milla orchestrates the communication to Mallikas database service so that a project, requirement etc. can be manipulated (CRUD manner) in Mallikas database service in OpenReq JSON format. <br>\r\n3) Milla orchestrates the data from Mallikas database service to Mulperi service in order to manage dependencies, carry out analyses etc.  <br>\r\n<b>Detection controller:</b><br>4) Milla calls the natural language processing services of OpenReq infrastructre that can detect from the requirements text hidden or implicit dependencies to other requirements.  <br>\r\n<b>Qt controller:</b><br>5) Milla provides the access point for the Qt Jira dependency browser in the Qt trial. <br>\r\n"
+  version: "1.13"
+  title: Milla
+host: 'localhost:9203'
+basePath: /
+tags:
+  - name: qt-controller
+    description: Qt Controller
+  - name: milla-controller
+    description: Milla Controller
+  - name: testing-controller
+    description: Testing Controller
+  - name: detection-controller
+    description: Detection Controller
+paths:
+  /allRequirements:
+    get:
+      tags:
+        - milla-controller
+      summary: Fetch all requirements including their dependencies from the Mallikas database in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch all requirements from Mallikas database in OpenReq JSON requirement and dependency format. Project object is not included.This is practically an export of the entire database and, thus, dataset. In Swagger, the data might get too large to be shown in the response field.For large database, Milla and Mallikas java VM need extra memory.<br><b>Precondition</b>: There is at least one project and requirement cached in Mallikas.<br><b>Postcondition</b>: Requirements and dependencies in OpenReq JSON is produced.<br>'
+      operationId: getAllRequirementsUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /detectSimilarityAddReqs:
+    post:
+      tags:
+        - detection-controller
+      summary: Cache requirements for UPC dependency Detection
+      description: '<b>Functionality</b>: Post all requirements and dependencies in a project as a String to UPC services in order to be cached for dependency detection purposes. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successfully caching requirements in UPC service, similarity detection can be carried out.<br><b>Exception</b>: Not needed for DKPro.<br><b>Prarameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
+      operationId: postRequirementsToUPCSimilarityDetectionUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: projectId
+          description: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /detectSimilarityProject:
+    post:
+      tags:
+        - detection-controller
+      summary: Detect similarity between all requirements of a project using UPC Similarity Detection
+      description: '<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between all requirements. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>compare: Whether text attribute is used in comparison<br>projectId: The project id in Mallikas.<br>threshold: The minimum score for similarity detection (e.g. 0.3).'
+      operationId: postRequirementsToUPCSimilarityDetectionProjectUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: compare
+          in: query
+          description: compare
+          required: true
+          type: boolean
+        - name: projectId
+          in: query
+          description: projectId
+          required: true
+          type: string
+        - name: threshold
+          in: query
+          description: threshold
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /detectSimilarityReqProject:
+    post:
+      tags:
+        - detection-controller
+      summary: Detect similarity of one requirement against all other requirements of a project using UPC Similarity Detection
+      description: '<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between one specified requirements in to project to all other requirements. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>compare: Whether the text attribute is used in comparison<br>projectId: The project id in Mallikas.<br>reqIds: The ids of the requirements that are to be compared to other requirements in the project.<br>threshold: The minimum score for similarity detection (e.g. 0.3).'
+      operationId: postRequirementsToUPCSimilarityDetectionReqProjectUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: compare
+          in: query
+          description: compare
+          required: true
+          type: boolean
+        - name: projectId
+          in: query
+          description: projectId
+          required: true
+          type: string
+        - name: requirementId
+          in: query
+          description: requirementId
+          required: true
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: threshold
+          in: query
+          description: threshold
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /detectSimilarityReqReq:
+    post:
+      tags:
+        - detection-controller
+      summary: Detect similarity between two requirements using UPC Similarity Detection
+      description: '<b>Functionality</b>: Two given requirements are posted to UPC Similarity Detection in order to detect similarity between them.<br><b>Precondition</b>: The two requirements have been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the similarity, if above treshold, is stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>reqId1: The id of the requirement that is compared to other requirement (reqId2).<br>reqId2: The id of the requirement that is compared to other requirement (reqId1).'
+      operationId: postRequirementsToUPCSimilarityDetectionReqReqUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: compare
+          in: query
+          description: compare
+          required: true
+          type: boolean
+        - name: requirementId1
+          in: query
+          description: requirementId1
+          required: true
+          type: string
+        - name: requirementId2
+          in: query
+          description: requirementId2
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /example/gui:
+    get:
+      tags:
+        - testing-controller
+      summary: exampleGUI
+      operationId: exampleGUIUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /getConsistencyCheckForRequirement:
+    get:
+      tags:
+        - qt-controller
+      summary: Get concistency check for the transitive closure of a requirement
+      operationId: getConsistencyCheckForRequirementUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: requirementId
+          in: query
+          description: requirementId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'Success, returns JSON model'
+          schema:
+            type: string
+        '400':
+          description: 'Failure, ex. model not found'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+  /getDependenciesOfRequirement:
+    get:
+      tags:
+        - qt-controller
+      summary: Get the dependencies of a requirement
+      operationId: getDependenciesOfRequirementUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: requirementId
+          in: query
+          description: requirementId
+          required: true
+          type: string
+        - name: scoreThreshold
+          in: query
+          description: scoreThreshold
+          required: false
+          type: number
+          format: double
+        - name: maxResults
+          in: query
+          description: maxResults
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: 'Success, returns JSON model'
+          schema:
+            type: string
+        '400':
+          description: 'Failure, ex. model not found'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+  /getTopProposedDependenciesOfRequirement:
+    get:
+      tags:
+        - qt-controller
+      summary: Get top X proposed dependencies of a requirement
+      operationId: getTopProposedDependenciesOfRequirementUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: requirementId
+          in: query
+          description: requirementId
+          required: true
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: maxResults
+          in: query
+          description: maxResults
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: 'Success, returns JSON model'
+          schema:
+            type: string
+        '400':
+          description: 'Failure, ex. model not found'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+  /getTransitiveClosureOfRequirement:
+    get:
+      tags:
+        - qt-controller
+      summary: Get the transitive closure of a requirement
+      description: Returns the transitive closure of a given requirement to the depth of 5
+      operationId: getTransitiveClosureOfRequirementUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: requirementId
+          in: query
+          description: requirementId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'Success, returns JSON model'
+          schema:
+            type: string
+        '400':
+          description: 'Failure, ex. model not found'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+  /qtjira:
+    post:
+      tags:
+        - milla-controller
+      summary: Import a selected project from Qt Jira and store a cache of the project to Mallikas
+      description: '<b>Functionality</b>: This is the full data import from Qt Jira. A selected project including its issues are fetched from Qt Jira. The data is converted to OpenReq JSON requirements and dependencies, and OpenReq JSON project is constructed.The project including its requirements and dependencies is cached to Mallikas database<br><b>Postcondition</b>: The selected project is cached in Mallikas to be managed in the OpenReq infrastructure. The same project name (id) is used in Qt Jira and Mallikas.<br><b>Note:</b> For update rather than full import, see "qtjiraUpdated", which is  more effiecient for large projects.</b><br><b>Parameter: </b><br>projectId: The project id in Qt Jira, which is then used also in Mallikas (e.g., QTWB).'
+      operationId: importFromQtJiraUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: projectId
+          description: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+        '201':
+          description: 'Success, all requirements and dependencies downloaded'
+          schema:
+            type: string
+        '400':
+          description: 'Failure, ex. malformed JSON'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: 'Failure, ex. invalid URLs'
+  /qtjiraUpdated:
+    post:
+      tags:
+        - milla-controller
+      summary: Import the updated issues from Qt Jira to Mallikas.
+      description: '<b>Functionality</b>: Import the updated Jira issues of a project from Qt Jira and send the issues as OpenReq JSON requirements and dependencies to be cached in Mallikas database<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: New or changed Jira issues are updated to Mallikas<br><b>Exception</b>: This is not full synchronization.<br><b>Prarameter: </b><br>projectId: The project id that is used in Qt Jira and Mallikas (e.g., QTWB).'
+      operationId: importUpdatedFromQtJiraUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: projectId
+          description: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Success, all updated requirements and dependencies downloaded'
+          schema:
+            type: string
+        '201':
+          description: Created
+        '400':
+          description: 'Failure, ex. malformed JSON'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: 'Failure, ex. invalid URLs'
+  /receiveAddReqResponse:
+    post:
+      tags:
+        - detection-controller
+      summary: receiveAddReqResponse
+      operationId: receiveAddReqResponseUsingPOST
+      consumes:
+        - multipart/form-data
+      produces:
+        - '*/*'
+      parameters:
+        - name: result
+          in: formData
+          description: result
+          required: true
+          type: file
+      responses:
+        '200':
+          description: OK
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /receiveSimilarities:
+    post:
+      tags:
+        - detection-controller
+      summary: addDependenciesToMallikas
+      operationId: addDependenciesToMallikasUsingPOST
+      consumes:
+        - multipart/form-data
+      produces:
+        - '*/*'
+      parameters:
+        - name: result
+          in: formData
+          description: result
+          required: true
+          type: file
+      responses:
+        '200':
+          description: OK
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementAndDependents:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch one selected requirement and requirements dependent on it from the database
+      description: '<b>Functionality</b>: Fetch the specified requirement and its dependent requirements including the dependency objects from Mallikas in OpenReq JSON format. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requested requirement and an array of dependent requirements and dependencies are produced.<br><b>Parameter: </b><br>id: The id of the requirement, e.g. QTWB-30.'
+      operationId: getOneRequirementAndDependentsUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: id
+          description: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementsByParams:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch requirements based on various parameters given in JSON format.
+      description: '<b>Functionality</b>: Fetch requirements based on various parameters given in JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>requestParams: Object containing various parameters'
+      operationId: getRequirementsByVariousParamsUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: params
+          description: params
+          required: true
+          schema:
+            $ref: '#/definitions/RequestParams'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementsInProject:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch all requirements  of a project in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch all requirements of a project including their dependencies that are cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the project including requirements and dependencies is produced.<br><b>Prarameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
+      operationId: getRequirementsInProjectUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: projectId
+          description: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementsSinceDate:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch all requirements since a given date in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch requirements, including their dependencies that are cached in Mallikas database in the OpenReq JSON format from any project.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>date: Date in proper format such as "2019-03-05T11:13:39.529Z"'
+      operationId: getRequirementsSinceDateUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: date
+          description: date
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementsWithDependencyType:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch requirements that have the selected dependency type in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch requirements that have the selected dependency type and cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>type: Dependency type can be e.g. DUPLICATES, REQUIRES etc.'
+      operationId: getRequirementsWithDependencyTypeUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: type
+          description: type
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementsWithIds:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch a specified set of requirements in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch a specied requirements including their dependencies that are cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Prarameter: </b><br>ids: ids as a String array, e.g. ["QTWB-1", "QTWB-2"] '
+      operationId: getRequirementsWithIdsUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: ids
+          description: ids
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementsWithResolution:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch requirements that have the selected resolution in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch requirements that have the selected resolution cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>resolution: Resolution can be e.g. Duplicate, Unresolved etc. '
+      operationId: getRequirementsWithResolutionUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: resolution
+          in: query
+          description: resolution
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /requirementsWithTypeAndStatus:
+    post:
+      tags:
+        - milla-controller
+      summary: Fetch requirements that have the selected requirement type and status in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch requirements that have the selected requirement type and status that are cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>type: Requirement type in all caps, e.g. BUG<br>status: Requirement status in all caps, e.g. NEW'
+      operationId: getRequirementsWithTypeAndStatusUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: type
+          in: query
+          description: type
+          required: true
+          type: string
+        - name: status
+          in: query
+          description: status
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /sendProjectToMulperi:
+    post:
+      tags:
+        - milla-controller
+      summary: Construct a transitive closure by sending all requirements of the selected project to Mulperi
+      description: '<b>Functionality</b>: All requirements in the same project are fetched from Mallikas database and send to Mulperi to construct a transitive closure.<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br><b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br><br><b>Prarameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
+      operationId: sendProjectToMulperiUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: projectId
+          in: query
+          description: projectId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /sendProjectToMulperiWithParams:
+    post:
+      tags:
+        - milla-controller
+      summary: Construct a transitive closure by sending all requirements of the selected project to Mulperi
+      description: '<b>Functionality</b>: All requirements in the same project are fetched from Mallikas database and send to Mulperi to construct a transitive closure.<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br><b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br><br><b>Prarameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
+      operationId: sendProjectToMulperiWithParamsUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: projectId
+          in: query
+          description: projectId
+          required: true
+          type: string
+        - name: includeProposedDependencies
+          in: query
+          description: includeProposedDependencies
+          required: true
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /updateDependencies:
+    post:
+      tags:
+        - milla-controller
+      summary: OBSOLETE? Post updated dependencies to Mallikas
+      description: Post updated dependencies as a String list to Mallikas database
+      operationId: postUpdatedDependenciesToMallikasUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: dependencies
+          description: dependencies
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /updateProject:
+    post:
+      tags:
+        - qt-controller
+      summary: Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas
+      description: Post a Project to Mallikas database and KeljuCaas
+      operationId: updateWholeProjectUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: projectId
+          description: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /updateProposedDependencies:
+    post:
+      tags:
+        - qt-controller
+      summary: Update proposed depencies (were they accepted or rejected?)
+      operationId: updateProposedDependenciesUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: dependencies
+          description: dependencies
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Success, returns JSON model'
+          schema:
+            type: string
+        '201':
+          description: Created
+        '400':
+          description: 'Failure, ex. model not found'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+  /updateRecentInProject:
+    post:
+      tags:
+        - qt-controller
+      summary: Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the graph in KeljuCaas
+      description: Post recent issues in a project to Mallikas database and KeljuCaas
+      operationId: updateMostRecentIssuesInProjectUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: projectId
+          description: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /updateRequirements:
+    post:
+      tags:
+        - milla-controller
+      summary: OBSOLETE? Post updated requirements to Mallikas
+      description: Post updated requirements as a String list to Mallikas database
+      operationId: postUpdatedRequirementsToMallikasUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: requirements
+          description: requirements
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+definitions:
+  RequestParams:
+    type: object
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      includeProposed:
+        type: boolean
+      includeRejected:
+        type: boolean
+      maxDependencies:
+        type: integer
+        format: int32
+      modified_at:
+        type: string
+        format: date-time
+      projectId:
+        type: string
+      proposedOnly:
+        type: boolean
+      requirementIds:
+        type: array
+        items:
+          type: string
+      resolution:
+        type: string
+      scoreThreshold:
+        type: number
+        format: double
+      status:
+        type: string
+      type:
+        type: string
+
