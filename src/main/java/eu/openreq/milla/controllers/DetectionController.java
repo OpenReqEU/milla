@@ -28,7 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import eu.openreq.milla.services.MallikasService;
 import eu.openreq.milla.services.JSONParser;
-import io.swagger.annotations.ApiOperation; 
+import io.swagger.annotations.ApiOperation;
+import okhttp3.ResponseBody;
 //import io.swagger.annotations.*;
 import eu.openreq.milla.models.json.*;
 
@@ -164,7 +165,7 @@ public class DetectionController {
 				+ "/upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
 				"&threshold=" + threshold + "&url=" + thisAddress;
 		
-		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
+		ResponseEntity<?> entity = sendRequirementsForDetection(projectId, null, completeAddress);
 		
 		return entity;
 	}	
@@ -204,7 +205,7 @@ public class DetectionController {
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 
 		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress;
 		
-		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
+		ResponseEntity<?> entity = sendRequirementsForDetection(projectId, null, completeAddress);
 		return entity;
 	}	
 	
@@ -235,7 +236,7 @@ public class DetectionController {
 		
 		List<String> ids = Arrays.asList(requirementId1, requirementId2);
 				
-		ResponseEntity<?> entity = sendRequirementsForSimilarityDetection(null, ids, completeAddress);
+		ResponseEntity<?> entity = sendRequirementsForDetection(null, ids, completeAddress);
 		
 		return entity;
 	}
@@ -278,10 +279,9 @@ public class DetectionController {
 	 * @return Response from the server, which contains the id of the request if successful. 
 	 * @throws IOException
 	 */
-	private ResponseEntity<?> sendRequirementsForSimilarityDetection(String projectId, Collection<String> ids, String url) throws IOException {
+	private ResponseEntity<String> sendRequirementsForDetection(String projectId, Collection<String> ids, String url) throws IOException {
 		RestTemplate rt = new RestTemplate();
 		String response = null;
-		ResponseEntity<?> entity = null;
 		String jsonString = "";
 		try {
 			if (ids!=null) {
@@ -308,7 +308,7 @@ public class DetectionController {
 //			e.printStackTrace();
 //			return new ResponseEntity<>("Error in parsing JSON ", HttpStatus.NO_CONTENT);
 //		}
-		return entity;
+		return new ResponseEntity<String>("No requirements to send for detection!", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 		
 	/**
@@ -317,31 +317,31 @@ public class DetectionController {
 	 * @throws IOException
 	 */
 	@PostMapping(value = "receiveSimilarities")
-	public void addDependenciesToMallikas(@RequestParam MultipartFile result)
-			throws IOException{
-		
+	public void receiveSimilarities(@RequestParam MultipartFile result) throws IOException {
 		String content = new String(result.getBytes());
 
 		System.out.println(content);
-//		JSONParser.parseToOpenReqObjects(content);
-//		List<Dependency> dependencies = JSONParser.dependencies;
 		
-		ResponseEntity<?> entity = null;
+		addDependenciesToMallikas(content);
+	}
+	
+	public ResponseEntity<String> addDependenciesToMallikas(String content)
+			throws IOException{	
+		String response = null;
 		
 		try {
 			JSONParser.parseToOpenReqObjects(content);
 			List<Dependency> dependencies = JSONParser.dependencies;
-			entity = millaController.postDependenciesToMallikas(dependencies, true);
-		
+			response = (String)millaController.postDependenciesToMallikas(dependencies, true).getBody();
 		} catch (HttpClientErrorException e) {
-			System.out.println("UPC error:\n\n" + e.getResponseBodyAsString() + " " + e.getStatusCode());
+			return new ResponseEntity<String>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 		catch (JSONException e) {
 			e.printStackTrace();
-			System.out.println("Error in parsing JSON " + HttpStatus.NO_CONTENT);
+			return new ResponseEntity<String>("Error in parsing JSON", HttpStatus.NO_CONTENT);
 		}
 
-		System.out.println("Successfully posted dependencies to Mallikas!\n" + entity);
+		return new ResponseEntity<String>(response, HttpStatus.ACCEPTED);
 	}
 	
 	/**
@@ -376,6 +376,38 @@ public class DetectionController {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+
+	/**
+	 * Post project requirements and the url of the service, received dependencies are saved to Mallikas
+	 * 
+	 * @param projectId
+	 * @param url
+	 * @return ResponseEntity<?>
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Post requirements to some detection service", 
+			notes = "<b>Functionality</b>: Post all requirements and dependencies to some detection service. <br>"
+					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
+					+ "<b>Postcondition</b>: Successfully detected dependencies are saved in Mallikas.<br>"
+					+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
+					+ "<br>url: The url of the service to be used.")
+	@PostMapping(value = "otherDetectionService")
+	public ResponseEntity<?> postRequirementsToDetectionService(@RequestParam String projectId, @RequestParam String url)
+			throws IOException {
+		ResponseEntity<String> response = (ResponseEntity<String>)sendRequirementsForDetection(projectId, null, url);
+		
+		String content = response.getBody();
+		
+		if (response.getStatusCode() != HttpStatus.ACCEPTED) {
+			return new ResponseEntity<String>(content, HttpStatus.BAD_REQUEST);
+		}
+		
+		content = "{\"dependencies\":" + content + "}";
+		
+		return addDependenciesToMallikas(content);		
+		
 	}
 	
 }

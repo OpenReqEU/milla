@@ -230,7 +230,7 @@ public class MillaController {
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		return response;
+		return new ResponseEntity<String>("Mallikas update successful\n\n", response.getStatusCode());
 	}
 
 	/**
