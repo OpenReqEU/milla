@@ -201,8 +201,8 @@ public class MallikasService {
 		}
 
 		try {
-			String response = rt.postForObject(url, updatedDependencies, String.class);
-			return "Update successful! " + response;
+			rt.postForObject(url, updatedDependencies, String.class);
+			return "Update successful!";
 
 		} catch (HttpClientErrorException e) {
 			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " "+ e.getStatusCode();
