@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +25,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import eu.openreq.milla.services.MallikasService;
-import eu.openreq.milla.services.JSONParser;
-import io.swagger.annotations.ApiOperation;
-import okhttp3.ResponseBody;
 //import io.swagger.annotations.*;
-import eu.openreq.milla.models.json.*;
+import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.services.JSONParser;
+import eu.openreq.milla.services.MallikasService;
+import io.swagger.annotations.ApiOperation;
 
 @SpringBootApplication
 @RestController

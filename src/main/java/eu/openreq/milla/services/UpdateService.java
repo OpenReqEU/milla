@@ -1,6 +1,10 @@
 package eu.openreq.milla.services;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Value;
@@ -191,7 +195,7 @@ public class UpdateService {
 	private ResponseEntity<?> postReqIdsToMallikas(Collection<String> reqIds, String projectId) {
 		RestTemplate rt = new RestTemplate();
 		ResponseEntity<?> response = null;
-		Map<String, Collection> updatedReqs = new HashMap<String, Collection>();
+		Map<String, Collection<String>> updatedReqs = new HashMap<String, Collection<String>>();
 		updatedReqs.put(projectId, reqIds);
 		
 		try {	
