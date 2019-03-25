@@ -227,11 +227,10 @@ public class MillaController {
 			completeAddress += "?isProposed=true";
 		}
 
-		Collection<Dependency> dependencyList = dependencies;
 		ResponseEntity<?> response = null;
 
 		try {
-			response = rt.postForEntity(completeAddress, dependencyList, Collection.class);
+			response = rt.postForEntity(completeAddress, dependencies, Collection.class);
 
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
@@ -272,81 +271,6 @@ public class MillaController {
 		}
 		return response;
 	}
-
-	// Might be unnecessary to have this and postUpdatedRequirementsToMallikas, but
-	// keeping them for now, might be useful with UPC
-	/**
-	 * Post a Collection of updated (or new) OpenReq JSON Dependencies to Mallikas
-	 * database
-	 * 
-	 * @param dependencies
-	 *            Collection<Dependency> received as a parameter, dependencies to be
-	 *            updated
-	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "OBSOLETE? Post updated dependencies to Mallikas", notes = "Post updated dependencies as a String list to Mallikas database")
-	//@ResponseBody
-	@PostMapping(value = "updateDependencies")
-	public ResponseEntity<?> postUpdatedDependenciesToMallikas(@RequestBody String dependencies) throws IOException {
-
-		String completeAddress = mallikasAddress + "/updateDependencies";
-
-		String updated = null;
-
-		try {
-			updated = mallikasService.updateSelectedDependencies(dependencies, completeAddress, false);
-
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		ResponseEntity<String> response = new ResponseEntity<>(updated, HttpStatus.OK);
-		return response;
-	}
-
-	@ApiOperation(value = "OBSOLETE? Post updated requirements to Mallikas", notes = "Post updated requirements as a String list to Mallikas database")
-	//@ResponseBody
-	@PostMapping(value = "updateRequirements")
-	public ResponseEntity<?> postUpdatedRequirementsToMallikas(@RequestBody String requirements) throws IOException {
-
-		String completeAddress = mallikasAddress + "/updateRequirements";
-
-		String updated = null;
-
-		try {
-			updated = mallikasService.updateSelectedRequirements(requirements, completeAddress);
-
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-
-		ResponseEntity<String> response = new ResponseEntity<>(updated, HttpStatus.OK);
-		return response;
-	}
-
-//	/**
-//	 * Fetch Requirements related to the selected Component (OpenReq Classifier)
-//	 * 
-//	 * @param
-//	 * @return ResponseEntity<?>
-//	 * @throws IOException
-//	 */
-//	@ApiOperation(value = "Fetch requirements in the same component", notes = "Fetch all requirements in the same component from Mallikas database")
-//	@ResponseBody
-//	@PostMapping(value = "requirementsInComponent")
-//	public ResponseEntity<?> getRequirementsInSameComponent(@RequestBody String componentId) throws IOException {
-//
-//		String completeAddress = mallikasAddress + "classifiers";
-//
-//		String reqsInComponent = mallikasService.getAllRequirementsWithClassifierFromMallikas(componentId,
-//				completeAddress);
-//
-//		if (reqsInComponent == null) {
-//			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
-//		}
-//		ResponseEntity<String> response = new ResponseEntity<>(reqsInComponent, HttpStatus.FOUND);
-//		return response;
-//	}
 
 	/**
 	 * Fetch Requirements that are in the selected Project
@@ -402,125 +326,6 @@ public class MillaController {
 		ResponseEntity<String> response = new ResponseEntity<>(reqsWithIds, HttpStatus.FOUND);
 		return response;
 	}
-
-	/**
-	 * Fetch a List of Requirements created after the Date given from Mallikas
-	 * 
-	 * @param project
-	 *            Project received as a parameter
-	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Fetch all requirements since a given date in OpenReq JSON format.", 
-	notes = "<b>Functionality</b>: Fetch requirements, including their dependencies that are cached in Mallikas database in the OpenReq JSON format from any project."
-			+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
-			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-			+ "<br><b>Parameter: </b>"
-			+ "<br>date: Date in proper format such as \"2019-03-05T11:13:39.529Z\"")
-	//@ResponseBody
-	@PostMapping(value = "requirementsSinceDate")
-	public ResponseEntity<?> getRequirementsSinceDate(@RequestBody Date date) throws IOException {
-		String completeAddress = mallikasAddress + "/reqsSinceDate";
-
-		String reqsWithDate = mallikasService.getRequirementsSinceDateFromMallikas(date.getTime(), completeAddress);
-
-		if (reqsWithDate == null || reqsWithDate.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
-		}
-		ResponseEntity<String> response = new ResponseEntity<>(reqsWithDate, HttpStatus.FOUND);
-		return response;
-	}
-	
-	/**
-	 * Fetch a list of requirements according to their type and/or status from the
-	 * database.
-	 * 
-	 * @param type
-	 * @return
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Fetch requirements that have the selected requirement type and status in OpenReq JSON format.", 
-	notes = "<b>Functionality</b>: Fetch requirements that have the selected requirement type and status that are cached in Mallikas database in the OpenReq JSON format."
-			+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
-			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-			+ "<br><b>Parameter: </b>"
-			+ "<br>type: Requirement type in all caps, e.g. BUG"
-			+ "<br>status: Requirement status in all caps, e.g. NEW")
-	//@ResponseBody
-	@PostMapping(value = "requirementsWithTypeAndStatus")
-	public ResponseEntity<?> getRequirementsWithTypeAndStatus(@RequestParam String type, @RequestParam String status)
-			throws IOException {
-		String completeAddress = mallikasAddress + "/reqsWithType";
-
-		String reqsWithType = mallikasService.getAllRequirementsWithTypeAndStatusFromMallikas(type, status,
-				completeAddress);
-
-		if (reqsWithType == null || reqsWithType.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
-		}
-		ResponseEntity<String> response = new ResponseEntity<>(reqsWithType, HttpStatus.FOUND);
-		return response;
-	}
-
-	/**
-	 * Fetch a list of requirements according to their resolution value from the
-	 * database.
-	 * 
-	 * @param resolution
-	 * @return
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Fetch requirements that have the selected resolution in OpenReq JSON format.", 
-			notes = "<b>Functionality</b>: Fetch requirements that have the selected resolution cached in Mallikas database in the OpenReq JSON format."
-					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
-					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-					+ "<br><b>Parameter: </b>"
-					+ "<br>resolution: Resolution can be e.g. Duplicate, Unresolved etc. ")
-	//@ResponseBody
-	@PostMapping(value = "requirementsWithResolution")
-	public ResponseEntity<?> getRequirementsWithResolution(@RequestParam String resolution) throws IOException {
-		String completeAddress = mallikasAddress + "/reqsWithResolution";
-
-		String reqsWithResolution = mallikasService.getAllRequirementsWithSearchedStringFromMallikas(resolution,
-				completeAddress);
-
-		if (reqsWithResolution == null || reqsWithResolution.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
-		}
-		ResponseEntity<String> response = new ResponseEntity<>(reqsWithResolution, HttpStatus.FOUND);
-		return response;
-	}
-	
-	/**
-	 * Fetch a list of requirements according to their dependency type from the
-	 * database.
-	 * 
-	 * @param type
-	 * @return
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Fetch requirements that have the selected dependency type in OpenReq JSON format.", 
-			notes = "<b>Functionality</b>: Fetch requirements that have the selected dependency type and cached in Mallikas database in the OpenReq JSON format."
-					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
-					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
-					+ "<br><b>Parameter: </b>"
-					+ "<br>type: Dependency type can be e.g. DUPLICATES, REQUIRES etc.")
-	//@ResponseBody
-	@PostMapping(value = "requirementsWithDependencyType")
-	public ResponseEntity<?> getRequirementsWithDependencyType(@RequestBody String type) throws IOException {
-		String completeAddress = mallikasAddress + "/reqsWithDependencyType";
-		
-		String modifiedType = type.toUpperCase();
-
-		String reqsWithDependencyType = mallikasService.getAllRequirementsWithSearchedStringFromMallikas(modifiedType,
-				completeAddress);
-
-		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
-		}
-		ResponseEntity<String> response = new ResponseEntity<>(reqsWithDependencyType, HttpStatus.FOUND);
-		return response;
-	}
 	
 	/**
 	 * Fetch a list of requirements from the database based on a list of various parameters.
@@ -547,33 +352,6 @@ public class MillaController {
 			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
 		}
 		ResponseEntity<String> response = new ResponseEntity<>(reqsWithDependencyType, HttpStatus.FOUND);
-		return response;
-	}
-
-	/**
-	 * Fetch one Requirement and Requirements that depend on it from Mallikas
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Fetch one selected requirement and requirements dependent on it from the database", 
-			notes = "<b>Functionality</b>: Fetch the specified requirement and its dependent requirements including the dependency objects from Mallikas in OpenReq JSON format. "
-					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
-					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requested requirement and an array of dependent requirements "
-					+ "and dependencies are produced."
-					+ "<br><b>Parameter: </b>"
-					+ "<br>id: The id of the requirement, e.g. QTWB-30.")
-	//@ResponseBody
-	@PostMapping(value = "requirementAndDependents")
-	public ResponseEntity<?> getOneRequirementAndDependents(@RequestBody String id) throws IOException {
-
-		String completeAddress = mallikasAddress + "/dependents";
-		String requirement = mallikasService.getOneRequirementFromMallikas(completeAddress, id);
-
-		if (requirement == null || requirement.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
-		}
-		ResponseEntity<String> response = new ResponseEntity<>(requirement, HttpStatus.FOUND);
 		return response;
 	}
 
@@ -684,16 +462,16 @@ public class MillaController {
 	 * @return
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Fetch all requirements including their dependencies from the Mallikas database in OpenReq JSON format.", 
-			notes = "<b>Functionality</b>: Fetch all requirements from Mallikas database in OpenReq JSON requirement and dependency format. "
-					+ "Project object is not included."
-					+ "This is practically an export of the entire database and, thus, dataset. "
-					+ "In Swagger, the data might get too large to be shown in the response field."
-					+ "For large database, Milla and Mallikas java VM need extra memory."
-			+ "<br><b>Precondition</b>: There is at least one project and requirement cached in Mallikas.<br>"
-			+ "<b>Postcondition</b>: Requirements and dependencies in OpenReq JSON is produced.<br>")
-	//@ResponseBody
-	@RequestMapping(value = "allRequirements", method = RequestMethod.GET)
+//	@ApiOperation(value = "Fetch all requirements including their dependencies from the Mallikas database in OpenReq JSON format.", 
+//			notes = "<b>Functionality</b>: Fetch all requirements from Mallikas database in OpenReq JSON requirement and dependency format. "
+//					+ "Project object is not included."
+//					+ "This is practically an export of the entire database and, thus, dataset. "
+//					+ "In Swagger, the data might get too large to be shown in the response field."
+//					+ "For large database, Milla and Mallikas java VM need extra memory."
+//			+ "<br><b>Precondition</b>: There is at least one project and requirement cached in Mallikas.<br>"
+//			+ "<b>Postcondition</b>: Requirements and dependencies in OpenReq JSON is produced.<br>")
+//	//@ResponseBody
+//	@RequestMapping(value = "allRequirements", method = RequestMethod.GET)
 	public ResponseEntity<?> getAllRequirements() throws IOException {
 
 		System.out.println("getAllRequirements called");

@@ -46,7 +46,6 @@ public class ProjectIssues {
 		if (username!=null && password!=null) {
 			credentials = Credentials.basic(username, password);
 		}
-		System.out.println(credentials);
 		
 		_project = project;
 		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project, credentials);
