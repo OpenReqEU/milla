@@ -1,17 +1,15 @@
 package eu.openreq.milla.qtjiraimporter;
 
-import com.google.gson.*;
-
-import okhttp3.OkHttpClient;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import okhttp3.OkHttpClient;
 
 public class UpdatedIssues {
 
