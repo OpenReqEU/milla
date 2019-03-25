@@ -10,13 +10,16 @@ import java.util.ArrayList;
 
 public class ImportHTML
 {
-    public static ArrayList<String> importPage(String urlString)
+    public static ArrayList<String> importPage(String urlString, String credentials)
     {
         ArrayList<String> page = new ArrayList<String>();
         try
-        {
+        {	
             URL url = new URL(urlString);
             URLConnection connection = url.openConnection();
+            if (credentials!=null) {
+            	connection.setRequestProperty("Authorization", credentials);
+            }
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String inputLine;
             while((inputLine = in.readLine()) != null)

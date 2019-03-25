@@ -2,15 +2,24 @@ package eu.openreq.milla.qtjiraimporter;
 
 import com.google.gson.*;
 
+import okhttp3.Credentials;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 /**
  * This class gets all the issues of a project. Since the issues are enumerated
@@ -26,10 +35,21 @@ public class ProjectIssues {
 	private int _maxProjectIssues;
 	// the REST API URI
 	private String _PROJECT_ISSUES_URL;
+	
+	private String credentials;
+	
 
-	public ProjectIssues(String project) throws IOException {
+	public ProjectIssues(String project, String username, String password) throws IOException {
+	
+		credentials = null;
+		
+		if (username!=null && password!=null) {
+			credentials = Credentials.basic(username, password);
+		}
+		System.out.println(credentials);
+		
 		_project = project;
-		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project);
+		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project, credentials);
 		_maxProjectIssues = numberOfIssues.getNumberOfIssues();
 		_PROJECT_ISSUES_URL = "https://bugreports.qt.io/rest/api/2/issue/" + _project + "-%d";
 	}
@@ -42,7 +62,23 @@ public class ProjectIssues {
 	 * @throws IOException
 	 */
 	public Collection<JsonElement> collectIssues(int start, int end) throws IOException {
-		OkHttpClient client = new OkHttpClient();
+		OkHttpClient client = new OkHttpClient.Builder()
+				.addInterceptor(new Interceptor() {
+					@Override
+                    public Response intercept(Chain chain) throws IOException {
+                        Request request = chain.request();
+                        if (credentials!=null) {
+                        	request = request.newBuilder()
+                        			.addHeader("Authorization", credentials)
+                        			.addHeader("Content-Type", "application/json")
+                        			.build();
+                        	
+                        }
+                        return chain.proceed(request);
+					}
+				})
+				.build();
+		
 		Run run = new Run();
 		Gson issueJSON = new Gson();
 		

@@ -49,6 +49,12 @@ public class MillaController {
 
 	@Value("${milla.mallikasAddress}")
 	private String mallikasAddress;
+	
+	@Value("${jira.username}")
+	private String jiraUsername;
+	
+	@Value("${jira.password}")
+	private String jiraPassword;
 
 	@Autowired
 	FormatTransformerService transformer;
@@ -598,7 +604,7 @@ public class MillaController {
 	@PostMapping(value = "qtjira")
 	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException {
 
-		ProjectIssues projectIssues = new ProjectIssues(projectId);
+		ProjectIssues projectIssues = new ProjectIssues(projectId, jiraUsername, jiraPassword);
 		
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
