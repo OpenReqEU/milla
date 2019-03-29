@@ -53,10 +53,10 @@ public class FileService {
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter("logs/proposedDependencyUpdates.log", true))) {
 			for (Dependency dep : dependencies) {
 				if (dep.getStatus()!=null && dep.getStatus().equals(Dependency_status.ACCEPTED)) {
-					writer.append("ACCEPTED " + dep.getId() + " " + dep.getDependency_type() + "\n");
+					writer.append("ACCEPTED " + dep.getFromid() + "_" + dep.getToid() + " " + dep.getDependency_type() + "\n");
 				} 
 				if (dep.getStatus()!=null && dep.getStatus().equals(Dependency_status.REJECTED)) {
-					writer.append("REJECTED " + dep.getId() + " " + dep.getDependency_type() + "\n");
+					writer.append("REJECTED " + dep.getFromid() + "_" + dep.getToid() + " " + dep.getDependency_type() + "\n");
 				}
 			}
 			writer.close();

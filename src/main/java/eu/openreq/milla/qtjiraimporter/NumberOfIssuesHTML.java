@@ -10,18 +10,20 @@ public class NumberOfIssuesHTML
     private int _numberOfIssues;
     private String _URL;
     private String _project;
+    private String credentials;
 
-    public NumberOfIssuesHTML(String project)
+    public NumberOfIssuesHTML(String project, String userCredentials)
     {
         _URL = "https://bugreports.qt.io/projects/"+ project +"/issues/?filter=allissues"; //A better way?: _URL = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project + "&orderBy=-created&maxResults=1";
         _project = project;
         _numberOfIssues = detectNumberOfIssues();
+        credentials = userCredentials;
     }
 
     private int detectNumberOfIssues()
     {
         int projectStringlength = _project.length();
-        ArrayList<String> page = ImportHTML.importPage(_URL);
+        ArrayList<String> page = ImportHTML.importPage(_URL, credentials);
         for (String line : page)
         {
             if(line.contains("\\\"issueKeys\\\":"))
