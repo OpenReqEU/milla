@@ -17,9 +17,10 @@ public class SwaggerConfig {
     @Bean
     public Docket productApi() {
         return new Docket(DocumentationType.SWAGGER_2)
+        		.host("ai.openreq.eu/milla")
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("eu.openreq.milla.controllers"))    
-                .paths(PathSelectors.any())  
+                .paths(PathSelectors.any())
                 .build()
                 .apiInfo(metaData());
              
