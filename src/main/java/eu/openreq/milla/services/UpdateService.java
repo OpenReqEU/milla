@@ -1,12 +1,14 @@
 package eu.openreq.milla.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,7 @@ public class UpdateService {
 
 	private FormatTransformerService transformer;
 
+	@Autowired
 	private MallikasService mallikasService;
 
 	private int start = 100;
@@ -128,8 +131,7 @@ public class UpdateService {
 	 * @return
 	 */
 	private Requirement getOldRequirementFromMallikas(String id) {
-		String url = mallikasAddress + "/one";
-		String requirementString = mallikasService.getOneRequirementFromMallikas(url, id);
+		String requirementString = mallikasService.getSelectedRequirements(Arrays.asList(id));
 		if (requirementString != null) {
 			try {
 				JSONParser.parseToOpenReqObjects(requirementString);

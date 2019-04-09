@@ -7,9 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,9 +29,6 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 public class QtController {
 	
-	@Value("${milla.mallikasAddress}")
-	private String mallikasAddress;
-	
 	@Value("${milla.mulperiAddress}")
 	private String mulperiAddress;
 
@@ -42,6 +37,9 @@ public class QtController {
 	
 	@Autowired
 	MillaController millaController;
+	
+	@Autowired
+	RestTemplate rt;
 	
 	@ApiOperation(value = "Get the transitive closure of a requirement",
 			notes = "Returns the transitive closure of a given requirement to the depth of 5",
@@ -52,13 +50,10 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTransitiveClosureOfRequirement")
 	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam String requirementId) throws IOException {
-		RestTemplate rt = new RestTemplate();
 
 		String completeAddress = mulperiAddress + "/models/findTransitiveClosureOfRequirement";
-		
-		String response = null;
 		try {
-			response = rt.postForObject(completeAddress, requirementId, String.class);		
+			String response = rt.postForObject(completeAddress, requirementId, String.class);		
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
@@ -69,7 +64,8 @@ public class QtController {
 
 	}
 	
-	@ApiOperation(value = "Get the dependencies of a requirement",
+	@ApiOperation(value = "Get the dependencies of a requirement", notes = "Get the dependencies of a requirement, with "
+			+ "minimum score and max results as params",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
@@ -85,21 +81,19 @@ public class QtController {
 		params.setRequirementIds(reqIds);
 		params.setScoreThreshold(scoreThreshold);
 		params.setMaxDependencies(maxResults);
-		
-		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";
 
-		String reqsWithDependencyType = mallikasService.sendRequestWithParamsToMallikas(params,
-				completeAddress);
+		String reqsWithDependencyType = mallikasService.requestWithParams(params, "dependencies");
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
 			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
 		}
-		ResponseEntity<String> response = new ResponseEntity<>(reqsWithDependencyType, HttpStatus.FOUND);
-		return response;
+		return new ResponseEntity<>(reqsWithDependencyType, HttpStatus.FOUND);
+		
 
 	}
 	
-	@ApiOperation(value = "Get concistency check for the transitive closure of a requirement",
+	@ApiOperation(value = "Get consistency check for the transitive closure of a requirement", notes = "First the transitive closure is created, then"
+			+ "a consistency check is performed on it.",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
@@ -107,26 +101,21 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getConsistencyCheckForRequirement")
 	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam String requirementId) throws IOException {
-		
-		RestTemplate rt = new RestTemplate();
-		
 		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure";
-
-		String response = null;
 		try {
-			response = rt.postForObject(completeAddress, requirementId, String.class);
+			String response = rt.postForObject(completeAddress, requirementId, String.class);
+			return new ResponseEntity<>(response, HttpStatus.FOUND);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 		catch (Exception e) {
 			return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-
-		return new ResponseEntity<>(response, HttpStatus.FOUND);
+		
 
 	}
 	
-	@ApiOperation(value = "Get top X proposed dependencies of a requirement",
+	@ApiOperation(value = "Get top X proposed dependencies of a requirement", notes = "Get the top dependencies as proposed by detection services", 
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
@@ -135,15 +124,13 @@ public class QtController {
 	@GetMapping(value = "/getTopProposedDependenciesOfRequirement")
 	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, @RequestParam Integer maxResults) throws IOException {
 		
-		String completeAddress = mallikasAddress + "/onlyDependenciesByParams";
-		
 		RequestParams params = new RequestParams();
 		params.setRequirementIds(requirementId);
 		params.setProposedOnly(true);
 		params.setMaxDependencies(maxResults);
 		
-		String reqWithTopProposed = mallikasService.sendRequestWithParamsToMallikas(params,
-				completeAddress);
+		String reqWithTopProposed = mallikasService.requestWithParams(params,
+				"dependencies");
 
 		if (reqWithTopProposed == null || reqWithTopProposed.equals("")) {
 			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
@@ -165,21 +152,15 @@ public class QtController {
 	//@ResponseBody
 	@PostMapping(value = "updateProject")
 	public ResponseEntity<?> updateWholeProject(@RequestBody String projectId) throws IOException {
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		ResponseEntity<?> response = null;
-
 		try {
-			response = millaController.importFromQtJira(projectId);
+			ResponseEntity<?> response = millaController.importFromQtJira(projectId);
 			if(response!=null) {
 				return millaController.sendProjectToMulperi(projectId);
 			}
+			return response;
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Error in updating the whole project " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		return response;
 	}
 	
 	
@@ -195,18 +176,11 @@ public class QtController {
 			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
 	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestBody String projectId) throws IOException {
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		ResponseEntity<?> response = null;
-
 		try {
-			response = millaController.importUpdatedFromQtJira(projectId);
+			return millaController.importUpdatedFromQtJira(projectId);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Error in updating the most recent issues " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		return response;
 	}
 	
 	/**
@@ -216,7 +190,7 @@ public class QtController {
 	 * @return
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Update proposed depencies (were they accepted or rejected?)",
+	@ApiOperation(value = "Update proposed dependencies by user input", notes = "Update proposed dependencies, were they accepted or rejected?",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
@@ -224,19 +198,15 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@PostMapping(value = "updateProposedDependencies")
 	public ResponseEntity<?> updateProposedDependencies(@RequestBody String dependencies) throws IOException {
-		
-		String completeAddress = mallikasAddress + "/updateDependencies?userInput=true";
-
 		String updated = null;
 		
 		try {
-			updated = mallikasService.updateSelectedDependencies(dependencies, completeAddress, true);
-
+			updated = mallikasService.convertAndUpdateDependencies(dependencies, false, true);
+			return new ResponseEntity<>(updated, HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		ResponseEntity<String> response = new ResponseEntity<>(updated, HttpStatus.OK);
-		return response;
+
 	}
 
 }

@@ -28,12 +28,13 @@ public class SwaggerConfig {
     private ApiInfo metaData() {
       return new ApiInfoBuilder()
               .title("Milla")
+              .version("1.13")
               .description("Milla is mostly Qt Jira-specific orchestrator service for the OpenReq Qt trial that operates between Qt Jira and the OpenReq infrastructure. Milla has five main functionalities divided into three different controllers. <br>\r\n" + 
-                	"<b>Milla controller:</b><br>" +
-              		"1) Milla fetches all or updated data from Qt Jira and stores in a caching manner the data in the Mallikas database service.  <br>\r\n" + 
-              		"2) Milla orchestrates the communication to Mallikas database service so that a project, requirement etc. can be manipulated (CRUD manner) in Mallikas database service in OpenReq JSON format. <br>\r\n" + 
-              		"3) Milla orchestrates the data from Mallikas database service to Mulperi service in order to manage dependencies, carry out analyses etc.  <br>\r\n" + 
-              		"<b>Detection controller:</b><br>" +
+                	"<b>Milla controller:</b>" +
+                	"<br>1) Milla fetches all or updated data from Qt Jira and stores in a caching manner the data in the Mallikas database service. " + 
+              		"<br>2) Milla orchestrates the communication to Mallikas database service so that a project, requirement etc. can be manipulated (CRUD manner) in Mallikas database service in OpenReq JSON format." + 
+              		"<br>3) Milla orchestrates the data from Mallikas database service to Mulperi service in order to manage dependencies, carry out analyses etc. \n" + 
+              		"<br><b>Detection controller:</b><br>" +
               		"4) Milla calls the natural language processing services of OpenReq infrastructre that can detect from the requirements text hidden or implicit dependencies to other requirements.  <br>\r\n" + 
               		"<b>Qt controller:</b><br>" +
             		"5) Milla provides the access point for the Qt Jira dependency browser in the Qt trial. <br>\r\n" )
