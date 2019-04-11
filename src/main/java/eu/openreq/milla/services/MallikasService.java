@@ -1,12 +1,13 @@
 package eu.openreq.milla.services;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -32,16 +33,27 @@ public class MallikasService {
 	@Autowired
 	RestTemplate rt;
 	
+	public String getListOfProjects() {
+		try {
+			return rt.getForObject(mallikasAddress + "/listOfProjects", String.class);
+		}
+		catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
+			return e.getResponseBodyAsString();
+		}
+	}
+	
 	/**
 	 * Send request to Mallikas to get all Requirements in the database
 	 * @return
 	 */
 	public String getAllRequirements() {
-	
 		try {
 			return rt.getForObject(mallikasAddress + "/allRequirements", String.class);
 		}
 		catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
 			e.printStackTrace();
 			return e.getResponseBodyAsString();
 		}
@@ -68,9 +80,10 @@ public class MallikasService {
 	 * @param projectId Id of the Project
 	 * @return String containing all requirements and their dependencies in the same project
 	 */
-	public String getAllRequirementsInProject(String projectId) {	
+	public String getAllRequirementsInProject(String projectId, boolean includeProposed) {	
 		try {
-			return rt.getForObject(mallikasAddress + "/projectRequirements?projectId=" + projectId, String.class);	
+			return rt.getForObject(mallikasAddress + "/projectRequirements?projectId=" + projectId + 
+					"&includeProposed=" + includeProposed, String.class);	
 		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
@@ -93,28 +106,40 @@ public class MallikasService {
 		}
 	}
 	
+	/**
+	 * Post the project to Mallikas
+	 * @param project
+	 * @return
+	 */
 	public String postProject(Project project) {
 		try {
-			return rt.postForEntity(mallikasAddress + "/importProject", project, String.class).getBody();
+			return rt.postForObject(mallikasAddress + "/importProject", project, String.class);
 
 		} catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
 			return e.getResponseBodyAsString();
 		}
 	}
 	
+	/**
+	 * Post the requirements to be updated in Mallikas
+	 * @param requirements
+	 * @return
+	 */
 	public String updateRequirements(Collection<Requirement> requirements) {
 		try {
 			return rt.postForObject(mallikasAddress + "/updateRequirements", requirements, String.class);	
 		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
-			return e.getMessage();
+			return e.getResponseBodyAsString();
 		}
 			
 	}
 	
 	/**
-	 * Send updated dependencies as a String to Mallikas
+	 * Post the dependencies to be updated in Mallikas, along with some params used in saving
 	 * @param dependencies
 	 * @param proposed
 	 * @param userInput
@@ -138,7 +163,9 @@ public class MallikasService {
 			return "Update successful!";
 
 		} catch (HttpClientErrorException e) {
-			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " "+ e.getStatusCode();
+			System.out.println("Error " + e);
+			e.printStackTrace();
+			return e.getResponseBodyAsString();
 		}
 	}
 	
@@ -147,6 +174,25 @@ public class MallikasService {
 		return updateDependencies(convertedDependencies, proposed, userInput);
 	}
 	
+	/**
+	 * Post the ids of the updated requirements to Mallikas so that the Project object can be updated. 
+	 * @param reqIds
+	 * @param projectId
+	 * @return
+	 */
+	public String updateReqIds(Collection<String> reqIds, String projectId) {
+		Map<String, Collection<String>> updatedReqs = new HashMap<String, Collection<String>>();
+		updatedReqs.put(projectId, reqIds);
+		
+		try {	
+			return rt.postForObject(mallikasAddress + "/updateProjectSpecifiedRequirements?projectId=" + projectId, updatedReqs, String.class);
+		} catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
+			return e.getResponseBodyAsString();
+		}
+		
+	}
 
 	/**
 	 * Parse JSON String to Dependencies

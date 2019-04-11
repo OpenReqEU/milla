@@ -78,7 +78,7 @@ public class DetectionController {
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
-		String requirements = mallikasService.getAllRequirementsInProject(projectId);
+		String requirements = mallikasService.getAllRequirementsInProject(projectId, false);
 		String receiveAddress = millaAddress + "/receiveAddReqResponse";
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/DB/AddReqs?url=" + receiveAddress;
 		
@@ -184,7 +184,7 @@ public class DetectionController {
 			+ "<br><b>Parameters:</b>"
 			+ "<br>compare: Whether the text attribute is used in comparison"
 			+ "<br>projectId: The project id in Mallikas."
-			+ "<br>reqIds: The ids of the requirements that are to be compared to other requirements in the project."
+			+ "<br>requirementId: The ids of the requirements that are to be compared to other requirements in the project."
 			+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
 	@PostMapping(value = "detectSimilarityReqProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
@@ -276,7 +276,7 @@ public class DetectionController {
 			if (ids!=null) {
 				jsonString = mallikasService.getSelectedRequirements(ids);
 			} else {
-				jsonString = mallikasService.getAllRequirementsInProject(projectId);
+				jsonString = mallikasService.getAllRequirementsInProject(projectId, false);
 			}
 			if(jsonString!=null) {
 				HttpHeaders headers = new HttpHeaders();

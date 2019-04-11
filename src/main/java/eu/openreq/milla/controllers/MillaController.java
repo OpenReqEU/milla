@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,7 +79,6 @@ public class MillaController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-
 		String completeAddress = mulperiAddress + "/models/requirementsToChoco";
 
 		HttpEntity<String> entity = new HttpEntity<String>(data, headers);
@@ -90,36 +90,36 @@ public class MillaController {
 
 	}
 
-	/**
-	 * Fetch Requirements by params given from Mallikas, and send
-	 * to Mulperi
-	 * 
-	 * @param
-	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 */
-	@ApiOperation(value = "Construct a transitive closure by sending all requirements of the selected project to Mulperi", 
-	notes = "<b>Functionality</b>: All requirements of a project are fetched from Mallikas database and sent to Mulperi to construct a transitive closure."
-			+ "<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br>"
-			+ "<b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br>"
-			+ "<br><b>Parameters: </b>"
-			+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
-			+ "<br>includeProposedDependencies: Whether to fetch dependencies with the status 'proposed'")
-	@PostMapping(value = "sendProjectToMulperiWithParams")
-	public ResponseEntity<?> sendProjectToMulperiWithParams(@RequestParam String projectId, @RequestParam boolean includeProposedDependencies) throws IOException {
-
-		RequestParams params = new RequestParams();
-		
-		params.setProjectId(projectId);
-		params.setIncludeProposed(includeProposedDependencies);
-		
-		String reqsInProject = mallikasService.requestWithParams(params, "requirements");
-
-		if (reqsInProject == null) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
-		}
-		return this.postToMulperi(reqsInProject);
-	}
+//	/**
+//	 * Fetch Requirements by params given from Mallikas, and send
+//	 * to Mulperi
+//	 * 
+//	 * @param
+//	 * @return ResponseEntity<?>
+//	 * @throws IOException
+//	 */
+//	@ApiOperation(value = "Construct a transitive closure by sending all requirements of the selected project to Mulperi", 
+//	notes = "<b>Functionality</b>: All requirements of a project are fetched from Mallikas database and sent to Mulperi to construct a transitive closure."
+//			+ "<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br>"
+//			+ "<b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br>"
+//			+ "<br><b>Parameters: </b>"
+//			+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
+//			+ "<br>includeProposedDependencies: Whether to fetch dependencies with the status 'proposed'")
+//	@PostMapping(value = "sendProjectToMulperiWithParams")
+//	public ResponseEntity<?> sendProjectToMulperiWithParams(@RequestParam String projectId, @RequestParam boolean includeProposedDependencies) throws IOException {
+//
+//		RequestParams params = new RequestParams();
+//		
+//		params.setProjectId(projectId);
+//		params.setIncludeProposed(includeProposedDependencies);
+//		
+//		String reqsInProject = mallikasService.requestWithParams(params, "requirements");
+//
+//		if (reqsInProject == null) {
+//			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+//		}
+//		return this.postToMulperi(reqsInProject);
+//	}
 	
 	/**
 	 * Fetch Requirements that are in the selected Project from Mallikas, and send
@@ -129,8 +129,9 @@ public class MillaController {
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Construct a transitive closure by sending all requirements of the selected project to Mulperi", 
-	notes = "<b>Functionality</b>: All requirements of a project are fetched from Mallikas database and sent to Mulperi to construct a transitive closure."
+	@ApiOperation(value = "Send all requirements of the selected project to Mulperi.", 
+	notes = "<b>Functionality</b>: All requirements of a project, excluding their proposed dependencies, are fetched from Mallikas database "
+			+ "and sent to Mulperi to construct a transitive closure. "
 			+ "<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br>"
 			+ "<b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br>"
 			+ "<br><b>Parameter: </b>"
@@ -138,7 +139,7 @@ public class MillaController {
 	@PostMapping(value = "sendProjectToMulperi")
 	public ResponseEntity<?> sendProjectToMulperi(@RequestParam String projectId) throws IOException {
 
-		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId);
+		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false);
 
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
@@ -179,6 +180,7 @@ public class MillaController {
 	 * @param dependencies
 	 *            Collection<Dependency> received as a parameter, requirements to be
 	 *            saved into the database
+	 * @param isProposed           
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
@@ -219,7 +221,6 @@ public class MillaController {
 //	//@ResponseBody
 //	@PostMapping(value = "project")
 	private ResponseEntity<?> postProjectToMallikas(@RequestBody Project project) throws IOException {
-
 		try {
 			mallikasService.postProject(project);
 			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
@@ -229,39 +230,41 @@ public class MillaController {
 	}
 
 	/**
-	 * Fetch Requirements that are in the selected Project
+	 * Fetch all requirements of the project defined
 	 * 
-	 * @param
+	 * @param projectId
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Fetch all requirements  of a project in OpenReq JSON format.", 
+	@ApiOperation(value = "Fetch all requirements of a project in OpenReq JSON format.", 
 			notes = "<b>Functionality</b>: Fetch all requirements of a project including their dependencies that are cached in Mallikas database in the OpenReq JSON format."
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the project including requirements and dependencies is produced."
 					+ "<br><b>Parameter: </b>"
-					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
+					+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
+					+ "<br>includeProposed: Whether to fetch proposed dependencies")
 	@GetMapping(value = "requirementsInProject")
-	public ResponseEntity<?> getRequirementsInProject(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<?> getRequirementsInProject(@RequestParam String projectId, @RequestParam(required = false)
+			boolean includeProposed) throws IOException {
 
-		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId);
+		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, includeProposed);
 
 		if (reqsInProject == null || reqsInProject.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
 		}
 		return new ResponseEntity<String>(reqsInProject, HttpStatus.FOUND);
 	}
 
 	/**
-	 * Fetch a List of selected Requirements from Mallikas
+	 * Fetch a list of selected Requirements from Mallikas
 	 * 
-	 * @param project
-	 *            Project received as a parameter
-	 * @return ResponseEntity<?>
+	 * @param ids
+	 * @return ResponseEntity
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch a specified set of requirements in OpenReq JSON format.", 
-	notes = "<b>Functionality</b>: Fetch a specied requirements including their dependencies that are cached in Mallikas database in the OpenReq JSON format."
+	notes = "<b>Functionality</b>: Fetch specified requirements and their dependencies that are cached in Mallikas database "
+			+ "in OpenReq JSON format."
 			+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 			+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 			+ "<br><b>Parameter: </b>"
@@ -272,16 +275,16 @@ public class MillaController {
 		String reqsWithIds = mallikasService.getSelectedRequirements(ids);
 
 		if (reqsWithIds == null || reqsWithIds.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
 		}
 		return new ResponseEntity<String>(reqsWithIds, HttpStatus.FOUND);
 	}
 	
 	/**
-	 * Fetch a list of requirements from the database based on a list of various parameters.
+	 * Fetch a list of requirements from the database based on various parameters.
 	 * 
-	 * @param type
-	 * @return
+	 * @param params
+	 * @return ResponseEntity<String>
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch requirements based on various parameters posted in JSON format.", 
@@ -289,21 +292,21 @@ public class MillaController {
 					+ "<br><b>Precondition</b>: The project has been cached in Mallikas."
 					+ "<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced."
 					+ "<br><b>Parameter: </b>"
-					+ "<br>requestParams: Parameters object containing various parameters")
+					+ "<br>params: RequestParams object containing various parameters to be used in database query")
 	@PostMapping(value = "requirementsByParams")
 	public ResponseEntity<?> getRequirementsByParams(@RequestBody RequestParams params) throws IOException {
 		String reqsWithDependencyType = mallikasService.requestWithParams(params,
 				"requirements");
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.OK);
 		}
 		return new ResponseEntity<String>(reqsWithDependencyType, HttpStatus.FOUND);
 	}
 
 	/**
-	 * Uses QtJiraImporter to get the issues of a selected project in OpenReq JSON
-	 * format and sends them to Mallikas database.
+	 * Use QtJiraImporter to get the issues of a selected project in OpenReq JSON
+	 * format and send them to Mallikas database.
 	 * 
 	 * @param projectId,
 	 *            ID of the selected project
@@ -313,18 +316,18 @@ public class MillaController {
 	@ApiOperation(value = "Import a selected project from Qt Jira and store a cache of the project in Mallikas", 
 			notes = "<b>Functionality</b>: This is the full data import from Qt Jira. "
 					+ "A selected project including its issues are fetched from Qt Jira. "
-					+ "The data is converted to OpenReq JSON requirements and dependencies, and OpenReq JSON project is constructed."
-					+ "The project including its requirements and dependencies is cached to Mallikas database"
+					+ "The data is converted to OpenReq JSON requirements and dependencies, and OpenReq JSON project is constructed. "
+					+ "The project, including its requirements and dependencies, is cached to Mallikas database"
 					+ "<br><b>Postcondition</b>: The selected project is cached in Mallikas to be managed in the OpenReq infrastructure. "
 					+ "The same project name (id) is used in Qt Jira and Mallikas."
-					+ "<br><b>Note:</b> For update rather than full import, see \"qtjiraUpdated\", which is  more efficient for large projects.</b>"
+					+ "<br><b>Note:</b> For update rather than full import, see \"qtJiraUpdated\", which is  more efficient for large projects.</b>"
 					+ "<br><b>Parameter: </b>"
 					+ "<br>projectId: The id of the project to be fetched from Qt Jira (e.g., QTWB).", 
 					response = String.class)
 	@ApiResponses(value = { @ApiResponse(code = 201, message = "Success, all requirements and dependencies downloaded"),
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
-	@PostMapping(value = "qtjira")
+	@PostMapping(value = "qtJira")
 	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException {
 
 		ProjectIssues projectIssues = new ProjectIssues(projectId, jiraUsername, jiraPassword);
@@ -403,7 +406,7 @@ public class MillaController {
 	/**
 	 * Fetch all Requirements and Dependencies from Mallikas
 	 * 
-	 * @return
+	 * @return ResponseEntity<String>
 	 * @throws IOException
 	 */
 //	@ApiOperation(value = "Fetch all requirements including their dependencies from the Mallikas database in OpenReq JSON format.", 
@@ -417,12 +420,10 @@ public class MillaController {
 	@GetMapping(value = "allRequirements")
 	@ApiIgnore
 	public ResponseEntity<?> getAllRequirements() throws IOException {
-
-
 		String allRequirements = mallikasService.getAllRequirements();
 
 		if (allRequirements == null || allRequirements.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
 		}
 		return new ResponseEntity<String>(allRequirements, HttpStatus.FOUND);
 	}
@@ -434,11 +435,12 @@ public class MillaController {
 	 * 
 	 * @param projectId,
 	 *            ID of the selected project
-	 * @return ResponseEntity if successful
+	 * @return ResponseEntity
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Import the updated issues from Qt Jira to Mallikas.", 
-			notes = "<b>Functionality</b>: Import the updated Jira issues of a project from Qt Jira and send the issues as OpenReq JSON requirements and dependencies to be cached in Mallikas database"
+	@ApiOperation(value = "Import updated issues from Qt Jira to Mallikas.", 
+			notes = "<b>Functionality</b>: Import the updated Jira issues of a project from Qt Jira and send the issues as "
+					+ "OpenReq JSON requirements and dependencies to be cached in Mallikas database"
 			+ "<br><b>Precondition</b>: The project has been cached in Mallikas.<br>"
 			+ "<b>Postcondition</b>: New or changed Jira issues are updated to Mallikas<br>"
 			+ "<b>Exception</b>: This is not full synchronization."
@@ -457,6 +459,12 @@ public class MillaController {
 		person.setEmail("dummyEmail");
 		
 		try {
+			String response = mallikasService.getListOfProjects();
+			if (!response.contains(projectId)) {
+				Project project = transformer.createProject(projectId, new ArrayList<String>());
+				mallikasService.postProject(project);
+			}
+			
 			return updateService.getAllUpdatedIssues(projectId, person);
 		} catch (IOException e) {
 			e.printStackTrace();

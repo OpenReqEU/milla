@@ -16,14 +16,10 @@ public class UpdatedIssues {
 	// HashMap to save in the Issue identifier and the JSON of the issue
 	private HashMap<String, JsonElement> _projectIssues;
 	// name of the project
-	private String _project;
 	private String singleIssueUrl;
-
-	private String projectIssuesUrl;
 
 	public UpdatedIssues(String project) throws IOException {
 		_projectIssues = new HashMap<String, JsonElement>();
-		_project = project;
 		singleIssueUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project + "+order+by+updated+DESC&maxResults=1&startAt=";
 	}
 
@@ -46,7 +42,6 @@ public class UpdatedIssues {
 		if (responseJSON != null) {
 			projectJSON = gson.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
 			JsonArray issuesInProjectJSON = projectJSON.getAsJsonArray("issues");
-			System.out.println("issuesInProjectJSON.size is " + issuesInProjectJSON.size());
 			if (issuesInProjectJSON.size()>0) {
 				element = issuesInProjectJSON.get(0);
 			}
@@ -55,33 +50,36 @@ public class UpdatedIssues {
 	}
 
 	/**
-	 * Fetches 100-1000 updated Issues from Qt Jira
+	 * Fetches ALL updated Issues from Qt Jira
 	 * @param project
 	 * @param amount
 	 * @throws IOException
 	 */
-	public void collectAllUpdatedIssues(String project, int amount) throws IOException {
+	public void collectAllUpdatedIssues(String project, int current) throws IOException {
 		OkHttpClient client = new OkHttpClient();
 		Run run = new Run();
-		projectIssuesUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project
-				+ "+order+by+updated+DESC&maxResults=" + amount + "&startAt=0";
+		
+		String projectIssuesUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project
+				+ "+order+by+updated+DESC&maxResults=1000&startAt=" + current;
 
 		String responseJSON = run.run(projectIssuesUrl, client);
 		if(responseJSON!=null) {
-		Gson gson = new Gson();
-		JsonObject projectJSON = gson.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
-		JsonArray issuesInProjectJSON = projectJSON.getAsJsonArray("issues");
-		for (int i = 0; i < issuesInProjectJSON.size(); i++) {
-			JsonObject issueJSON = issuesInProjectJSON.get(i).getAsJsonObject();
-				String issueKey = issueJSON.get("key").getAsString();
-				_projectIssues.put(issueKey, issueJSON);
-	
+			Gson gson = new Gson();
+			JsonObject projectJSON = gson.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
+			JsonArray issuesInProjectJSON = projectJSON.getAsJsonArray("issues");
+			for (int i = 0; i < issuesInProjectJSON.size(); i++) {
+				JsonObject issueJSON = issuesInProjectJSON.get(i).getAsJsonObject();
+					String issueKey = issueJSON.get("key").getAsString();
+					_projectIssues.put(issueKey, issueJSON);
+			}
 		}
-		}
-
 	}
 
 	public Collection<JsonElement> getProjectIssues() {
 		return _projectIssues.values();
+	}
+	
+	public void clearIssues() {
+		_projectIssues.clear();
 	}
 }

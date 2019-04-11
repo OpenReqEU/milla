@@ -42,7 +42,7 @@ public class QtController {
 	RestTemplate rt;
 	
 	@ApiOperation(value = "Get the transitive closure of a requirement",
-			notes = "Returns the transitive closure of a given requirement to the depth of 5",
+			notes = "Returns the transitive closure of a given requirement up to the depth of 5",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
@@ -143,18 +143,18 @@ public class QtController {
 	/**
 	 * Fetches specified project from Qt Jira and sends it to Mallikas. Then posts the project to Mulperi and KeljuCaas for the transitive closure.
 	 * 
-	 * @param project
+	 * @param projectId
 	 *            Project received as a parameter
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas", notes = "Post a Project to Mallikas database and KeljuCaas")
-	//@ResponseBody
+	@ApiOperation(value = "Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas", 
+			notes = "Post a Project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateProject")
 	public ResponseEntity<?> updateWholeProject(@RequestBody String projectId) throws IOException {
 		try {
 			ResponseEntity<?> response = millaController.importFromQtJira(projectId);
-			if(response!=null) {
+			if (response!=null) {
 				return millaController.sendProjectToMulperi(projectId);
 			}
 			return response;
@@ -165,9 +165,9 @@ public class QtController {
 	
 	
 	/**
-	 * Fetches specified project from Qt Jira and sends it to Mallikas. Then posts the project to Mulperi and KeljuCaas for the transitive closure.
+	 * Fetches recent issues of the specified project from Qt Jira and sends them to Mallikas.
 	 * 
-	 * @param project
+	 * @param projectId
 	 *            Project received as a parameter
 	 * @return ResponseEntity<?>
 	 * @throws IOException
@@ -177,7 +177,11 @@ public class QtController {
 	@PostMapping(value = "updateRecentInProject")
 	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestBody String projectId) throws IOException {
 		try {
-			return millaController.importUpdatedFromQtJira(projectId);
+			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);
+			if (response!=null) {
+				return millaController.sendProjectToMulperi(projectId);
+			}
+			return response;
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Error in updating the most recent issues " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
@@ -187,10 +191,11 @@ public class QtController {
 	 * Updates the type and status of the proposed dependencies provided
 	 * 
 	 * @param dependencies
-	 * @return
+	 * @return ResponseEntity
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Update proposed dependencies by user input", notes = "Update proposed dependencies, were they accepted or rejected?",
+	@ApiOperation(value = "Update proposed dependencies by user input", notes = "Update proposed dependencies, were they accepted or rejected? "
+			+ "If accepted, what is the type?",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
@@ -198,10 +203,8 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@PostMapping(value = "updateProposedDependencies")
 	public ResponseEntity<?> updateProposedDependencies(@RequestBody String dependencies) throws IOException {
-		String updated = null;
-		
 		try {
-			updated = mallikasService.convertAndUpdateDependencies(dependencies, false, true);
+			String updated = mallikasService.convertAndUpdateDependencies(dependencies, false, true);
 			return new ResponseEntity<>(updated, HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
