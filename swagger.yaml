@@ -10,8 +10,6 @@ tags:
     description: Qt Controller
   - name: milla-controller
     description: Milla Controller
-  - name: testing-controller
-    description: Testing Controller
   - name: detection-controller
     description: Detection Controller
 paths:
@@ -91,7 +89,7 @@ paths:
       tags:
         - detection-controller
       summary: Detect similarity of one requirement against all other requirements of a project using UPC Similarity Detection
-      description: '<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between one specified requirements in to project to all other requirements. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>compare: Whether the text attribute is used in comparison<br>projectId: The project id in Mallikas.<br>reqIds: The ids of the requirements that are to be compared to other requirements in the project.<br>threshold: The minimum score for similarity detection (e.g. 0.3).'
+      description: '<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between one specified requirements in to project to all other requirements. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>compare: Whether the text attribute is used in comparison<br>projectId: The project id in Mallikas.<br>requirementId: The ids of the requirements that are to be compared to other requirements in the project.<br>threshold: The minimum score for similarity detection (e.g. 0.3).'
       operationId: postRequirementsToUPCSimilarityDetectionReqProjectUsingPOST
       consumes:
         - application/json
@@ -168,27 +166,6 @@ paths:
             type: object
         '201':
           description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /example/gui:
-    get:
-      tags:
-        - testing-controller
-      summary: exampleGUI
-      operationId: exampleGUIUsingGET
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: string
         '401':
           description: Unauthorized
         '403':
@@ -317,7 +294,7 @@ paths:
       tags:
         - qt-controller
       summary: Get the transitive closure of a requirement
-      description: Returns the transitive closure of a given requirement to the depth of 5
+      description: Returns the transitive closure of a given requirement up to the depth of 5
       operationId: getTransitiveClosureOfRequirementUsingGET
       consumes:
         - application/json
@@ -379,47 +356,12 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /qtJiraUpdated:
-    post:
-      tags:
-        - milla-controller
-      summary: Import the updated issues from Qt Jira to Mallikas.
-      description: '<b>Functionality</b>: Import the updated Jira issues of a project from Qt Jira and send the issues as OpenReq JSON requirements and dependencies to be cached in Mallikas database<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: New or changed Jira issues are updated to Mallikas<br><b>Exception</b>: This is not full synchronization.<br><b>Parameter: </b><br>projectId: The id of the Qt Jira project (e.g., QTWB).'
-      operationId: importUpdatedFromQtJiraUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - in: body
-          name: projectId
-          description: projectId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 'Success, all updated requirements and dependencies downloaded'
-          schema:
-            type: string
-        '201':
-          description: Created
-        '400':
-          description: 'Failure, ex. malformed JSON'
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-        '500':
-          description: 'Failure, ex. invalid URLs'
-  /qtjira:
+  /qtJira:
     post:
       tags:
         - milla-controller
       summary: Import a selected project from Qt Jira and store a cache of the project in Mallikas
-      description: '<b>Functionality</b>: This is the full data import from Qt Jira. A selected project including its issues are fetched from Qt Jira. The data is converted to OpenReq JSON requirements and dependencies, and OpenReq JSON project is constructed.The project including its requirements and dependencies is cached to Mallikas database<br><b>Postcondition</b>: The selected project is cached in Mallikas to be managed in the OpenReq infrastructure. The same project name (id) is used in Qt Jira and Mallikas.<br><b>Note:</b> For update rather than full import, see "qtjiraUpdated", which is  more efficient for large projects.</b><br><b>Parameter: </b><br>projectId: The id of the project to be fetched from Qt Jira (e.g., QTWB).'
+      description: '<b>Functionality</b>: This is the full data import from Qt Jira. A selected project including its issues are fetched from Qt Jira. The data is converted to OpenReq JSON requirements and dependencies, and OpenReq JSON project is constructed. The project, including its requirements and dependencies, is cached to Mallikas database<br><b>Postcondition</b>: The selected project is cached in Mallikas to be managed in the OpenReq infrastructure. The same project name (id) is used in Qt Jira and Mallikas.<br><b>Note:</b> For update rather than full import, see "qtJiraUpdated", which is  more efficient for large projects.</b><br><b>Parameter: </b><br>projectId: The id of the project to be fetched from Qt Jira (e.g., QTWB).'
       operationId: importFromQtJiraUsingPOST
       consumes:
         - application/json
@@ -451,12 +393,47 @@ paths:
           description: Not Found
         '500':
           description: 'Failure, ex. invalid URLs'
+  /qtJiraUpdated:
+    post:
+      tags:
+        - milla-controller
+      summary: Import updated issues from Qt Jira to Mallikas.
+      description: '<b>Functionality</b>: Import the updated Jira issues of a project from Qt Jira and send the issues as OpenReq JSON requirements and dependencies to be cached in Mallikas database<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: New or changed Jira issues are updated to Mallikas<br><b>Exception</b>: This is not full synchronization.<br><b>Parameter: </b><br>projectId: The id of the Qt Jira project (e.g., QTWB).'
+      operationId: importUpdatedFromQtJiraUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: projectId
+          description: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Success, all updated requirements and dependencies downloaded'
+          schema:
+            type: string
+        '201':
+          description: Created
+        '400':
+          description: 'Failure, ex. malformed JSON'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: 'Failure, ex. invalid URLs'
   /requirementsByIds:
     post:
       tags:
         - milla-controller
       summary: Fetch a specified set of requirements in OpenReq JSON format.
-      description: '<b>Functionality</b>: Fetch a specied requirements including their dependencies that are cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>ids: ids as a String array, e.g. ["QTWB-1", "QTWB-2"] '
+      description: '<b>Functionality</b>: Fetch specified requirements and their dependencies that are cached in Mallikas database in OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>ids: ids as a String array, e.g. ["QTWB-1", "QTWB-2"] '
       operationId: getRequirementsByIdsUsingPOST
       consumes:
         - application/json
@@ -489,7 +466,7 @@ paths:
       tags:
         - milla-controller
       summary: Fetch requirements based on various parameters posted in JSON format.
-      description: '<b>Functionality</b>: Fetch requirements based on various parameters given in JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>requestParams: Parameters object containing various parameters'
+      description: '<b>Functionality</b>: Fetch requirements based on various parameters given in JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the requirements and their dependencies is produced.<br><b>Parameter: </b><br>params: RequestParams object containing various parameters to be used in database query'
       operationId: getRequirementsByParamsUsingPOST
       consumes:
         - application/json
@@ -519,8 +496,8 @@ paths:
     get:
       tags:
         - milla-controller
-      summary: Fetch all requirements  of a project in OpenReq JSON format.
-      description: '<b>Functionality</b>: Fetch all requirements of a project including their dependencies that are cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the project including requirements and dependencies is produced.<br><b>Parameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
+      summary: Fetch all requirements of a project in OpenReq JSON format.
+      description: '<b>Functionality</b>: Fetch all requirements of a project including their dependencies that are cached in Mallikas database in the OpenReq JSON format.<br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: An OpenReq JSON of the project including requirements and dependencies is produced.<br><b>Parameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).<br>includeProposed: Whether to fetch proposed dependencies'
       operationId: getRequirementsInProjectUsingGET
       consumes:
         - application/json
@@ -532,6 +509,11 @@ paths:
           description: projectId
           required: true
           type: string
+        - name: includeProposed
+          in: query
+          description: includeProposed
+          required: false
+          type: boolean
       responses:
         '200':
           description: OK
@@ -547,8 +529,8 @@ paths:
     post:
       tags:
         - milla-controller
-      summary: Construct a transitive closure by sending all requirements of the selected project to Mulperi
-      description: '<b>Functionality</b>: All requirements of a project are fetched from Mallikas database and sent to Mulperi to construct a transitive closure.<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br><b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br><br><b>Parameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
+      summary: Send all requirements of the selected project to Mulperi.
+      description: '<b>Functionality</b>: All requirements of a project, excluding their proposed dependencies, are fetched from Mallikas database and sent to Mulperi to construct a transitive closure. <br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br><b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br><br><b>Parameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
       operationId: sendProjectToMulperiUsingPOST
       consumes:
         - application/json
@@ -560,41 +542,6 @@ paths:
           description: projectId
           required: true
           type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /sendProjectToMulperiWithParams:
-    post:
-      tags:
-        - milla-controller
-      summary: Construct a transitive closure by sending all requirements of the selected project to Mulperi
-      description: '<b>Functionality</b>: All requirements of a project are fetched from Mallikas database and sent to Mulperi to construct a transitive closure.<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br><b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br><br><b>Parameters: </b><br>projectId: The project id in Mallikas (e.g., QTWB).<br>includeProposedDependencies: Whether to fetch dependencies with the status ''proposed'''
-      operationId: sendProjectToMulperiWithParamsUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: projectId
-          in: query
-          description: projectId
-          required: true
-          type: string
-        - name: includeProposedDependencies
-          in: query
-          description: includeProposedDependencies
-          required: true
-          type: boolean
       responses:
         '200':
           description: OK
@@ -644,7 +591,7 @@ paths:
       tags:
         - qt-controller
       summary: Update proposed dependencies by user input
-      description: 'Update proposed dependencies, were they accepted or rejected?'
+      description: 'Update proposed dependencies, were they accepted or rejected? If accepted, what is the type?'
       operationId: updateProposedDependenciesUsingPOST
       consumes:
         - application/json
