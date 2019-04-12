@@ -6,7 +6,7 @@
 
 	<groupId>eu.openreq</groupId>
 	<artifactId>Milla</artifactId>
-	<version>1.13</version>
+	<version>1.14</version>
 	<packaging>jar</packaging>
 
 	<name>Milla</name>
