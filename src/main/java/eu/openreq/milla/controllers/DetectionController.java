@@ -276,7 +276,7 @@ public class DetectionController {
 			if (ids!=null) {
 				jsonString = mallikasService.getSelectedRequirements(ids);
 			} else {
-				jsonString = mallikasService.getAllRequirementsInProject(projectId, false);
+				jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
 			}
 			if(jsonString!=null) {
 				HttpHeaders headers = new HttpHeaders();
@@ -384,7 +384,9 @@ public class DetectionController {
 		if (response.getStatusCode() != HttpStatus.ACCEPTED) {
 			return new ResponseEntity<String>(content, HttpStatus.BAD_REQUEST);
 		}
-		
+		if (content.isEmpty()) {
+			return new ResponseEntity<String>("No response received!", HttpStatus.NOT_FOUND);
+		}
 		content = "{\"dependencies\":" + content + "}";
 		
 		return addDependenciesToMallikas(content);		
