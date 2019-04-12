@@ -17,6 +17,9 @@ public class MillaApplication {
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder builder) {
 	   // Do any additional configuration here
-	   return builder.build();
+	   return builder
+			   .setReadTimeout(3000000)
+			   .setConnectTimeout(3000000)
+			   .build();
 	}
 }

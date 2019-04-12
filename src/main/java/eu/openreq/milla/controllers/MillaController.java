@@ -460,7 +460,7 @@ public class MillaController {
 		
 		try {
 			String response = mallikasService.getListOfProjects();
-			if (!response.contains(projectId)) {
+			if (response==null || !response.contains(projectId)) {
 				Project project = transformer.createProject(projectId, new ArrayList<String>());
 				mallikasService.postProject(project);
 			}
