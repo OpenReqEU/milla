@@ -93,7 +93,7 @@ public class FormatTransformerService {
 	 */
 	public List<Issue> convertJsonElementsToIssues(Collection<JsonElement> jsonElements) throws IOException {
 
-		long start = System.nanoTime();
+		//long start = System.nanoTime();
 
 		Gson gson = new Gson();
 		List<Issue> issues = new ArrayList<>();
@@ -107,8 +107,8 @@ public class FormatTransformerService {
 			element = null;
 			issue = null;
 		}
-		long end = System.nanoTime();
-		printProgress(start, end);
+		//long end = System.nanoTime();
+		//printProgress(start, end);
 
 		return issues;
 	}
@@ -154,11 +154,11 @@ public class FormatTransformerService {
 	}
 
 	
-	private void printProgress(long start, long end) {
-		long durationSec = (end - start) / 1000000000;
-		double durationMin = durationSec / 60.0;
-		System.out.println("Lists done, it took " + durationSec + " second(s) or " + durationMin + " minute(s).");
-	}
+//	private void printProgress(long start, long end) {
+//		long durationSec = (end - start) / 1000000000;
+//		double durationMin = durationSec / 60.0;
+//		System.out.println("Lists done, it took " + durationSec + " second(s) or " + durationMin + " minute(s).");
+//	}
 	
 	/**
 	 * Converts a List of Jira Issues into OpenReq Json Requirements, and creates a
@@ -827,11 +827,6 @@ public class FormatTransformerService {
 					reqPart.setId(req.getId() + "_" + fixVersion.getId());
 				}
 				String versionString = fixVersion.getName();
-//				String versionString = fixVersion.getDescription();
-//				System.out.println("Requirement ID: " + req.getId());
-//				System.out.println("FixVersion ID: " + fixVersion.getId());
-//				System.out.println("FixVersion version: " + fixVersion.getDescription());
-//				System.out.println("FixVersion name: " + fixVersion.getName());
 				reqPart.setText(versionString);
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -1,8 +1,13 @@
 package eu.openreq.milla.services;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -15,240 +20,178 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 
 import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.models.json.Project;
 import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.models.json.Requirement;
 
 @Service
 public class MallikasService {
 	
+	@Value("${milla.mallikasAddress}")
+	private String mallikasAddress;
+	
+	@Autowired
+	RestTemplate rt;
+	
+	public String getListOfProjects() {
+		try {
+			return rt.getForObject(mallikasAddress + "/listOfProjects", String.class);
+		}
+		catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
+			return e.getResponseBodyAsString();
+		}
+	}
 	
 	/**
 	 * Send request to Mallikas to get all Requirements in the database
-	 * @param url the address in Mallikas
 	 * @return
 	 */
-	public String getAllRequirementsFromMallikas(String url) {
-		
-		RestTemplate rt = new RestTemplate();	
-		String reqsAndDependencies = null; 
-		
+	public String getAllRequirements() {
 		try {
-			reqsAndDependencies=rt.getForObject(url, String.class);
-		}
-		catch (HttpClientErrorException e) {
-			e.printStackTrace();
-		}
-		
-		return reqsAndDependencies;
-	}
-	
-	/**
-	 * Send request to Mallikas to get one Requirement with a selected id
-	 * @param url the address in Mallikas
-	 * @param id String identifier of the Requirement
-	 * @return
-	 */
-	public String getOneRequirementFromMallikas(String url, String id) {
-		RestTemplate rt = new RestTemplate();	
-		String req = null;
-		
-		try {
-			req = rt.postForObject(url, id, String.class);	
+			return rt.getForObject(mallikasAddress + "/allRequirements", String.class);
 		}
 		catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
+			return e.getResponseBodyAsString();
 		}
-		return req;
 	}
 		
 	/**
-	 * Send request to Mallikas to get a List of Requirements and their Dependecies as a String (based on a List of selected Requirement IDs) 
+	 * Send request to Mallikas to get a List of Requirements and their Dependencies as a String (based on a List of selected Requirement IDs) 
 	 * @param ids List<String> containing selected Requirement IDs
-	 * @param url the address in Mallikas
 	 * @return
 	 */
-	public String getSelectedRequirementsFromMallikas(Collection<String> ids, String url) {
-		
-		RestTemplate rt = new RestTemplate();
-		String reqs = null;
-		
+	public String getSelectedRequirements(Collection<String> ids) {
 		try {
-			reqs= rt.postForObject(url, ids, String.class);
+			return rt.postForObject(mallikasAddress + "/selectedReqs", ids, String.class);
 		}
 		catch (HttpClientErrorException e) { 
 			System.out.println("Error " + e);
 			e.printStackTrace();
+			return e.getResponseBodyAsString();
 		}
-		
-		return reqs;
-	}
-	
-	/**
-	 * Send request to Mallikas to get a List of Requirements and their Dependecies as a String (based on a List of selected Requirement IDs) 
-	 * @param ids List<String> containing selected Requirement IDs
-	 * @param url the address in Mallikas
-	 * @return
-	 */
-	public String getRequirementsSinceDateFromMallikas(Long date, String url) {
-		
-		RestTemplate rt = new RestTemplate();
-		String reqs = null;
-		
-		try {
-			reqs= rt.postForObject(url, date, String.class);
-		}
-		catch (HttpClientErrorException e) { 
-			System.out.println("Error " + e);
-			e.printStackTrace();
-		}
-		
-		return reqs;
 	}
 	
 	/**
 	 * Send request to Mallikas to get a String (List of Requirements that are in the same Project and their Dependencies)
 	 * @param projectId Id of the Project
-	 * @param url the address in Mallikas
 	 * @return String containing all requirements and their dependencies in the same project
 	 */
-	public String getAllRequirementsInProjectFromMallikas(String projectId, String url) {
-		RestTemplate rt = new RestTemplate();	
-		String reqs = null;
+	public String getAllRequirementsInProject(String projectId, boolean includeProposed) {	
 		try {
-			reqs = rt.postForObject(url, projectId, String.class);		
+			return rt.getForObject(mallikasAddress + "/projectRequirements?projectId=" + projectId + 
+					"&includeProposed=" + includeProposed, String.class);	
 		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
+			return e.getResponseBodyAsString();
 		}
-		return reqs;
 	}
-		
 	/**
-	 * Post the searched type and status to Mallikas
-	 * @param type
-	 * @param status
-	 * @param url
+	 * Send a request to Mallikas contained within a RequestParams object
+	 * @param params
+	 * @param objectType
 	 * @return
 	 */
-	public String getAllRequirementsWithTypeAndStatusFromMallikas(String type, String status, String url) {
-
-		RestTemplate rt = new RestTemplate();	
-		String reqs = null;
-		
-		String whole = createTypeStatusString(type, status);
-		
-		try {	
-			reqs = rt.postForObject(url, whole, String.class);
-			
+	public String requestWithParams(RequestParams params, String objectType) {	
+		try {
+			return rt.postForObject(mallikasAddress + "/" + objectType + "ByParams", params, String.class);		
 		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
+			return e.getResponseBodyAsString();
 		}
-		return reqs;
-	}
-
-	/**
-	 * Can be used to search requirements with a certain Resolution or Dependency type
-	 * @param searched
-	 * @param url
-	 * @return
-	 */
-	public String getAllRequirementsWithSearchedStringFromMallikas(String searched, String url) {
-		RestTemplate rt = new RestTemplate();	
-		String reqs = null;
-		try {	
-			reqs = rt.postForObject(url, searched, String.class);
-			
-		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-		}
-		return reqs;
 	}
 	
 	/**
-	 * Checks if the user wishes to exclude either type or status from the search (must write "No type" or "No status" to the requested input fields) 
-	 * @param type
-	 * @param status
+	 * Post the project to Mallikas
+	 * @param project
 	 * @return
 	 */
-	private String createTypeStatusString(String type, String status) {
-		String type2 = type;
-		String status2 = status;
-		if(type.equalsIgnoreCase("No type")) {
-			type2="null";
+	public String postProject(Project project) {
+		try {
+			return rt.postForObject(mallikasAddress + "/importProject", project, String.class);
+
+		} catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
+			return e.getResponseBodyAsString();
 		}
-		if(status.equalsIgnoreCase("No status")) {
-			status2="null";
-		}
-		return type2+"+"+status2;
 	}
 	
 	/**
-	 * Send updated dependencies as a String to Mallikas
+	 * Post the requirements to be updated in Mallikas
+	 * @param requirements
+	 * @return
+	 */
+	public String updateRequirements(Collection<Requirement> requirements) {
+		try {
+			return rt.postForObject(mallikasAddress + "/updateRequirements", requirements, String.class);	
+		} catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
+			e.printStackTrace();
+			return e.getResponseBodyAsString();
+		}
+			
+	}
+	
+	/**
+	 * Post the dependencies to be updated in Mallikas, along with some params used in saving
 	 * @param dependencies
-	 * @param url
+	 * @param proposed
+	 * @param userInput
 	 * @return
 	 */
-	public String updateSelectedDependencies(String dependencies, String url, Boolean proposed) {
-		RestTemplate rt = new RestTemplate();	
-		Collection<Dependency> updatedDependencies = parseStringToDependencies(dependencies);
+	public String updateDependencies(Collection<Dependency> dependencies, Boolean proposed, Boolean userInput) {
+		
+		String completeAddress = mallikasAddress + "/updateDependencies";
 		
 		if (proposed) {
 			FileService fs = new FileService();
-			fs.logDependencies(updatedDependencies);
+			fs.logDependencies(dependencies);
+			completeAddress += "?isProposed=true";
+		}
+		if (userInput) {
+			completeAddress += "?userInput=true";
 		}
 
 		try {
-			rt.postForObject(url, updatedDependencies, String.class);
+			rt.postForObject(completeAddress, dependencies, String.class);
 			return "Update successful!";
 
 		} catch (HttpClientErrorException e) {
-			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " "+ e.getStatusCode();
+			System.out.println("Error " + e);
+			e.printStackTrace();
+			return e.getResponseBodyAsString();
 		}
 	}
 	
-//	/**
-//	 * Send updated dependencies as a String to Mallikas
-//	 * @param dependencies
-//	 * @param url
-//	 * @return
-//	 */
-//	public String updateUPCDependencies(Collection<Dependency> dependencies, String url) {
-//		RestTemplate rt = new RestTemplate();	
-//
-//		String response = null;
-//
-//		try {
-//			response = rt.postForObject(url, dependencies, String.class);
-//			return response;
-//
-//		} catch (HttpClientErrorException e) {
-//			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " "+ e.getStatusCode();
-//		}
-//	}
+	public String convertAndUpdateDependencies(String dependencies, Boolean proposed, Boolean userInput) {
+		Collection<Dependency> convertedDependencies = parseStringToDependencies(dependencies);
+		return updateDependencies(convertedDependencies, proposed, userInput);
+	}
 	
 	/**
-	 * Send updated requirements as a String to Mallikas
-	 * @param requirements
-	 * @param url
+	 * Post the ids of the updated requirements to Mallikas so that the Project object can be updated. 
+	 * @param reqIds
+	 * @param projectId
 	 * @return
 	 */
-	public String updateSelectedRequirements(String requirements, String url) {
-		RestTemplate rt = new RestTemplate();	
-		Collection<Requirement> updatedRequirements = parseStringToRequirements(requirements);
-
-		String response = null;
-
-		try {
-			response = rt.postForObject(url, updatedRequirements, String.class);
-			return response;
-
+	public String updateReqIds(Collection<String> reqIds, String projectId) {
+		Map<String, Collection<String>> updatedReqs = new HashMap<String, Collection<String>>();
+		updatedReqs.put(projectId, reqIds);
+		
+		try {	
+			return rt.postForObject(mallikasAddress + "/updateProjectSpecifiedRequirements?projectId=" + projectId, updatedReqs, String.class);
 		} catch (HttpClientErrorException e) {
+			System.out.println("Error " + e);
 			e.printStackTrace();
-			return "Mallikas error:\n\n" + e.getResponseBodyAsString() + " " + e.getStatusCode();
+			return e.getResponseBodyAsString();
 		}
+		
 	}
 
 	/**
@@ -285,22 +228,5 @@ public class MallikasService {
 		return updatedRequirements;
 	}
 
-	/**
-	 * Send a request to Mallikas contained within a RequestParams object
-	 * @param params
-	 * @param url
-	 * @return
-	 */
-	public String sendRequestWithParamsToMallikas(RequestParams params, String url) {
-		RestTemplate rt = new RestTemplate();	
-		String reqs = null;
-		try {
-			reqs = rt.postForObject(url, params, String.class);		
-		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-		}
-		return reqs;
-	}
 
 }

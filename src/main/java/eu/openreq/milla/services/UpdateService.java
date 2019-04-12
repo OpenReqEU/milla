@@ -1,18 +1,17 @@
 package eu.openreq.milla.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.JsonElement;
 
@@ -30,20 +29,13 @@ public class UpdateService {
 
 	private UpdatedIssues updatedIssues;
 
-	private FormatTransformerService transformer;
-
+	@Autowired
 	private MallikasService mallikasService;
-
-	private int start = 100;
 	
 	private List<String> reqIds;
 	
 	private Collection<Dependency> dependencies;
 
-	public UpdateService() {
-		transformer = new FormatTransformerService();
-		mallikasService = new MallikasService();
-	}
 
 	/**
 	 * Downloads at least 100 (latest) updated issues from Qt Jira and sends them as OpenReq JSON Requirements to Mallikas
@@ -52,27 +44,30 @@ public class UpdateService {
 	 * @throws Exception
 	 */
 	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person) throws Exception {
-		updatedIssues = new UpdatedIssues(projectId);
+		FormatTransformerService transformer = new FormatTransformerService();
 		transformer.readFixVersionsToHashMap(projectId);
-		ResponseEntity<?> response = null;
 		try {
+			updatedIssues = new UpdatedIssues(projectId);
 			int amount = getNumberOfUpdatedIssues(projectId, person);
-			updatedIssues.collectAllUpdatedIssues(projectId, amount);
-			Collection<Requirement> requirements = processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
-			if (requirements!=null && !requirements.isEmpty()) {
-				this.postRequirementsToMallikas(requirements);
+			System.out.println(amount);
+			for (int current = 0; current<=amount; current = current + 1000) {
+				updatedIssues.collectAllUpdatedIssues(projectId, current);
+				Collection<Requirement> requirements = processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
+				if (requirements!=null && !requirements.isEmpty()) {
+					mallikasService.updateRequirements(requirements);
+				}
+				if (dependencies!=null && !dependencies.isEmpty()) {
+					mallikasService.updateDependencies(dependencies, false, false);
+				}
+				if (reqIds!=null && !reqIds.isEmpty()) {
+					mallikasService.updateReqIds(reqIds, projectId);
+				}
+				updatedIssues.clearIssues();
 			}
-			if (dependencies!=null && !dependencies.isEmpty()) {
-				this.postDependenciesToMallikas(dependencies);
-			}
-			if (reqIds!=null && !reqIds.isEmpty()) {
-				this.postReqIdsToMallikas(reqIds, projectId);
-			}
-			response = new ResponseEntity<>(amount + " updated requirements downloaded along with dependencies", HttpStatus.OK);
+			return new ResponseEntity<>("About " + amount + " updated requirements downloaded along with dependencies", HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		return response;
 	}
 
 	/**
@@ -82,6 +77,7 @@ public class UpdateService {
 	 * @throws Exception
 	 */
 	public int getNumberOfUpdatedIssues(String projectId, Person person) throws Exception {
+		int start = 0;
 		int number = -1;
 		int sum = 0;
 		while (number != 0) {
@@ -89,15 +85,13 @@ public class UpdateService {
 			if (element==null) {
 				break;
 			}
-			List<JsonElement> elements = new ArrayList<>();
-			elements.add(element);
-			List<Requirement> reqs = new ArrayList<Requirement>(processJsonElementsToRequirements(elements, projectId, person));
+			List<Requirement> reqs = new ArrayList<Requirement>(processJsonElementsToRequirements(Arrays.asList(element), projectId, person));
 			if (reqs.isEmpty()) { 
 				break;
 			}
 			number = compareUpdatedIssueWithTheIssueInMallikas(reqs.get(0));
 			sum++;
-			System.out.println("Sum (how many times 100 updated issues must be fetched): " + sum);
+			//System.out.println("Sum (how many times 100 updated issues must be fetched): " + sum);
 			start = start + 100;
 		}
 
@@ -128,8 +122,7 @@ public class UpdateService {
 	 * @return
 	 */
 	private Requirement getOldRequirementFromMallikas(String id) {
-		String url = mallikasAddress + "/one";
-		String requirementString = mallikasService.getOneRequirementFromMallikas(url, id);
+		String requirementString = mallikasService.getSelectedRequirements(Arrays.asList(id));
 		if (requirementString != null) {
 			try {
 				JSONParser.parseToOpenReqObjects(requirementString);
@@ -152,6 +145,7 @@ public class UpdateService {
 	 */
 	private Collection<Requirement> processJsonElementsToRequirements(Collection<JsonElement> elements,
 			String projectId, Person person) throws Exception {
+		FormatTransformerService transformer = new FormatTransformerService();
 		Collection<Requirement> requirements = new ArrayList<Requirement>();
 		if (!elements.isEmpty()) {
 			List<Issue> issues = transformer.convertJsonElementsToIssues(elements);
@@ -160,51 +154,6 @@ public class UpdateService {
 			dependencies = transformer.getDependencies();
 		}
 		return requirements;
-	}
-	
-	private ResponseEntity<?> postRequirementsToMallikas(Collection<Requirement> requirements) {
-		RestTemplate rt = new RestTemplate();
-		ResponseEntity<?> response = null;
-		try {	
-			response = rt.postForEntity(mallikasAddress + "/updateRequirements", requirements, Collection.class);
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		return response;
-		
-	}
-	
-	private ResponseEntity<?> postDependenciesToMallikas(Collection<Dependency> dependencies) {
-		RestTemplate rt = new RestTemplate();
-		ResponseEntity<?> response = null;
-		try {	
-			response = rt.postForEntity(mallikasAddress + "/updateDependencies", dependencies, Collection.class);
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		return response;
-		
-	}
-	
-	/**
-	 * Post the ids of the updated requirements to Mallikas so that the Project object can be updated. 
-	 * @param reqIds
-	 * @param projectId
-	 * @return
-	 */
-	private ResponseEntity<?> postReqIdsToMallikas(Collection<String> reqIds, String projectId) {
-		RestTemplate rt = new RestTemplate();
-		ResponseEntity<?> response = null;
-		Map<String, Collection<String>> updatedReqs = new HashMap<String, Collection<String>>();
-		updatedReqs.put(projectId, reqIds);
-		
-		try {	
-			response = rt.postForEntity(mallikasAddress + "/updateProjectSpecifiedRequirements/"+projectId, updatedReqs, Map.class);
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		return response;
-		
 	}
 	
 
