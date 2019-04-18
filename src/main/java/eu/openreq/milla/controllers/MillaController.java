@@ -1,6 +1,8 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +35,7 @@ import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.FormatTransformerService;
 import eu.openreq.milla.services.MallikasService;
+import eu.openreq.milla.services.OAuthService;
 import eu.openreq.milla.services.UpdateService;
 import eu.openreq.milla.qtjiraimporter.ProjectIssues;
 import io.swagger.annotations.ApiOperation;
@@ -62,6 +65,8 @@ public class MillaController {
 	
 	@Autowired
 	UpdateService updateService;
+	
+	OAuthService authService;
 	
 
 	/**
@@ -472,6 +477,29 @@ public class MillaController {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
+	}
+	
+	@GetMapping(value = "getJiraAuthorizationAddress")
+	public ResponseEntity<?> authorizeJira() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+		authService = new OAuthService();
+		String response = authService.tempTokenAuthorization();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "verifyJiraAuthorization")
+	public ResponseEntity<?> sendSecret(@RequestBody String secret) throws IOException {
+		if (authService == null) {
+			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
+		}
+		return new ResponseEntity<>(authService.accessTokenAuthorization(secret), HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "authorizedRequest")
+	public ResponseEntity<?> authorizedRequest(@RequestParam String address) throws IOException {
+		if (authService == null) {
+			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
+		}
+		return new ResponseEntity<>(authService.authorizedRequest(address), HttpStatus.OK);
 	}
 	 
 }
