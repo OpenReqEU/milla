@@ -6,7 +6,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -317,6 +316,8 @@ public class MillaController {
 	 *            ID of the selected project
 	 * @return ResponseEntity if successful
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeySpecException 
 	 */
 	@ApiOperation(value = "Import a selected project from Qt Jira and store a cache of the project in Mallikas", 
 			notes = "<b>Functionality</b>: This is the full data import from Qt Jira. "
@@ -333,9 +334,18 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJira")
-	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException {
+	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+		
+		
+		ProjectIssues projectIssues = null;
+		
+		if (authService==null) {
+			projectIssues = new ProjectIssues(projectId, new OAuthService());
+		} else {
+			projectIssues = new ProjectIssues(projectId, authService);
+		}
 
-		ProjectIssues projectIssues = new ProjectIssues(projectId, jiraUsername, jiraPassword);
+		
 		
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
@@ -479,6 +489,17 @@ public class MillaController {
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
 	}
 	
+	
+	/**
+	 * Get address used in authorizing Milla for Jira
+	 * 
+	 * @return ResponseEntity
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Get address used in authorizing Milla for Jira", 
+			notes = "Initialize authorization process and receive Jira authorization address, where "
+					+ "user has to log in to receive a secret key",
+			response = String.class)
 	@GetMapping(value = "getJiraAuthorizationAddress")
 	public ResponseEntity<?> authorizeJira() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
 		authService = new OAuthService();
@@ -486,6 +507,15 @@ public class MillaController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	/**
+	 * Authorize Milla for Jira with a secret key
+	 * 
+	 * @return ResponseEntity
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Authorize Milla for Jira with a secret key", 
+			notes = "Use a secret key received from Jira to authorize Milla",
+			response = String.class)
 	@PostMapping(value = "verifyJiraAuthorization")
 	public ResponseEntity<?> sendSecret(@RequestBody String secret) throws IOException {
 		if (authService == null) {
@@ -494,7 +524,7 @@ public class MillaController {
 		return new ResponseEntity<>(authService.accessTokenAuthorization(secret), HttpStatus.OK);
 	}
 	
-	@PostMapping(value = "authorizedRequest")
+	@PostMapping(value = "testAuthorizedRequest")
 	public ResponseEntity<?> authorizedRequest(@RequestParam String address) throws IOException {
 		if (authService == null) {
 			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);

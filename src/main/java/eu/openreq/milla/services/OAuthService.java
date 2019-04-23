@@ -46,7 +46,7 @@ public class OAuthService {
 	    signer.privateKey = getPrivate();
 	}
 	
-	public String tempTokenAuthorization() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {;
+	public String tempTokenAuthorization() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
 		JiraOAuthGetTemporaryToken getTemp = new JiraOAuthGetTemporaryToken(JIRA_BASE_URL + REQUEST_TOKEN_URL);
 		getTemp.consumerKey = CONSUMER_KEY;
 		getTemp.callback = "oob";
@@ -56,14 +56,13 @@ public class OAuthService {
 		
 		OAuthCredentialsResponse response = getTemp.execute();
 		
-		System.out.println("Token:\t\t\t" + response.token);
-	    System.out.println("Token secret:\t" + response.tokenSecret);
+		System.out.println("Request token: " + response.token);
 
 	    String authorizationURL = JIRA_BASE_URL + AUTHORIZATION_URL + "?oauth_token=" + response.token;
         
         REQUEST_TOKEN = response.token;
 
-        return "Authorize token at " + authorizationURL;
+        return authorizationURL;
        
 	}
 	
@@ -77,19 +76,22 @@ public class OAuthService {
 	    
 	    OAuthCredentialsResponse response = getAcc.execute();
 	    
+	    if (response.token==null) {
+	    	return "Authorization failed, secret not correct?";
+	    }
+	    
 	    ACCESS_TOKEN = response.token;
 	    SECRET = response.tokenSecret;
 	    
-	    System.out.println("Token:\t\t\t" + response.token);
-	    System.out.println("Token secret:\t" + response.tokenSecret);
+	    System.out.println("Access token: " + response.token);
 	    
 	    parameters = new OAuthParameters();
 		parameters.consumerKey = CONSUMER_KEY;
 	    parameters.signer = signer;
 	    parameters.verifier = SECRET;
 	    parameters.token = ACCESS_TOKEN;
-	    	
-	    return "Access token obtained: " + response.token;		
+	    
+	    return "Jira authorization complete";		
 	    
 	}
 	
@@ -99,20 +101,19 @@ public class OAuthService {
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePrivate(keySpec);
 	}
+	
 	public String authorizedRequest(String url) throws IOException {
 	    if (parameters==null) {
 	    	return "Authorization not complete";
 	    }
-	    HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(parameters);
-        HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(url));
-        HttpResponse response = request.execute();
-        
-        return  parseResponse(response);
+		    
+		HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(parameters);
+		HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(url));
+		HttpResponse response = request.execute();
+		    
+		return parseResponse(response);
         
 	}
-	
-	
-   
 
 	/**
 	* Prints response content
@@ -122,16 +123,16 @@ public class OAuthService {
 	* @throws IOException
 	*/
 	private String parseResponse(HttpResponse response) throws IOException {
+		@SuppressWarnings("resource")
 		Scanner s = new Scanner(response.getContent()).useDelimiter("\\A");
 		String result = s.hasNext() ? s.next() : "";
-		
+		s.close();
 		try {
 		    JSONObject jsonObj = new JSONObject(result);
 		    result += (jsonObj.toString(2));
 		} catch (Exception e) {
 		    System.out.println(result);
 		}
-		s.close();
 		return result;
 	}
 

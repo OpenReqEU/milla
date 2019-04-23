@@ -1,6 +1,8 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,11 +149,13 @@ public class QtController {
 	 *            Project received as a parameter
 	 * @return ResponseEntity<?>
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeySpecException 
 	 */
 	@ApiOperation(value = "Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas", 
 			notes = "Post a Project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateProject")
-	public ResponseEntity<?> updateWholeProject(@RequestBody String projectId) throws IOException {
+	public ResponseEntity<?> updateWholeProject(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		try {
 			ResponseEntity<?> response = millaController.importFromQtJira(projectId);
 			if (response!=null) {

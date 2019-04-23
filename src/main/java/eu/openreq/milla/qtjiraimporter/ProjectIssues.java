@@ -2,24 +2,17 @@ package eu.openreq.milla.qtjiraimporter;
 
 import com.google.gson.*;
 
-import okhttp3.Credentials;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import eu.openreq.milla.services.OAuthService;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
-
-import org.apache.tomcat.util.codec.binary.Base64;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 /**
  * This class gets all the issues of a project. Since the issues are enumerated
@@ -36,19 +29,15 @@ public class ProjectIssues {
 	// the REST API URI
 	private String _PROJECT_ISSUES_URL;
 	
-	private String credentials;
+	private OAuthService authService;
 	
 
-	public ProjectIssues(String project, String username, String password) throws IOException {
+	public ProjectIssues(String project, OAuthService service) throws IOException {
 	
-		credentials = null;
-		
-		if (username!=null && password!=null) {
-			credentials = Credentials.basic(username, password);
-		}
+		authService = service;
 		
 		_project = project;
-		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project, credentials);
+		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project, authService);
 		_maxProjectIssues = numberOfIssues.getNumberOfIssues();
 		_PROJECT_ISSUES_URL = "https://bugreports.qt.io/rest/api/2/issue/" + _project + "-%d";
 	}
@@ -59,26 +48,13 @@ public class ProjectIssues {
 	 * @param end Integer, end point of the import
 	 * @return List of JsonElements
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeySpecException 
 	 */
-	public Collection<JsonElement> collectIssues(int start, int end) throws IOException {
-		OkHttpClient client = new OkHttpClient.Builder()
-				.addInterceptor(new Interceptor() {
-					@Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request request = chain.request();
-                        if (credentials!=null) {
-                        	request = request.newBuilder()
-                        			.addHeader("Authorization", credentials)
-                        			.addHeader("Content-Type", "application/json")
-                        			.build();
-                        	
-                        }
-                        return chain.proceed(request);
-					}
-				})
-				.build();
+	public Collection<JsonElement> collectIssues(int start, int end) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+
+		OAuthService service = new OAuthService();
 		
-		Run run = new Run();
 		Gson issueJSON = new Gson();
 		
 		List<String> paths = new ArrayList<>();
@@ -96,7 +72,7 @@ public class ProjectIssues {
 			        () -> paths.parallelStream().forEach((url) -> {
 			        	String responseJSON = "";
 						try {
-							responseJSON = run.run(url, client);
+							responseJSON = service.authorizedRequest(url);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
