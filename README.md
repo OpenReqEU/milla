@@ -6,7 +6,7 @@ This service was created as a result of the OpenReq project funded by the Europe
 
 # Technical Description
 
-Milla is an orchestrator (broker) service used in the Qt Jira trial of OpenReq. For further details, see the [swagger documentation](http://217.172.12.199:9203/swagger-ui.html).
+Milla is an orchestrator (broker) service used in the Qt Jira trial of OpenReq. For further details, see the [swagger documentation](https://api.openreq.eu/milla/swagger-ui.html).
 
 ## The following technologies are used:
 - Java
@@ -16,11 +16,11 @@ Milla is an orchestrator (broker) service used in the Qt Jira trial of OpenReq. 
 	
 ## Public APIs
 
-The API is documented by using Swagger2: http://217.172.12.199:9203/swagger-ui.html
+The API is documented by using Swagger2: https://api.openreq.eu/milla/swagger-ui.html
 
 ## How to Install
 
-Run the compiled jar file, e.g., `java -jar Milla-1.12.jar`.
+Run the compiled jar file, e.g., `java -jar Milla-1.13.jar`.
 
 Milla uses port 9203 that needs to be open to in order that the Swagger page can be accessed. Milla also connects to Qt Jira ja the Mallikas and Mulperi services of OpenReq.
 
@@ -32,16 +32,16 @@ The swagger page describes all endpoints. Below are examples of the key commands
 
 Milla fetches the relevant data from Qt Jira and stores (caches) the data to Mallikas' database to be more efficiently accessible and in order to be in OpenReq JSON format. qtjira endpoint is used with the project as a parameter.
 
-`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/qtjira'`
+`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'https://api.openreq.eu/milla/qtJira'`
 
 A copy of the data in OpenReq JSON can be fetched  using the following command after the project has been stored in Mallikas (see above). 
 
-`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/requirementsInProject' > QTWB-OpenReq.json`
+`curl -X GET --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'https://api.openreq.eu/milla/requirementsInProject?projectId=QTWB' > QTWB-OpenReq.json`
 
 
 A project can be sent to mulperi to be analyzed
 
-`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'http://217.172.12.199:9203/sendProjectToMulperi'` 
+`curl -X POST --header 'Content-Type: application/json' --header 'Accept: text/plain' -d 'QTWB' 'https://api.openreq.eu/milla/sendProjectToMulperi'` 
 
 ## Notes for Developers
 
