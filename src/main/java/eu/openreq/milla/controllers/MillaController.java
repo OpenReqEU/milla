@@ -336,7 +336,6 @@ public class MillaController {
 	@PostMapping(value = "qtJira")
 	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		
-		
 		ProjectIssues projectIssues = null;
 		
 		if (authService==null) {
@@ -345,8 +344,6 @@ public class MillaController {
 			projectIssues = new ProjectIssues(projectId, authService);
 		}
 
-		
-		
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
 		person.setEmail("dummyEmail");
@@ -525,7 +522,7 @@ public class MillaController {
 	}
 	
 	@PostMapping(value = "testAuthorizedRequest")
-	public ResponseEntity<?> authorizedRequest(@RequestParam String address) throws IOException {
+	public ResponseEntity<?> authorizedRequest(@RequestParam String address) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		if (authService == null) {
 			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
 		}

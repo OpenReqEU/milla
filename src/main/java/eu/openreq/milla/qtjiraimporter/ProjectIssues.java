@@ -74,16 +74,19 @@ public class ProjectIssues {
 						try {
 							responseJSON = service.authorizedRequest(url);
 						} catch (IOException e) {
-							e.printStackTrace();
+							System.out.println("No issue found at " + url);
 						}
 						if (responseJSON != null) {
-							JsonObject issueElement = issueJSON.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
-							String urlId = url.substring(url.lastIndexOf("/") + 1);
-							String responseId = issueElement.get("key").getAsString();
-							if (urlId.equals(responseId)) {
-								issues.put(url, issueElement); 
-							} 
-							issueElement = null;
+							JsonElement element = issueJSON.fromJson(responseJSON, JsonElement.class);
+							if (element != null && element.isJsonObject()) {
+								JsonObject issueElement = element.getAsJsonObject();
+								String urlId = url.substring(url.lastIndexOf("/") + 1);
+								String responseId = issueElement.get("key").getAsString();
+								if (urlId.equals(responseId)) {
+									issues.put(url, issueElement); 
+								} 							
+								issueElement = null;
+							}
 						}
 			        })
 			).get();

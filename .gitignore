@@ -30,4 +30,4 @@ bin/
 
 *.log
 
-key.txt
+*key.txt

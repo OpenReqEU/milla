@@ -26,7 +26,7 @@ import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 
 public class OAuthService {
 
-	private static final String JIRA_BASE_URL = "http://localhost:2990/jira";
+	private static final String JIRA_BASE_URL = "https://bugreports.qt.io";
 	private static final String REQUEST_TOKEN_URL = "/plugins/servlet/oauth/request-token";
 	private static final String ACCESS_TOKEN_URL = "/plugins/servlet/oauth/access-token";
 	private static final String AUTHORIZATION_URL = "/plugins/servlet/oauth/authorize";
@@ -43,7 +43,7 @@ public class OAuthService {
 		byte[] encoded = Files.readAllBytes(Paths.get("key.txt"));
 		PRIVATE_KEY = new String(encoded, StandardCharsets.UTF_8);
 		signer = new OAuthRsaSigner();
-	    signer.privateKey = getPrivate();
+	    signer.privateKey = encodedPrivateKey();
 	}
 	
 	public String tempTokenAuthorization() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
@@ -95,7 +95,7 @@ public class OAuthService {
 	    
 	}
 	
-	private PrivateKey getPrivate() throws InvalidKeySpecException, NoSuchAlgorithmException {
+	private PrivateKey encodedPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
 		byte[] privateBytes = Base64.decodeBase64(PRIVATE_KEY);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -103,11 +103,7 @@ public class OAuthService {
 	}
 	
 	public String authorizedRequest(String url) throws IOException {
-	    if (parameters==null) {
-	    	return "Authorization not complete";
-	    }
-		    
-		HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(parameters);
+	    HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(parameters);
 		HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(url));
 		HttpResponse response = request.execute();
 		    
@@ -116,8 +112,7 @@ public class OAuthService {
 	}
 
 	/**
-	* Prints response content
-	* if response content is valid JSON it prints it in 'pretty' format
+	* Returns response content as String
 	*
 	* @param response
 	* @throws IOException
@@ -125,15 +120,9 @@ public class OAuthService {
 	private String parseResponse(HttpResponse response) throws IOException {
 		@SuppressWarnings("resource")
 		Scanner s = new Scanner(response.getContent()).useDelimiter("\\A");
-		String result = s.hasNext() ? s.next() : "";
+		String text = s.hasNext() ? s.next() : "";
 		s.close();
-		try {
-		    JSONObject jsonObj = new JSONObject(result);
-		    result += (jsonObj.toString(2));
-		} catch (Exception e) {
-		    System.out.println(result);
-		}
-		return result;
+		return text;
 	}
 
 }
