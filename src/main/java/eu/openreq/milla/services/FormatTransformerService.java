@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.springframework.stereotype.Service;
@@ -62,10 +61,6 @@ public class FormatTransformerService {
 	 */
 	private List<String> requirementIds;
 
-	private FileService fileService;
-
-	private Map<String, Integer> fixVersions;
-
 	private int epicCount;
 
 	public int getEpicCount() {
@@ -76,11 +71,6 @@ public class FormatTransformerService {
 
 	public int getSubtaskCount() {
 		return subtaskCount;
-	}
-
-	public void readFixVersionsToHashMap(String projectId) {
-		fileService = new FileService();
-		fixVersions = fileService.readFixVersionsFromFile(projectId);
 	}
 
 	/**
@@ -819,13 +809,7 @@ public class FormatTransformerService {
 		reqPart.setName("FixVersion");
 		if (fixVersion != null) {
 			try {
-				if (fixVersions!=null && fixVersions.containsKey(fixVersion.getName())) {
-					int number = fixVersions.get(fixVersion.getName()); // This number tells the "release number (or id)" of
-																		// the fix version
-					reqPart.setId(req.getId() + "_" + fixVersion.getId() + "_" + number); 
-				} else {
-					reqPart.setId(req.getId() + "_" + fixVersion.getId());
-				}
+				reqPart.setId(req.getId() + "_" + fixVersion.getId());
 				String versionString = fixVersion.getName();
 				reqPart.setText(versionString);
 			} catch (Exception e) {

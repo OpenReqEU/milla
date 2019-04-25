@@ -336,13 +336,7 @@ public class MillaController {
 	@PostMapping(value = "qtJira")
 	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		
-		ProjectIssues projectIssues = null;
-		
-		if (authService==null) {
-			projectIssues = new ProjectIssues(projectId, new OAuthService());
-		} else {
-			projectIssues = new ProjectIssues(projectId, authService);
-		}
+		ProjectIssues projectIssues = new ProjectIssues(projectId, authService);
 
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
@@ -369,7 +363,6 @@ public class MillaController {
 		List<String> requirementIds = new ArrayList<>();
 		Collection<JsonElement> projectIssuesAsJson;
 		
-		transformer.readFixVersionsToHashMap(projectId);
 		try {
 			while (true) { // a loop needed for sending large projects in chunks to Mallikas
 				if (end >= issueCount + divided) {
@@ -477,7 +470,7 @@ public class MillaController {
 				mallikasService.postProject(project);
 			}
 			
-			return updateService.getAllUpdatedIssues(projectId, person);
+			return updateService.getAllUpdatedIssues(projectId, person, authService);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {

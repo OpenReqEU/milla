@@ -35,19 +35,16 @@ public class UpdateService {
 	private List<String> reqIds;
 	
 	private Collection<Dependency> dependencies;
-
-
+	
 	/**
 	 * Downloads at least 100 (latest) updated issues from Qt Jira and sends them as OpenReq JSON Requirements to Mallikas
 	 * @param projectId
 	 * @return
 	 * @throws Exception
 	 */
-	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person) throws Exception {
-		FormatTransformerService transformer = new FormatTransformerService();
-		transformer.readFixVersionsToHashMap(projectId);
+	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person, OAuthService authService) throws Exception {
 		try {
-			updatedIssues = new UpdatedIssues(projectId);
+			updatedIssues = new UpdatedIssues(projectId, authService);
 			int amount = getNumberOfUpdatedIssues(projectId, person);
 			System.out.println(amount);
 			for (int current = 0; current<=amount; current = current + 1000) {
@@ -81,7 +78,7 @@ public class UpdateService {
 		int number = -1;
 		int sum = 0;
 		while (number != 0) {
-			JsonElement element = updatedIssues.getTheLatestUpdatedIssue(start);
+			JsonElement element = updatedIssues.getLatestUpdatedIssue(start);
 			if (element==null) {
 				break;
 			}

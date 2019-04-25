@@ -32,9 +32,13 @@ public class ProjectIssues {
 	private OAuthService authService;
 	
 
-	public ProjectIssues(String project, OAuthService service) throws IOException {
+	public ProjectIssues(String project, OAuthService service) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 	
-		authService = service;
+		if (service!=null) {
+			authService = service;
+		} else {
+			authService = new OAuthService();
+		}
 		
 		_project = project;
 		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project, authService);
