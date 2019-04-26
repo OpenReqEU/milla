@@ -493,8 +493,16 @@ public class MillaController {
 	@GetMapping(value = "getJiraAuthorizationAddress")
 	public ResponseEntity<?> authorizeJira() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
 		authService = new OAuthService();
-		String response = authService.tempTokenAuthorization();
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		try {
+			String response = authService.tempTokenAuthorization();
+			if(response == null) {
+				return new ResponseEntity<>("Authorization failed, address not acquired", HttpStatus.UNAUTHORIZED);
+			}
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch(Exception e) {
+			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
 	}
 	
 	/**
@@ -511,7 +519,16 @@ public class MillaController {
 		if (authService == null) {
 			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
 		}
-		return new ResponseEntity<>(authService.accessTokenAuthorization(secret), HttpStatus.OK);
+		try {
+			String response = authService.accessTokenAuthorization(secret);
+			if(response == null) {
+				return new ResponseEntity<>("Authorization failed, secret incorrect?", HttpStatus.UNAUTHORIZED);
+			}
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch (Exception e) {
+			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
 	}
 	
 	@PostMapping(value = "testAuthorizedRequest")
@@ -519,7 +536,16 @@ public class MillaController {
 		if (authService == null) {
 			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
 		}
-		return new ResponseEntity<>(authService.authorizedRequest(address), HttpStatus.OK);
+		try {
+			String response = authService.authorizedRequest(address);
+			if(response == null) {
+				return new ResponseEntity<>("Authorization failed, address unauthorized", HttpStatus.UNAUTHORIZED);
+			}
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch (Exception e) {
+			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
 	}
 	 
 }
