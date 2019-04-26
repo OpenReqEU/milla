@@ -43,7 +43,7 @@ public class ProjectIssues {
 		_project = project;
 		NumberOfIssuesHTML numberOfIssues = new NumberOfIssuesHTML(project, authService);
 		_maxProjectIssues = numberOfIssues.getNumberOfIssues();
-		_PROJECT_ISSUES_URL = "https://bugreports.qt.io/rest/api/2/issue/" + _project + "-%d";
+		_PROJECT_ISSUES_URL = "/rest/api/2/issue/" + _project + "-%d";
 	}
 	
 	/**
@@ -76,7 +76,7 @@ public class ProjectIssues {
 			        () -> paths.parallelStream().forEach((url) -> {
 			        	String responseJSON = "";
 						try {
-							responseJSON = service.authorizedRequest(url);
+							responseJSON = service.authorizedJiraRequest(url);
 						} catch (IOException e) {
 							System.out.println("No issue found at " + url);
 						}

@@ -80,7 +80,7 @@ public class DetectionController {
 
 		String requirements = mallikasService.getAllRequirementsInProject(projectId, false);
 		String receiveAddress = millaAddress + "/receiveAddReqResponse";
-		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/DB/AddReqs?url=" + receiveAddress;
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/AddReqs?url=" + receiveAddress + "&organization=Qt";
 		
 		HttpEntity<String> entity = new HttpEntity<String>(requirements, headers);
 		try {
@@ -160,7 +160,7 @@ public class DetectionController {
 		
 		String completeAddress = upcSimilarityAddress
 				+ "/upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
-				"&threshold=" + threshold + "&url=" + thisAddress;
+				"&threshold=" + threshold + "&url=" + thisAddress + "&organization=Qt";
 		
 		ResponseEntity<?> entity = sendRequirementsForDetection(projectId, null, completeAddress);
 		
@@ -200,7 +200,7 @@ public class DetectionController {
 		}
 		
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 
-		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress;
+		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress + "&organization=Qt";
 		
 		return sendRequirementsForDetection(projectId, null, completeAddress);
 	}	
@@ -227,7 +227,7 @@ public class DetectionController {
 
 		String thisAddress = millaAddress + "/receiveSimilarities";
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqReq?compare=" + compare + 
-				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress;
+				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress + "&organization=Qt";
 		
 		List<String> ids = Arrays.asList(requirementId1, requirementId2);
 				

@@ -25,7 +25,7 @@ import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 
 public class OAuthService {
 
-	private static final String JIRA_BASE_URL = "https://bugreports.qt.io";
+	private static final String JIRA_BASE_URL = "https://bugreports-test.qt.io";
 	private static final String REQUEST_TOKEN_URL = "/plugins/servlet/oauth/request-token";
 	private static final String ACCESS_TOKEN_URL = "/plugins/servlet/oauth/access-token";
 	private static final String AUTHORIZATION_URL = "/plugins/servlet/oauth/authorize";
@@ -125,10 +125,14 @@ public class OAuthService {
 			}
 			return parseResponse(response);
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			//System.out.println(e.getMessage());
 			return null;
 		}
 
+	}
+	
+	public String authorizedJiraRequest(String urlTail) throws IOException {
+		return authorizedRequest(JIRA_BASE_URL + urlTail);
 	}
 
 	/**

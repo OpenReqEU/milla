@@ -1,7 +1,6 @@
 package eu.openreq.milla.qtjiraimporter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import eu.openreq.milla.services.OAuthService;
 
@@ -18,7 +17,7 @@ public class NumberOfIssuesHTML
     public NumberOfIssuesHTML(String project, OAuthService service) throws IOException
     {
     	authService = service;
-        _URL = "https://bugreports.qt.io/projects/"+ project +"/issues/?filter=allissues"; //A better way?: _URL = "https://bugreports.qt.io/rest/api/2/search?jql=project=" + project + "&orderBy=-created&maxResults=1";
+        _URL = "/projects/"+ project +"/issues/?filter=allissues"; //A better way?: _URL = "/rest/api/2/search?jql=project=" + project + "&orderBy=-created&maxResults=1";
         _project = project;
         _numberOfIssues = detectNumberOfIssues();
         
@@ -27,13 +26,12 @@ public class NumberOfIssuesHTML
     private int detectNumberOfIssues() throws IOException
     {
         int projectStringlength = _project.length();
-        String page = authService.authorizedRequest(_URL);
+        String page = authService.authorizedJiraRequest(_URL);
 
-        if(page.contains("\\\"issueKeys\\\":"))
+        if(page!=null && page.contains("\\\"issueKeys\\\":"))
         {
             String text = (page.substring(page.indexOf("\\\"issueKeys\\\":")+17+projectStringlength, page.indexOf("\\\"issueKeys\\\":")+26+projectStringlength));
             int numberOfIssues = Integer.parseInt(text.replaceAll("[^0-9.]", ""));
-            System.out.println(numberOfIssues);
             return numberOfIssues;
         }
         

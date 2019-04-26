@@ -491,7 +491,7 @@ public class MillaController {
 					+ "user has to log in to receive a secret key",
 			response = String.class)
 	@GetMapping(value = "getJiraAuthorizationAddress")
-	public ResponseEntity<?> authorizeJira() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> jiraAuthorizationAddress() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
 		authService = new OAuthService();
 		try {
 			String response = authService.tempTokenAuthorization();

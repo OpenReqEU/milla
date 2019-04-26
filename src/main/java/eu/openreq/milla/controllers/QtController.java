@@ -51,9 +51,15 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTransitiveClosureOfRequirement")
-	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam String requirementId) throws IOException {
+	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam String requirementId, 
+			@RequestParam(required = false) Integer layers) throws IOException {
 
 		String completeAddress = mulperiAddress + "/models/findTransitiveClosureOfRequirement";
+		
+		if (layers!=null) {
+			completeAddress += "?layers=" + layers;
+		}
+				
 		try {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);		
 			return new ResponseEntity<>(response, HttpStatus.OK);
@@ -158,7 +164,7 @@ public class QtController {
 	public ResponseEntity<?> updateWholeProject(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		try {
 			ResponseEntity<?> response = millaController.importFromQtJira(projectId);
-			if (response!=null) {
+			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
 				return millaController.sendProjectToMulperi(projectId);
 			}
 			return response;

@@ -30,7 +30,7 @@ public class UpdatedIssues {
 		}
 		
 		_projectIssues = new HashMap<String, JsonElement>();
-		singleIssueUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project%3D" + project + "+order+by+updated+DESC&maxResults=1&startAt=";
+		singleIssueUrl = "/rest/api/2/search?jql=project%3D" + project + "+order+by+updated+DESC&maxResults=1&startAt=";
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class UpdatedIssues {
 	public JsonElement getLatestUpdatedIssue(int start) throws IOException {
 		int i = start;
 		String requestURL = singleIssueUrl + i;
-		String responseJSON = authService.authorizedRequest(requestURL);
+		String responseJSON = authService.authorizedJiraRequest(requestURL);
 		Gson gson = new Gson();
 		JsonObject projectJSON = null;
 		JsonElement element = null;
@@ -63,10 +63,10 @@ public class UpdatedIssues {
 	 * @throws IOException
 	 */
 	public void collectAllUpdatedIssues(String project, int current) throws IOException {
-		String projectIssuesUrl = "https://bugreports.qt.io/rest/api/2/search?jql=project%3D" + project
+		String projectIssuesUrl = "/rest/api/2/search?jql=project%3D" + project
 				+ "+order+by+updated+DESC&maxResults=1000&startAt=" + current;
 
-		String responseJSON = authService.authorizedRequest(projectIssuesUrl);
+		String responseJSON = authService.authorizedJiraRequest(projectIssuesUrl);
 		if(responseJSON!=null) {
 			Gson gson = new Gson();
 			JsonObject projectJSON = gson.fromJson(responseJSON, JsonElement.class).getAsJsonObject();
