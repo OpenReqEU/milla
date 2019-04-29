@@ -30,7 +30,7 @@ public class OAuthService {
 	private static final String ACCESS_TOKEN_URL = "/plugins/servlet/oauth/access-token";
 	private static final String AUTHORIZATION_URL = "/plugins/servlet/oauth/authorize";
 
-	private static final String CONSUMER_KEY = "OauthKey";
+	private static final String CONSUMER_KEY = "milla-oauth";
 	private static String PRIVATE_KEY;
 	private String REQUEST_TOKEN;
 	private String ACCESS_TOKEN;
