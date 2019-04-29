@@ -44,20 +44,21 @@ public class QtController {
 	RestTemplate rt;
 	
 	@ApiOperation(value = "Get the transitive closure of a requirement",
-			notes = "Returns the transitive closure of a given requirement up to the depth of 5",
+			notes = "Returns the transitive closure of a given requirement up to the depth of 5. "
+					+ "Can now also provide custom depth value (layerCount).",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTransitiveClosureOfRequirement")
-	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam String requirementId, 
-			@RequestParam(required = false) Integer layers) throws IOException {
+	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam List<String> requirementId, 
+			@RequestParam(required = false) Integer layerCount) throws IOException {
 
 		String completeAddress = mulperiAddress + "/models/findTransitiveClosureOfRequirement";
 		
-		if (layers!=null) {
-			completeAddress += "?layers=" + layers;
+		if (layerCount!=null) {
+			completeAddress += "?layerCount=" + layerCount;
 		}
 				
 		try {
@@ -101,15 +102,21 @@ public class QtController {
 	}
 	
 	@ApiOperation(value = "Get consistency check for the transitive closure of a requirement", notes = "First the transitive closure is created, then"
-			+ "a consistency check is performed on it.",
+			+ "a consistency check is performed on it. Can now also provide custom depth value (layerCount), defaults to 5.",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getConsistencyCheckForRequirement")
-	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam String requirementId) throws IOException {
+	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam String requirementId, @RequestParam
+			(required = false) Integer layerCount) throws IOException {
 		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure";
+		
+		if (layerCount!=null) {
+			completeAddress += "?layerCount=" + layerCount;
+		}
+		
 		try {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);
 			return new ResponseEntity<>(response, HttpStatus.FOUND);
