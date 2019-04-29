@@ -38,22 +38,26 @@ public class OAuthService {
 	private OAuthParameters parameters;
 	private OAuthRsaSigner signer;
 
-	public OAuthService() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+	public OAuthService() {
 		try {
 			byte[] encoded = Files.readAllBytes(Paths.get("key.txt"));
 			PRIVATE_KEY = new String(encoded, StandardCharsets.UTF_8);
 			signer = new OAuthRsaSigner();
 			signer.privateKey = encodedPrivateKey();
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found: " + e.getMessage());
 		} 
-		catch (FileNotFoundException e) {	//Maybe not necessary to have this?
-			System.out.println("File key.txt not found"); 
-		}
-		catch (Exception e) {
+//		catch (InvalidKeySpecException e) {
+//			System.out.println("Invalid key: " + e.getMessage());
+//		} catch (NoSuchAlgorithmException e) {
+//			System.out.println(e.getMessage());
+//		} 
+		catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
 	}
 
-	public String tempTokenAuthorization() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+	public String tempTokenAuthorization() {
 
 		try {
 			JiraOAuthGetTemporaryToken getTemp = new JiraOAuthGetTemporaryToken(JIRA_BASE_URL + REQUEST_TOKEN_URL);
@@ -71,14 +75,14 @@ public class OAuthService {
 			REQUEST_TOKEN = response.token;
 
 			return authorizationURL;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			return null;
 		}
 
 	}
 
-	public String accessTokenAuthorization(String secret) throws IOException {
+	public String accessTokenAuthorization(String secret) {
 		JiraOAuthGetAccessToken getAcc = new JiraOAuthGetAccessToken(JIRA_BASE_URL + ACCESS_TOKEN_URL);
 		getAcc.consumerKey = CONSUMER_KEY;
 		getAcc.signer = signer;
@@ -101,21 +105,29 @@ public class OAuthService {
 			parameters.token = ACCESS_TOKEN;
 
 			return "Jira authorization complete";
-		} catch (Exception e) {
+		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			return null;
 		}
 
 	}
 
-	private PrivateKey encodedPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
-		byte[] privateBytes = Base64.decodeBase64(PRIVATE_KEY);
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateBytes);
-		KeyFactory kf = KeyFactory.getInstance("RSA");
-		return kf.generatePrivate(keySpec);
+	private PrivateKey encodedPrivateKey() {
+		try {
+			byte[] privateBytes = Base64.decodeBase64(PRIVATE_KEY);
+			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateBytes);
+			KeyFactory kf = KeyFactory.getInstance("RSA");
+			return kf.generatePrivate(keySpec);
+		} catch (InvalidKeySpecException e) {
+			System.out.println(e.getMessage());
+			return null;
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println(e.getMessage());
+			return null;
+		}
 	}
 
-	public String authorizedRequest(String url) throws IOException {
+	public String authorizedRequest(String url) {
 		try {
 			HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(parameters);
 			HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(url));
@@ -124,14 +136,14 @@ public class OAuthService {
 				return null;
 			}
 			return parseResponse(response);
-		} catch (Exception e) {
-			//System.out.println(e.getMessage());
+		} catch (IOException e) {
+			// System.out.println(e.getMessage());
 			return null;
 		}
 
 	}
-	
-	public String authorizedJiraRequest(String urlTail) throws IOException {
+
+	public String authorizedJiraRequest(String urlTail) {
 		return authorizedRequest(JIRA_BASE_URL + urlTail);
 	}
 

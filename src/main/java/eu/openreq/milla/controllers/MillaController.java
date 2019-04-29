@@ -491,7 +491,7 @@ public class MillaController {
 					+ "user has to log in to receive a secret key",
 			response = String.class)
 	@GetMapping(value = "getJiraAuthorizationAddress")
-	public ResponseEntity<?> jiraAuthorizationAddress() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> jiraAuthorizationAddress() {
 		authService = new OAuthService();
 		try {
 			String response = authService.tempTokenAuthorization();
@@ -500,7 +500,7 @@ public class MillaController {
 			}
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
-		catch(Exception e) {
+		catch(HttpClientErrorException e) {
 			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
 	}
@@ -515,7 +515,7 @@ public class MillaController {
 			notes = "Use a secret key received from Jira to authorize Milla",
 			response = String.class)
 	@PostMapping(value = "verifyJiraAuthorization")
-	public ResponseEntity<?> sendSecret(@RequestBody String secret) throws IOException {
+	public ResponseEntity<?> sendSecret(@RequestBody String secret){
 		if (authService == null) {
 			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
 		}
@@ -526,13 +526,13 @@ public class MillaController {
 			}
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
-		catch (Exception e) {
+		catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
 	}
 	
 	@PostMapping(value = "testAuthorizedRequest")
-	public ResponseEntity<?> authorizedRequest(@RequestParam String address) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public ResponseEntity<?> authorizedRequest(@RequestParam String address) {
 		if (authService == null) {
 			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
 		}
@@ -543,7 +543,7 @@ public class MillaController {
 			}
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
-		catch (Exception e) {
+		catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
 	}
