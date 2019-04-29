@@ -75,11 +75,12 @@ public class ProjectIssues {
 			customThreadPool.submit(
 			        () -> paths.parallelStream().forEach((url) -> {
 			        	String responseJSON = "";
-						try {
+			//			try {
 							responseJSON = service.authorizedJiraRequest(url);
-						} catch (IOException e) {
-							System.out.println("No issue found at " + url);
-						}
+			//			} 
+//						catch (IOException e) {
+//							System.out.println("No issue found at " + url);
+//						}
 						if (responseJSON != null) {
 							JsonElement element = issueJSON.fromJson(responseJSON, JsonElement.class);
 							if (element != null && element.isJsonObject()) {
