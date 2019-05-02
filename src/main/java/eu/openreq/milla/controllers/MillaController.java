@@ -1,10 +1,11 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.FormatTransformerService;
 import eu.openreq.milla.services.MallikasService;
+import eu.openreq.milla.services.OAuthService;
 import eu.openreq.milla.services.UpdateService;
 import eu.openreq.milla.qtjiraimporter.ProjectIssues;
 import io.swagger.annotations.ApiOperation;
@@ -62,6 +64,8 @@ public class MillaController {
 	
 	@Autowired
 	UpdateService updateService;
+	
+	OAuthService authService;
 	
 
 	/**
@@ -142,7 +146,7 @@ public class MillaController {
 		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false);
 
 		if (reqsInProject == null) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
 		return this.postToMulperi(reqsInProject);
 	}
@@ -250,9 +254,9 @@ public class MillaController {
 		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, includeProposed);
 
 		if (reqsInProject == null || reqsInProject.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(reqsInProject, HttpStatus.FOUND);
+		return new ResponseEntity<String>(reqsInProject, HttpStatus.OK);
 	}
 
 	/**
@@ -275,9 +279,9 @@ public class MillaController {
 		String reqsWithIds = mallikasService.getSelectedRequirements(ids);
 
 		if (reqsWithIds == null || reqsWithIds.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(reqsWithIds, HttpStatus.FOUND);
+		return new ResponseEntity<String>(reqsWithIds, HttpStatus.OK);
 	}
 	
 	/**
@@ -299,9 +303,9 @@ public class MillaController {
 				"requirements");
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Search failed, requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(reqsWithDependencyType, HttpStatus.FOUND);
+		return new ResponseEntity<String>(reqsWithDependencyType, HttpStatus.OK);
 	}
 
 	/**
@@ -312,6 +316,8 @@ public class MillaController {
 	 *            ID of the selected project
 	 * @return ResponseEntity if successful
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeySpecException 
 	 */
 	@ApiOperation(value = "Import a selected project from Qt Jira and store a cache of the project in Mallikas", 
 			notes = "<b>Functionality</b>: This is the full data import from Qt Jira. "
@@ -328,10 +334,10 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJira")
-	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException {
-
-		ProjectIssues projectIssues = new ProjectIssues(projectId, jiraUsername, jiraPassword);
+	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		
+		ProjectIssues projectIssues = new ProjectIssues(projectId, authService);
+
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
 		person.setEmail("dummyEmail");
@@ -357,7 +363,6 @@ public class MillaController {
 		List<String> requirementIds = new ArrayList<>();
 		Collection<JsonElement> projectIssuesAsJson;
 		
-		transformer.readFixVersionsToHashMap(projectId);
 		try {
 			while (true) { // a loop needed for sending large projects in chunks to Mallikas
 				if (end >= issueCount + divided) {
@@ -423,9 +428,9 @@ public class MillaController {
 		String allRequirements = mallikasService.getAllRequirements();
 
 		if (allRequirements == null || allRequirements.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(allRequirements, HttpStatus.FOUND);
+		return new ResponseEntity<String>(allRequirements, HttpStatus.OK);
 	}
 	
 	
@@ -465,13 +470,82 @@ public class MillaController {
 				mallikasService.postProject(project);
 			}
 			
-			return updateService.getAllUpdatedIssues(projectId, person);
+			return updateService.getAllUpdatedIssues(projectId, person, authService);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
+	}
+	
+	
+	/**
+	 * Get address used in authorizing Milla for Jira
+	 * 
+	 * @return ResponseEntity
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Get address used in authorizing Milla for Jira", 
+			notes = "Initialize authorization process and receive Jira authorization address, where "
+					+ "user has to log in to receive a secret key",
+			response = String.class)
+	@GetMapping(value = "getJiraAuthorizationAddress")
+	public ResponseEntity<?> jiraAuthorizationAddress() {
+		authService = new OAuthService();
+		try {
+			String response = authService.tempTokenAuthorization();
+			if(response == null) {
+				return new ResponseEntity<>("Authorization failed, address not acquired", HttpStatus.UNAUTHORIZED);
+			}
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch(HttpClientErrorException e) {
+			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
+	}
+	
+	/**
+	 * Authorize Milla for Jira with a secret key
+	 * 
+	 * @return ResponseEntity
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Authorize Milla for Jira with a secret key", 
+			notes = "Use a secret key received from Jira to authorize Milla",
+			response = String.class)
+	@PostMapping(value = "verifyJiraAuthorization")
+	public ResponseEntity<?> sendSecret(@RequestBody String secret){
+		if (authService == null) {
+			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
+		}
+		try {
+			String response = authService.accessTokenAuthorization(secret);
+			if(response == null) {
+				return new ResponseEntity<>("Authorization failed, secret incorrect?", HttpStatus.UNAUTHORIZED);
+			}
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch (HttpClientErrorException e) {
+			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
+	}
+	
+	@PostMapping(value = "testAuthorizedRequest")
+	public ResponseEntity<?> authorizedRequest(@RequestParam String address) {
+		if (authService == null) {
+			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
+		}
+		try {
+			String response = authService.authorizedRequest(address);
+			if(response == null) {
+				return new ResponseEntity<>("Authorization failed, address unauthorized", HttpStatus.UNAUTHORIZED);
+			}
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch (HttpClientErrorException e) {
+			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
 	}
 	 
 }
