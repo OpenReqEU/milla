@@ -58,7 +58,7 @@ public class OAuthService {
 	}
 
 	public String tempTokenAuthorization() {
-		if (PRIVATE_KEY==null) {
+		if (PRIVATE_KEY==null || signer==null) {
 			System.out.println("No private key loaded, cannot authorize");
 			return null;
 		}
@@ -86,7 +86,7 @@ public class OAuthService {
 	}
 
 	public String accessTokenAuthorization(String secret) {
-		if (PRIVATE_KEY==null) {
+		if (PRIVATE_KEY==null || signer==null) {
 			System.out.println("No private key loaded, cannot authorize");
 			return null;
 		}
