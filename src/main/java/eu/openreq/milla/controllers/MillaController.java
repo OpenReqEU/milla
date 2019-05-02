@@ -490,12 +490,12 @@ public class MillaController {
 		try {
 			String response = authService.tempTokenAuthorization();
 			if(response == null) {
-				return new ResponseEntity<>("Authorization failed, address not acquired", HttpStatus.UNAUTHORIZED);
+				return new ResponseEntity<>("Cannot initialize authorization process, address not acquired", HttpStatus.UNAUTHORIZED);
 			}
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
 		catch(HttpClientErrorException e) {
-			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>("Cannot initialize authorization process, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
 	}
 	
@@ -511,29 +511,12 @@ public class MillaController {
 	@PostMapping(value = "verifyJiraAuthorization")
 	public ResponseEntity<?> sendSecret(@RequestBody String secret){
 		if (authService == null) {
-			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
+			return new ResponseEntity<>("No authorization process initialized", HttpStatus.EXPECTATION_FAILED);
 		}
 		try {
 			String response = authService.accessTokenAuthorization(secret);
 			if(response == null) {
 				return new ResponseEntity<>("Authorization failed, secret incorrect?", HttpStatus.UNAUTHORIZED);
-			}
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		}
-		catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
-		}
-	}
-	
-	@PostMapping(value = "testAuthorizedRequest")
-	public ResponseEntity<?> authorizedRequest(@RequestParam String address) {
-		if (authService == null) {
-			return new ResponseEntity<>("No authorization initialized", HttpStatus.EXPECTATION_FAILED);
-		}
-		try {
-			String response = authService.authorizedRequest(address);
-			if(response == null) {
-				return new ResponseEntity<>("Authorization failed, address unauthorized", HttpStatus.UNAUTHORIZED);
 			}
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}

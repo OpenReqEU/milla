@@ -101,8 +101,8 @@ public class QtController {
 
 	}
 	
-	@ApiOperation(value = "Get consistency check for the transitive closure of a requirement", notes = "First the transitive closure is created, then"
-			+ "a consistency check is performed on it. Can now also provide custom depth value (layerCount), defaults to 5.",
+	@ApiOperation(value = "Get consistency check for the transitive closure of a requirement", notes = "First the transitive closure is created,"
+			+ " then a consistency check is performed on it. Can now also provide custom depth value (layerCount), defaults to 5.",
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),

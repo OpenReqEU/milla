@@ -53,12 +53,15 @@ public class OAuthService {
 //			System.out.println(e.getMessage());
 //		} 
 		catch (IOException e) {
-			System.out.println(e.getMessage());
+			System.out.println("IO exception: " + e.getMessage());
 		}
 	}
 
 	public String tempTokenAuthorization() {
-
+		if (PRIVATE_KEY==null) {
+			System.out.println("No private key loaded, cannot authorize");
+			return null;
+		}
 		try {
 			JiraOAuthGetTemporaryToken getTemp = new JiraOAuthGetTemporaryToken(JIRA_BASE_URL + REQUEST_TOKEN_URL);
 			getTemp.consumerKey = CONSUMER_KEY;
@@ -83,6 +86,10 @@ public class OAuthService {
 	}
 
 	public String accessTokenAuthorization(String secret) {
+		if (PRIVATE_KEY==null) {
+			System.out.println("No private key loaded, cannot authorize");
+			return null;
+		}
 		JiraOAuthGetAccessToken getAcc = new JiraOAuthGetAccessToken(JIRA_BASE_URL + ACCESS_TOKEN_URL);
 		getAcc.consumerKey = CONSUMER_KEY;
 		getAcc.signer = signer;
