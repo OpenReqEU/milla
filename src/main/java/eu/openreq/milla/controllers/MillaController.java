@@ -49,12 +49,6 @@ public class MillaController {
 
 	@Value("${milla.mulperiAddress}")
 	private String mulperiAddress;
-	
-	@Value("${jira.username}")
-	private String jiraUsername;
-	
-	@Value("${jira.password}")
-	private String jiraPassword;
 
 	@Autowired
 	FormatTransformerService transformer;
