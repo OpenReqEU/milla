@@ -94,9 +94,9 @@ public class QtController {
 		String reqsWithDependencyType = mallikasService.requestWithParams(params, "dependencies");
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Search failed, requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<>(reqsWithDependencyType, HttpStatus.FOUND);
+		return new ResponseEntity<>(reqsWithDependencyType, HttpStatus.OK);
 		
 
 	}
@@ -109,7 +109,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getConsistencyCheckForRequirement")
-	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam String requirementId, @RequestParam
+	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam List<String> requirementId, @RequestParam
 			(required = false) Integer layerCount) throws IOException {
 		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure";
 		
@@ -119,7 +119,7 @@ public class QtController {
 		
 		try {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);
-			return new ResponseEntity<>(response, HttpStatus.FOUND);
+			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
@@ -137,20 +137,23 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTopProposedDependenciesOfRequirement")
-	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, @RequestParam Integer maxResults) throws IOException {
+	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, 
+			@RequestParam(required = false) Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
 		params.setRequirementIds(requirementId);
 		params.setProposedOnly(true);
-		params.setMaxDependencies(maxResults);
+		if (maxResults!=null) {
+			params.setMaxDependencies(maxResults);
+		}
 		
 		String reqWithTopProposed = mallikasService.requestWithParams(params,
 				"dependencies");
 
 		if (reqWithTopProposed == null || reqWithTopProposed.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Search failed, requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<>(reqWithTopProposed, HttpStatus.FOUND);
+		return new ResponseEntity<>(reqWithTopProposed, HttpStatus.OK);
 
 	}
 	

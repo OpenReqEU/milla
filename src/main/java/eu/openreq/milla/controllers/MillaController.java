@@ -146,7 +146,7 @@ public class MillaController {
 		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false);
 
 		if (reqsInProject == null) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
 		return this.postToMulperi(reqsInProject);
 	}
@@ -254,9 +254,9 @@ public class MillaController {
 		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, includeProposed);
 
 		if (reqsInProject == null || reqsInProject.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(reqsInProject, HttpStatus.FOUND);
+		return new ResponseEntity<String>(reqsInProject, HttpStatus.OK);
 	}
 
 	/**
@@ -279,9 +279,9 @@ public class MillaController {
 		String reqsWithIds = mallikasService.getSelectedRequirements(ids);
 
 		if (reqsWithIds == null || reqsWithIds.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(reqsWithIds, HttpStatus.FOUND);
+		return new ResponseEntity<String>(reqsWithIds, HttpStatus.OK);
 	}
 	
 	/**
@@ -303,9 +303,9 @@ public class MillaController {
 				"requirements");
 
 		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Search failed, requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(reqsWithDependencyType, HttpStatus.FOUND);
+		return new ResponseEntity<String>(reqsWithDependencyType, HttpStatus.OK);
 	}
 
 	/**
@@ -428,9 +428,9 @@ public class MillaController {
 		String allRequirements = mallikasService.getAllRequirements();
 
 		if (allRequirements == null || allRequirements.equals("")) {
-			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.OK);
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(allRequirements, HttpStatus.FOUND);
+		return new ResponseEntity<String>(allRequirements, HttpStatus.OK);
 	}
 	
 	
