@@ -375,7 +375,7 @@ public class DetectionController {
 					+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
 					+ "<br>url: The url of the service to be used.")
 	@PostMapping(value = "otherDetectionService")
-	public ResponseEntity<?> postRequirementsToDetectionService(@RequestParam String projectId, @RequestParam String url)
+	public ResponseEntity<?> postRequirementsToDetectionService(@RequestParam String url, @RequestParam String projectId)
 			throws IOException {
 		ResponseEntity<String> response = (ResponseEntity<String>)sendRequirementsForDetection(projectId, null, url);
 		
