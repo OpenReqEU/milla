@@ -1,10 +1,12 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,6 +58,9 @@ public class DetectionController {
 	@Autowired
 	RestTemplate rt;
 	
+	Queue<String> responseIds;
+	
+	String org = "Qt";
 
 	/**
 	 * Post a Collection of OpenReq JSON Requirements to UPC for Similarity
@@ -73,23 +79,49 @@ public class DetectionController {
 	@PostMapping(value = "detectSimilarityAddReqs")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetection(@RequestBody String projectId)
 			throws IOException {
-
+		String receiveAddress = millaAddress + "/receiveAddReqResponse";
+		return postReqsToUPC(projectId, "AddReqs?url=" + receiveAddress + "&organization=" + org);
+	}
+	
+	/**
+	 * Post requirements to UPC dependency detection and detect similarity between all of them
+	 * @param projectId
+	 * @param threshold
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Post requirements to UPC dependency detection and compute all")
+	@PostMapping(value = "detectSimilarityAddReqsAndCompute")
+	public ResponseEntity<?> postToUPCAddReqsAndCompute(@RequestBody String projectId, @RequestParam Double threshold) 
+			throws IOException {
+		String receiveAddress = millaAddress + "/receiveSimilarities";
+		ResponseEntity<String> response = postReqsToUPC(projectId, "AddReqsAndCompute?threshold=" + threshold 
+				+ "&url=" + receiveAddress + "&organization=" + org);
+		
+		if (responseIds==null) {
+			responseIds = new ArrayDeque<String>();
+		}
+		JSONObject object = new JSONObject(response.getBody());
+		if (object.has("id")) {
+			String responseId = object.getString("id");
+			System.out.println("Added ID to queue: " + responseId);
+			responseIds.add(responseId);				
+		}
+		
+		return response;
+	}
+	
+	private ResponseEntity<String> postReqsToUPC(String projectId, String urlTail) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
 		String requirements = mallikasService.getAllRequirementsInProject(projectId, false);
-		String receiveAddress = millaAddress + "/receiveAddReqResponse";
-		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/AddReqs?url=" + receiveAddress + "&organization=Qt";
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/" + urlTail;
 		
 		HttpEntity<String> entity = new HttpEntity<String>(requirements, headers);
 		try {
-			ResponseEntity<?> response = rt.postForEntity(completeAddress, entity, String.class);
-//			if (requestIds==null) {
-//				requestIds = new ArrayList<String>();
-//			}
-//			requestIds.add(response.getBody().toString());
-			System.out.println(response.getBody());
+			ResponseEntity<String> response = rt.postForEntity(completeAddress, entity, String.class);
 			
 			return new ResponseEntity<String>(response.getBody() + "", HttpStatus.ACCEPTED);
 			
@@ -97,6 +129,7 @@ public class DetectionController {
 			return new ResponseEntity<>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
+	
 	
 	/**
 	 * Receive the confirmation that adding requirements to similarity detection has begun
@@ -160,11 +193,10 @@ public class DetectionController {
 		
 		String completeAddress = upcSimilarityAddress
 				+ "/upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
-				"&threshold=" + threshold + "&url=" + thisAddress + "&organization=Qt";
+				"&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + org;
 		
-		ResponseEntity<?> entity = sendRequirementsForDetection(projectId, null, completeAddress);
-		
-		return entity;
+		return sendRequirementsForDetection(projectId, null, completeAddress);
+
 	}	
 	
 	/**
@@ -200,9 +232,10 @@ public class DetectionController {
 		}
 		
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 
-		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress + "&organization=Qt";
+		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + org;
 		
 		return sendRequirementsForDetection(projectId, null, completeAddress);
+
 	}	
 	
 	/**
@@ -227,7 +260,7 @@ public class DetectionController {
 
 		String thisAddress = millaAddress + "/receiveSimilarities";
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqReq?compare=" + compare + 
-				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress + "&organization=Qt";
+				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress + "&organization=" + org;
 		
 		List<String> ids = Arrays.asList(requirementId1, requirementId2);
 				
@@ -284,25 +317,25 @@ public class DetectionController {
 				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 				
 				HttpEntity<String> entity2 = new HttpEntity<String>(jsonString, headers);
-				ResponseEntity<?> response = rt.postForEntity(url, entity2, String.class);
-				if(response!=null) {
-//					if (requestIds==null) {
-//						requestIds = new ArrayList<String>();
-//					}
-//					requestIds.add(response.getBody().toString());
-					System.out.println(response.getBody());
-					
+				ResponseEntity<String> response = rt.postForEntity(url, entity2, String.class);
+				if(response!=null) {			
+					if (responseIds==null) {
+						responseIds = new ArrayDeque<String>();
+					}
+					JSONObject object = new JSONObject(response.getBody());
+					if (object.has("id")) {
+						String responseId = object.getString("id");
+						System.out.println("Added ID to queue: " + responseId);
+						responseIds.add(responseId);				
+					}
 					return new ResponseEntity<String>(response.getBody() + "", HttpStatus.ACCEPTED);
+					
 				}		
 			}
 
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-//		catch (JSONException e) {
-//			e.printStackTrace();
-//			return new ResponseEntity<>("Error in parsing JSON ", HttpStatus.NO_CONTENT);
-//		}
 		return new ResponseEntity<String>("No requirements to send for detection!", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 		
@@ -313,30 +346,23 @@ public class DetectionController {
 	 */
 	@ApiIgnore
 	@PostMapping(value = "receiveSimilarities")
-	public void receiveSimilarities(@RequestParam MultipartFile result) throws IOException {
+	public String receiveSimilarities(@RequestParam String result) throws IOException {
 		String content = new String(result.getBytes());
 		
 		try {
 			JSONObject responseObj = new JSONObject(content);
-			System.out.println(responseObj.toString());
 			
 			if (!responseObj.isNull("error")) {
-				System.out.println(responseObj.getString("error"));
+				return responseObj.getString("error");
 			} else {
-//				String key = responseObj.getString("id");
-//				
-//				if (requestIds.contains(key)) {
-//					requestIds.remove(key);
-//					System.out.println("Matching request key: " + key);
-//					
 				addDependenciesToMallikas(content);
-//				} else {
-//					System.out.println("Unknown request key: " + key);
-//				}
+
+				return responseObj.toString();
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return null;
 		}
 	}
 	
@@ -391,6 +417,45 @@ public class DetectionController {
 		
 		return addDependenciesToMallikas(content);		
 		
+	}
+	
+	/**
+	 * Fetch the results of similarity detection by the ID of the process
+	 * @param responseId
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Fetch the result from UPC detection service")
+	@GetMapping(value = "getResponse")
+	public ResponseEntity<?> getResponseFromUPC(@RequestParam(required = false) String responseId) {
+		
+		if (responseIds==null || responseIds.isEmpty()) {
+			return new ResponseEntity<String>("No IDs queued", HttpStatus.BAD_REQUEST);	
+		}
+		if (responseId==null) {
+			responseId = responseIds.poll();
+			System.out.println("Removed ID from queue: " + responseId);
+		} else {
+			if (responseIds.contains(responseId)) {
+				responseIds.remove(responseId);
+				System.out.println("Removed ID from queue: " + responseId);
+			} else {
+				return new ResponseEntity<String>("No such ID queued", HttpStatus.BAD_REQUEST);	
+			}
+		}
+		
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/GetResponse?"
+				+ "organization=" + org + "&response=" + responseId;
+	
+		try {
+			String response = rt.getForObject(completeAddress, String.class); 
+			System.out.println(response);
+			String result = receiveSimilarities(response);
+			return new ResponseEntity<String>("Dependencies received and saved: \n\n" + result, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("Couldn't receive dependencies", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 }

@@ -215,17 +215,17 @@ public class MallikasService {
 	 * @param requirements
 	 * @return
 	 */
-	private Collection<Requirement> parseStringToRequirements(String requirements) {
-		Gson gson = new Gson();
-		JsonParser parser = new JsonParser();
-		JsonElement reqElement = parser.parse(requirements);
-		JsonArray requirementsJSON = reqElement.getAsJsonArray();
-		Type listType = new TypeToken<List<Dependency>>(){}.getType();
-		
-		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, listType);
-		
-		return updatedRequirements;
-	}
+//	private Collection<Requirement> parseStringToRequirements(String requirements) {
+//		Gson gson = new Gson();
+//		JsonParser parser = new JsonParser();
+//		JsonElement reqElement = parser.parse(requirements);
+//		JsonArray requirementsJSON = reqElement.getAsJsonArray();
+//		Type listType = new TypeToken<List<Dependency>>(){}.getType();
+//		
+//		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, listType);
+//		
+//		return updatedRequirements;
+//	}
 
 
 }
