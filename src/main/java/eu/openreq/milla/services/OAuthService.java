@@ -25,7 +25,7 @@ import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 
 public class OAuthService {
 
-	private static final String JIRA_BASE_URL = "https://bugreports-test.qt.io";
+	private static String JIRA_BASE_URL;
 	private static final String REQUEST_TOKEN_URL = "/plugins/servlet/oauth/request-token";
 	private static final String ACCESS_TOKEN_URL = "/plugins/servlet/oauth/access-token";
 	private static final String AUTHORIZATION_URL = "/plugins/servlet/oauth/authorize";
@@ -38,7 +38,10 @@ public class OAuthService {
 	private OAuthParameters parameters;
 	private OAuthRsaSigner signer;
 
-	public OAuthService() {
+	public OAuthService(String jiraAddress) {
+		
+		JIRA_BASE_URL = jiraAddress;
+		
 		try {
 			byte[] encoded = Files.readAllBytes(Paths.get("key.txt"));
 			PRIVATE_KEY = new String(encoded, StandardCharsets.UTF_8);

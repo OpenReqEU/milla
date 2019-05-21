@@ -49,6 +49,9 @@ public class MillaController {
 
 	@Value("${milla.mulperiAddress}")
 	private String mulperiAddress;
+	
+	@Value("${milla.jiraAddress}")
+	private String jiraAddress;
 
 	@Autowired
 	FormatTransformerService transformer;
@@ -330,7 +333,7 @@ public class MillaController {
 	@PostMapping(value = "qtJira")
 	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		
-		ProjectIssues projectIssues = new ProjectIssues(projectId, authService);
+		ProjectIssues projectIssues = new ProjectIssues(projectId, authService, jiraAddress);
 
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
@@ -486,7 +489,7 @@ public class MillaController {
 			response = String.class)
 	@GetMapping(value = "getJiraAuthorizationAddress")
 	public ResponseEntity<?> jiraAuthorizationAddress() {
-		authService = new OAuthService();
+		authService = new OAuthService(jiraAddress);
 		try {
 			String response = authService.tempTokenAuthorization();
 			if(response == null) {

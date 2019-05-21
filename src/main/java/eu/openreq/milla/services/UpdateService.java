@@ -26,6 +26,9 @@ public class UpdateService {
 
 	@Value("${milla.mallikasAddress}")
 	private String mallikasAddress;
+	
+	@Value("${milla.jiraAddress}")
+	private String jiraAddress;
 
 	private UpdatedIssues updatedIssues;
 
@@ -44,7 +47,7 @@ public class UpdateService {
 	 */
 	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person, OAuthService authService) throws Exception {
 		try {
-			updatedIssues = new UpdatedIssues(projectId, authService);
+			updatedIssues = new UpdatedIssues(projectId, authService, jiraAddress);
 			int amount = getNumberOfUpdatedIssues(projectId, person);
 			System.out.println(amount);
 			for (int current = 0; current<=amount; current = current + 1000) {
