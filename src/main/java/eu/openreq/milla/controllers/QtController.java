@@ -110,12 +110,16 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getConsistencyCheckForRequirement")
 	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam List<String> requirementId, @RequestParam
-			(required = false) Integer layerCount) throws IOException {
-		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure";
+			(required = false) Integer layerCount, @RequestParam(required = false) boolean analysisOnly, 
+			@RequestParam(required = false, defaultValue = "0") Integer timeOut) throws IOException {
+
+		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=" + analysisOnly + 
+				"&timeOut=" + timeOut;
 		
 		if (layerCount!=null) {
-			completeAddress += "?layerCount=" + layerCount;
+			completeAddress += "&layerCount=" + layerCount;
 		}
+		
 		
 		try {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);

@@ -56,8 +56,6 @@ public class ProjectIssues {
 	 * @throws InvalidKeySpecException 
 	 */
 	public Collection<JsonElement> collectIssues(int start, int end) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-
-		OAuthService service = new OAuthService();
 		
 		Gson issueJSON = new Gson();
 		
@@ -76,7 +74,7 @@ public class ProjectIssues {
 			        () -> paths.parallelStream().forEach((url) -> {
 			        	String responseJSON = "";
 			//			try {
-							responseJSON = service.authorizedJiraRequest(url);
+							responseJSON = authService.authorizedJiraRequest(url);
 			//			} 
 //						catch (IOException e) {
 //							System.out.println("No issue found at " + url);
