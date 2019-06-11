@@ -3,7 +3,6 @@ package eu.openreq.milla.controllers;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
@@ -24,10 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-//import io.swagger.annotations.*;
+
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.services.JSONParser;
 import eu.openreq.milla.services.MallikasService;
@@ -46,6 +46,13 @@ public class DetectionController {
 	
 	@Value("${milla.upcCrossReferenceAddress}")
 	private String upcCrossReferenceAddress;
+	
+	@Value("${milla.detectionGetAddresses}")
+	private String[] detectionGetAddresses;
+	
+	@Value("${milla.detectionPostAddresses}")
+	private String[] detectionPostAddresses;
+
 	
 //	private List<String> requestIds;
 
@@ -77,7 +84,7 @@ public class DetectionController {
 					+ "<br><b>Parameter: </b>"
 					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
 	@PostMapping(value = "detectSimilarityAddReqs")
-	public ResponseEntity<?> postRequirementsToUPCSimilarityDetection(@RequestBody String projectId)
+	public ResponseEntity<?> postRequirementsToUPCSimilarityDetection(@RequestParam String projectId)
 			throws IOException {
 		String receiveAddress = millaAddress + "/receiveAddReqResponse";
 		return postReqsToUPC(projectId, "AddReqs?url=" + receiveAddress + "&organization=" + org);
@@ -92,7 +99,8 @@ public class DetectionController {
 	 */
 	@ApiOperation(value = "Post requirements to UPC dependency detection and compute all")
 	@PostMapping(value = "detectSimilarityAddReqsAndCompute")
-	public ResponseEntity<?> postToUPCAddReqsAndCompute(@RequestBody String projectId, @RequestParam Double threshold) 
+	public ResponseEntity<?> postToUPCAddReqsAndCompute(@RequestParam String projectId, 
+			@RequestParam(required = false) Double threshold) 
 			throws IOException {
 		String receiveAddress = millaAddress + "/receiveSimilarities";
 		ResponseEntity<String> response = postReqsToUPC(projectId, "AddReqsAndCompute?threshold=" + threshold 
@@ -195,7 +203,9 @@ public class DetectionController {
 				+ "/upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
 				"&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + org;
 		
-		return sendRequirementsForDetection(projectId, null, completeAddress);
+		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+		
+		return sendRequirementsForDetection(jsonString, completeAddress);
 
 	}	
 	
@@ -234,7 +244,9 @@ public class DetectionController {
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 
 		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + org;
 		
-		return sendRequirementsForDetection(projectId, null, completeAddress);
+		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+		
+		return sendRequirementsForDetection(jsonString, completeAddress);
 
 	}	
 	
@@ -263,8 +275,10 @@ public class DetectionController {
 				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress + "&organization=" + org;
 		
 		List<String> ids = Arrays.asList(requirementId1, requirementId2);
+		
+		String jsonString = mallikasService.getSelectedRequirements(ids);
 				
-		return sendRequirementsForDetection(null, ids, completeAddress);
+		return sendRequirementsForDetection(jsonString, completeAddress);
 	}
 	
 	
@@ -303,40 +317,41 @@ public class DetectionController {
 	 * @return Response from the server, which contains the id of the request if successful. 
 	 * @throws IOException
 	 */
-	private ResponseEntity<String> sendRequirementsForDetection(String projectId, Collection<String> ids, String url) throws IOException {
-		String jsonString = "";
-		try {
-			if (ids!=null) {
-				jsonString = mallikasService.getSelectedRequirements(ids);
-			} else {
-				jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
-			}
-			if(jsonString!=null) {
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+	private ResponseEntity<String> sendRequirementsForDetection(String jsonString, String url) {
+		
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+			
+			HttpEntity<String> entity2 = new HttpEntity<String>(jsonString, headers);
+			ResponseEntity<String> response = null;	
+			
+			try {
+				response = rt.postForEntity(url, entity2, String.class);
 				
-				HttpEntity<String> entity2 = new HttpEntity<String>(jsonString, headers);
-				ResponseEntity<String> response = rt.postForEntity(url, entity2, String.class);
-				if(response!=null) {			
-					if (responseIds==null) {
-						responseIds = new ArrayDeque<String>();
-					}
-					JSONObject object = new JSONObject(response.getBody());
-					if (object.has("id")) {
-						String responseId = object.getString("id");
-						System.out.println("Added ID to queue: " + responseId);
-						responseIds.add(responseId);				
-					}
-					return new ResponseEntity<String>(response.getBody() + "", HttpStatus.ACCEPTED);
-					
-				}		
+				if(response==null) {
+					return new ResponseEntity<String>("Response is empty", HttpStatus.OK);
+				}
+				
+				if (responseIds==null) {
+					responseIds = new ArrayDeque<String>();
+				}
+				
+				System.out.println(response.getBody());
+				JSONObject object = new JSONObject(response.getBody());
+				if (object.has("id")) {
+					String responseId = object.getString("id");
+					System.out.println("Added ID to queue: " + responseId);
+					responseIds.add(responseId);				
+				}
+				return new ResponseEntity<String>(response.getBody() + "", HttpStatus.ACCEPTED);
+			} catch (RestClientException e) {
+				return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
 			}
+//			} catch (JSONException e) {
+//				return new ResponseEntity<String>(response.getBody().toString(), HttpStatus.OK);
+//			}
 
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		return new ResponseEntity<String>("No requirements to send for detection!", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 		
 	/**
@@ -373,11 +388,14 @@ public class DetectionController {
 		try {
 			JSONParser.parseToOpenReqObjects(content);
 			List<Dependency> dependencies = JSONParser.dependencies;
+			if (dependencies==null) {
+				return new ResponseEntity<String>("Dependencies null", HttpStatus.BAD_REQUEST);
+			}
 			response = (String)millaController.postDependenciesToMallikas(dependencies, true).getBody();
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<String>("UPC error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		catch (JSONException e) {
+		catch (JSONException|com.google.gson.JsonSyntaxException e) {
 			e.printStackTrace();
 			return new ResponseEntity<String>("Error in parsing JSON", HttpStatus.NO_CONTENT);
 		}
@@ -385,6 +403,51 @@ public class DetectionController {
 		return new ResponseEntity<String>(response, HttpStatus.ACCEPTED);
 	}
 	
+	/**
+	 * Get requirements from some detection service
+	 * 
+	 * @param projectId
+	 * @param url
+	 * @return ResponseEntity<?>
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Get results from a detection service")
+	@GetMapping(value = "getDetectedFromService")
+	private ResponseEntity<String> getDependenciesFromDetectionService(String url, String requirementId) {
+		
+		ResponseEntity<String> response = null;
+		
+		try { 
+			response = rt.getForEntity(url + requirementId, String.class);
+		} catch (RestClientException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
+		}
+		String content = response.getBody();
+		
+		if (response.getStatusCode() != HttpStatus.ACCEPTED) {
+			return new ResponseEntity<String>(content, HttpStatus.BAD_REQUEST);
+		}
+		if (content.isEmpty()) {
+			return new ResponseEntity<String>("No response received!", HttpStatus.NOT_FOUND);
+		}
+		
+		content = "{\"dependencies\":" + content + "}";
+		
+		ResponseEntity<?> resultEntity = null;
+		
+		try {
+			resultEntity = addDependenciesToMallikas(content);
+		} catch (IOException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
+		}
+		
+		if (resultEntity.getStatusCode()!=HttpStatus.ACCEPTED) {
+			return new ResponseEntity<String>(resultEntity.getStatusCode());
+		}
+		
+		return new ResponseEntity<String>(resultEntity.getBody() + " \n\n" + content, resultEntity.getStatusCode());	
+		
+	}
 
 	/**
 	 * Post project requirements and the url of the service, received dependencies are saved to Mallikas
@@ -394,28 +457,38 @@ public class DetectionController {
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Post requirements to some detection service", 
-			notes = "<b>Functionality</b>: Post all requirements and dependencies to some detection service. <br>"
-					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
-					+ "<b>Postcondition</b>: Successfully detected dependencies are saved in Mallikas.<br>"
-					+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
-					+ "<br>url: The url of the service to be used.")
-	@PostMapping(value = "otherDetectionService")
-	public ResponseEntity<?> postRequirementsToDetectionService(@RequestParam String url, @RequestParam String projectId)
-			throws IOException {
-		ResponseEntity<String> response = (ResponseEntity<String>)sendRequirementsForDetection(projectId, null, url);
+//	@ApiOperation(value = "Post requirements to some detection service", 
+//			notes = "<b>Functionality</b>: Post all requirements and dependencies to some detection service. <br>"
+//					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
+//					+ "<b>Postcondition</b>: Successfully detected dependencies are saved in Mallikas.<br>"
+//					+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
+//					+ "<br>url: The url of the service to be used.")
+	@PostMapping(value = "postProjectToService")
+	private ResponseEntity<String> postRequirementsToDetectionService(@RequestParam String url, @RequestParam String projectId, 
+			@RequestBody String jsonString) throws IOException {
+		
+		if (jsonString==null) {		
+			jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+		}
+		
+		ResponseEntity<String> response = (ResponseEntity<String>)sendRequirementsForDetection(jsonString, url);
 		
 		String content = response.getBody();
 		
 		if (response.getStatusCode() != HttpStatus.ACCEPTED) {
-			return new ResponseEntity<String>(content, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<String>(content, HttpStatus.OK);
 		}
 		if (content.isEmpty()) {
 			return new ResponseEntity<String>("No response received!", HttpStatus.NOT_FOUND);
 		}
-		content = "{\"dependencies\":" + content + "}";
 		
-		return addDependenciesToMallikas(content);		
+		ResponseEntity<?> resultEntity = addDependenciesToMallikas(content);
+		
+		if (resultEntity.getStatusCode()!=HttpStatus.ACCEPTED) {
+			return new ResponseEntity<String>(response.getBody(), HttpStatus.OK);
+		}
+		
+		return new ResponseEntity<String>(resultEntity.getBody() + "\n" + content, resultEntity.getStatusCode());	
 		
 	}
 	
@@ -443,19 +516,58 @@ public class DetectionController {
 				return new ResponseEntity<String>("No such ID queued", HttpStatus.BAD_REQUEST);	
 			}
 		}
-		
+
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/GetResponse?"
 				+ "organization=" + org + "&response=" + responseId;
-	
+
 		try {
-			String response = rt.getForObject(completeAddress, String.class); 
+			ResponseEntity<String> response = rt.getForEntity(completeAddress, String.class); 
 			System.out.println(response);
-			String result = receiveSimilarities(response);
+			if (response.getStatusCode()!=HttpStatus.OK) {
+				responseIds.add(responseId);
+				return new ResponseEntity<String>("Dependencies not saved: \n\n" + response.getBody(), response.getStatusCode());
+			}
+			String result = receiveSimilarities(response.getBody());
 			return new ResponseEntity<String>("Dependencies received and saved: \n\n" + result, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<String>("Couldn't receive dependencies", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@ApiOperation(value = "Get results from all detection services")
+	@PostMapping("getDetectedFromServices")
+	public ResponseEntity<String> getDetectedFromServices(@RequestParam String reqId) throws IOException {
+		JSONObject results = new JSONObject();
+		
+		for (String url : detectionGetAddresses) {
+			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, reqId);
+			try {
+				JSONObject result = new JSONObject(detectionResult.getBody());
+				for (String key : result.keySet()) {
+					results.accumulate(key, result.get(key));
+				}
+			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
+				System.out.println("Did not receive valid JSON from " + url);
+			}		
+		}
+		return new ResponseEntity<String>(results.toString(), HttpStatus.OK);
+	}
+	
+	@ApiOperation(value = "Post a project to all detection services")
+	@PostMapping("postProjectToServices")
+	public ResponseEntity<String> postProjectToServices(@RequestParam String projectId) throws IOException {
+		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+		String results = "";
+		
+		for (String url : detectionPostAddresses) {
+			ResponseEntity<String> postResult = postRequirementsToDetectionService(url, null, jsonString);
+			results += "Response from " + url + " \n" + postResult + "\n\n";
+		}
+		
+		return new ResponseEntity<String>(results, HttpStatus.OK);
+		
+	}
+	
 	
 }

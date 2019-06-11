@@ -4,8 +4,13 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,8 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-
+import eu.openreq.milla.models.TotalDependencyScore;
+import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.RequestParams;
+import eu.openreq.milla.services.JSONParser;
 import eu.openreq.milla.services.MallikasService;
 
 import io.swagger.annotations.ApiOperation;
@@ -39,6 +46,9 @@ public class QtController {
 	
 	@Autowired
 	MillaController millaController;
+	
+	@Autowired
+	DetectionController detectionController;
 	
 	@Autowired
 	RestTemplate rt;
@@ -161,6 +171,105 @@ public class QtController {
 
 	}
 	
+	@ApiOperation(value = "Detect and get top X proposed dependencies of a requirement", notes = "Get the top dependencies as proposed by detection services", 
+			response = String.class)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Success, returns JSON model"),
+			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
+			@ApiResponse(code = 409, message = "Conflict")}) 
+	@GetMapping(value = "/getTopProposedDependencies")
+	public ResponseEntity<?> getTopProposedDependencies(@RequestParam List<String> requirementId, 
+			@RequestParam(required = false) Integer maxResults) throws IOException {
+		
+		if (maxResults == null) {
+			maxResults = 50;
+		}
+		
+		RequestParams params = new RequestParams();
+		params.setRequirementIds(requirementId);
+		params.setProposedOnly(true);
+		if (maxResults!=null) {
+			params.setMaxDependencies(maxResults);
+		}
+		
+		JSONArray results = new JSONArray();
+		JSONObject response = null;
+		
+		List<Dependency> detected = new ArrayList<Dependency>();
+		
+		for (String reqId : requirementId) {
+			try {
+				response = new JSONObject(detectionController.getDetectedFromServices(reqId).getBody());
+				JSONParser.parseToOpenReqObjects(response.getString("dependencies"));
+		        detected.addAll(JSONParser.dependencies);
+			} catch (com.google.gson.JsonSyntaxException e) {
+				System.out.println("No valid JSON received for " + reqId);
+			} catch (org.json.JSONException e) {
+				System.out.println("No dependencies received for " + reqId);
+				results.put(response);
+			}
+		}
+		
+		String proposedFromMallikas = mallikasService.requestWithParams(params,
+				"dependencies");
+		
+		try {
+			JSONParser.parseToOpenReqObjects(proposedFromMallikas);
+	        detected.addAll(JSONParser.dependencies);
+		} catch (com.google.gson.JsonSyntaxException e) {
+			System.out.println("No dependencies saved in Mallikas");
+		}
+        
+		if (detected.isEmpty()) {
+			return new ResponseEntity<String>("No dependencies found!", HttpStatus.NOT_FOUND);
+		}
+		
+		
+		//Sum the scores
+		
+		Map<String, Dependency> detectedWithTotalScore = new HashMap<>();
+		List<TotalDependencyScore> topScores = new ArrayList<>();
+		
+		for (Dependency dep : detected) {
+			if (detectedWithTotalScore.containsKey(dep.getId())) {
+				Dependency totalDep = detectedWithTotalScore.get(dep.getId());
+				totalDep.setDependency_score(totalDep.getDependency_score() + dep.getDependency_score());			
+				List<String> desc = totalDep.getDescription();
+				desc.addAll(dep.getDescription());
+				totalDep.setDescription(desc);
+				dep = totalDep;
+				detectedWithTotalScore.put(dep.getId(), dep);
+			} else {
+				detectedWithTotalScore.put(dep.getId(), dep);
+			}
+			
+		}
+		
+		for (String key : detectedWithTotalScore.keySet()) { 
+			Dependency dep = detectedWithTotalScore.get(key);
+			topScores.add(new TotalDependencyScore(dep.getId(), dep.getDependency_score()));
+		}
+
+		Collections.sort(topScores);
+		
+		if (topScores.size()<maxResults) {
+			maxResults = topScores.size();
+		}
+		topScores = topScores.subList(0, maxResults);
+		
+		List<Dependency> topDependencies = new ArrayList<>();
+		for (TotalDependencyScore score : topScores) {
+			topDependencies.add(detectedWithTotalScore.get(score.getDependencyId()));
+		}
+		
+		JSONObject topObj = new JSONObject();
+		topObj.put("dependencies", topDependencies);
+		results.put(topObj);
+		
+		return new ResponseEntity<>(results.toString(), HttpStatus.OK);
+
+	}
+	
 
 	/**
 	 * Fetches specified project from Qt Jira and sends it to Mallikas. Then posts the project to Mulperi and KeljuCaas for the transitive closure.
@@ -175,7 +284,7 @@ public class QtController {
 	@ApiOperation(value = "Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas", 
 			notes = "Post a Project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateProject")
-	public ResponseEntity<?> updateWholeProject(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public ResponseEntity<?> updateWholeProject(@RequestParam String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		try {
 			ResponseEntity<?> response = millaController.importFromQtJira(projectId);
 			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
@@ -199,7 +308,7 @@ public class QtController {
 	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the "
 			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
-	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestBody String projectId) throws IOException {
+	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
 		try {
 			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);
 			if (response!=null) {

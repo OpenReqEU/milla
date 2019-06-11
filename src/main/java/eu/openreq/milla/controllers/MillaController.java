@@ -197,10 +197,9 @@ public class MillaController {
 			throws IOException {
 		try {
 			mallikasService.updateDependencies(dependencies, isProposed, false);
-			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
-			
+			return new ResponseEntity<String>("Mallikas update successful\n", HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<>("Mallikas error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 	
@@ -224,9 +223,9 @@ public class MillaController {
 	private ResponseEntity<?> postProjectToMallikas(@RequestBody Project project) throws IOException {
 		try {
 			mallikasService.postProject(project);
-			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
+			return new ResponseEntity<String>("Mallikas update successful\n", HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<>("Mallikas error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 
@@ -271,7 +270,7 @@ public class MillaController {
 			+ "<br><b>Parameter: </b>"
 			+ "<br>ids: ids as a String array, e.g. [\"QTWB-1\", \"QTWB-2\"] ")
 	@PostMapping(value = "requirementsByIds")
-	public ResponseEntity<?> getRequirementsByIds(@RequestBody Collection<String> ids) throws IOException {
+	public ResponseEntity<?> getRequirementsByIds(@RequestParam Collection<String> ids) throws IOException {
 
 		String reqsWithIds = mallikasService.getSelectedRequirements(ids);
 
@@ -331,7 +330,7 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJira")
-	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public ResponseEntity<?> importFromQtJira(@RequestParam String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		
 		ProjectIssues projectIssues = new ProjectIssues(projectId, authService, jiraAddress);
 
@@ -454,7 +453,7 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJiraUpdated")
-	public ResponseEntity<?> importUpdatedFromQtJira(@RequestBody String projectId) throws IOException {
+	public ResponseEntity<?> importUpdatedFromQtJira(@RequestParam String projectId) throws IOException {
 		
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
