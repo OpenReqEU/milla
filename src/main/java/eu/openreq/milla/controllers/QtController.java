@@ -171,7 +171,8 @@ public class QtController {
 
 	}
 	
-	@ApiOperation(value = "Detect and get top X proposed dependencies of a requirement", notes = "Get the top dependencies as proposed by detection services", 
+	@ApiOperation(value = "Detect and get top X proposed dependencies of a requirement", notes = "Get the top dependencies "
+			+ "as proposed by detection services, along with top scores", 
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
@@ -266,7 +267,7 @@ public class QtController {
 		topObj.put("dependencies", topDependencies);
 		results.put(topObj);
 		
-		return new ResponseEntity<>(results.toString(), HttpStatus.OK);
+		return new ResponseEntity<>(results.toString(1), HttpStatus.OK);
 
 	}
 	

@@ -282,30 +282,30 @@ public class DetectionController {
 	}
 	
 	
-//	/**
-//	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project to UPC for Cross-Reference
-//	 * detection.
-//	 * 
-//	 * @param projectId
-//	 * @return ResponseEntity<?>
-//	 * @throws IOException
-//	 */
-//	@ApiOperation(value = "Detect cross-references in all requirements of a project using UPC Cross-Reference Detection", 
-//			notes = "<b>Functionality</b>: Post all requirements and dependencies in a project as a String to UPC for Cross-Reference Detection. Requires projectId <br>"
-//					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
-//					+ "<b>Postcondition</b>: After successful detection, detected cross references "
-//					+ "are stored in Mallikas as proposed dependencies."
-//					+ "<br><b>Parameter: </b>"
-//					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
-//	@PostMapping(value = "detectCrossReferenceProject")
-//	public ResponseEntity<?> postRequirementsToUPCCrossReferenceDetectionProject(@RequestParam String projectId)
-//			throws IOException {
-//
-//		String completeAddress = upcCrossReferenceAddress
-//				+ "/upc/cross-reference-detection/json/"+ projectId;
-//
-//		return sendRequirementsForSimilarityDetection(projectId, null, completeAddress);
-//	}
+	/**
+	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project to UPC for Cross-Reference
+	 * detection.
+	 * 
+	 * @param projectId
+	 * @return ResponseEntity<?>
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Detect cross-references in all requirements of a project using UPC Cross-Reference Detection", 
+			notes = "<b>Functionality</b>: Post all requirements and dependencies in a project as a String to UPC for Cross-Reference Detection. Requires projectId <br>"
+					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
+					+ "<b>Postcondition</b>: After successful detection, detected cross references "
+					+ "are stored in Mallikas as proposed dependencies."
+					+ "<br><b>Parameter: </b>"
+					+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
+	@PostMapping(value = "detectCrossReferenceProject")
+	public ResponseEntity<?> postRequirementsToUPCCrossReferenceDetectionProject(@RequestParam String projectId)
+			throws IOException {
+
+		String completeAddress = upcCrossReferenceAddress
+				+ "/upc/cross-reference-detection/json/"+ projectId;
+
+		return sendRequirementsForDetection(projectId, completeAddress);
+	}
 	
 	/**
 	 * Retrieve the requirements from Mallikas based either on the given requirement IDs or project ID,
@@ -348,9 +348,6 @@ public class DetectionController {
 			} catch (RestClientException e) {
 				return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
 			}
-//			} catch (JSONException e) {
-//				return new ResponseEntity<String>(response.getBody().toString(), HttpStatus.OK);
-//			}
 
 	}
 		
@@ -381,6 +378,13 @@ public class DetectionController {
 		}
 	}
 	
+	/**
+	 * Sends dependencies provided to Mallikas
+	 * 
+	 * @param content
+	 * @return
+	 * @throws IOException
+	 */
 	public ResponseEntity<String> addDependenciesToMallikas(String content)
 			throws IOException{	
 		String response = null;
@@ -404,9 +408,9 @@ public class DetectionController {
 	}
 	
 	/**
-	 * Get requirements from some detection service
+	 * Get detected dependencies from some detection service
 	 * 
-	 * @param projectId
+	 * @param requirementId
 	 * @param url
 	 * @return ResponseEntity<?>
 	 * @throws IOException
@@ -431,7 +435,8 @@ public class DetectionController {
 			return new ResponseEntity<String>("No response received!", HttpStatus.NOT_FOUND);
 		}
 		
-		content = "{\"dependencies\":" + content + "}";
+		
+		//content = "{\"dependencies\":" + content + "}";
 		
 		ResponseEntity<?> resultEntity = null;
 		
@@ -457,15 +462,15 @@ public class DetectionController {
 	 * @return ResponseEntity<?>
 	 * @throws IOException
 	 */
-//	@ApiOperation(value = "Post requirements to some detection service", 
-//			notes = "<b>Functionality</b>: Post all requirements and dependencies to some detection service. <br>"
-//					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
-//					+ "<b>Postcondition</b>: Successfully detected dependencies are saved in Mallikas.<br>"
-//					+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
-//					+ "<br>url: The url of the service to be used.")
+	@ApiOperation(value = "Post requirements to some detection service", 
+			notes = "<b>Functionality</b>: Post all requirements and dependencies to some detection service. <br>"
+					+ "<b>Precondition</b>: The project has been cached in Mallikas.<br>"
+					+ "<b>Postcondition</b>: Successfully detected dependencies are saved in Mallikas.<br>"
+					+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
+					+ "<br>url: The url of the service to be used.")
 	@PostMapping(value = "postProjectToService")
 	private ResponseEntity<String> postRequirementsToDetectionService(@RequestParam String url, @RequestParam String projectId, 
-			@RequestBody String jsonString) throws IOException {
+			@RequestBody(required = false) String jsonString) throws IOException {
 		
 		if (jsonString==null) {		
 			jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
@@ -535,13 +540,19 @@ public class DetectionController {
 		}
 	}
 	
-	@ApiOperation(value = "Get results from all detection services")
+	/**
+	 * Request all services to return results for requirement id
+	 * @param requirementId
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Get results from all detection services for the requirement id")
 	@PostMapping("getDetectedFromServices")
-	public ResponseEntity<String> getDetectedFromServices(@RequestParam String reqId) throws IOException {
+	public ResponseEntity<String> getDetectedFromServices(@RequestParam String requirementId) throws IOException {
 		JSONObject results = new JSONObject();
 		
 		for (String url : detectionGetAddresses) {
-			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, reqId);
+			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, requirementId);
 			try {
 				JSONObject result = new JSONObject(detectionResult.getBody());
 				for (String key : result.keySet()) {
@@ -550,10 +561,17 @@ public class DetectionController {
 			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 				System.out.println("Did not receive valid JSON from " + url);
 			}		
-		}
+		}	
+		
 		return new ResponseEntity<String>(results.toString(), HttpStatus.OK);
 	}
 	
+	/**
+	 * Fetch a project from Mallikas and post it to all services defined in properties
+	 * @param projectId
+	 * @return
+	 * @throws IOException
+	 */
 	@ApiOperation(value = "Post a project to all detection services")
 	@PostMapping("postProjectToServices")
 	public ResponseEntity<String> postProjectToServices(@RequestParam String projectId) throws IOException {
