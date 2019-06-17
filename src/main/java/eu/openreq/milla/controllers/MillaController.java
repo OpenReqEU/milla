@@ -49,6 +49,9 @@ public class MillaController {
 
 	@Value("${milla.mulperiAddress}")
 	private String mulperiAddress;
+	
+	@Value("${milla.jiraAddress}")
+	private String jiraAddress;
 
 	@Autowired
 	FormatTransformerService transformer;
@@ -161,10 +164,10 @@ public class MillaController {
 //			+ "<br><b>Parameter: </b>"
 //			+ "<br>requirements: An array of requirements in OpenReq JSON format.")
 //	@PostMapping(value = "requirements")
-	private ResponseEntity<?> postRequirementsToMallikas(@RequestBody Collection<Requirement> requirements)
+	private ResponseEntity<?> postRequirementsToMallikas(Collection<Requirement> requirements, String projectId)
 			throws IOException {
 		try {
-			mallikasService.updateRequirements(requirements);
+			mallikasService.updateRequirements(requirements, projectId);
 			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
 
 		} catch (HttpClientErrorException e) {
@@ -194,10 +197,9 @@ public class MillaController {
 			throws IOException {
 		try {
 			mallikasService.updateDependencies(dependencies, isProposed, false);
-			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
-			
+			return new ResponseEntity<String>("Mallikas update successful\n", HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<>("Mallikas error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 	
@@ -221,9 +223,9 @@ public class MillaController {
 	private ResponseEntity<?> postProjectToMallikas(@RequestBody Project project) throws IOException {
 		try {
 			mallikasService.postProject(project);
-			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
+			return new ResponseEntity<String>("Mallikas update successful\n", HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<>("Mallikas error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 
@@ -268,7 +270,7 @@ public class MillaController {
 			+ "<br><b>Parameter: </b>"
 			+ "<br>ids: ids as a String array, e.g. [\"QTWB-1\", \"QTWB-2\"] ")
 	@PostMapping(value = "requirementsByIds")
-	public ResponseEntity<?> getRequirementsByIds(@RequestBody Collection<String> ids) throws IOException {
+	public ResponseEntity<?> getRequirementsByIds(@RequestParam Collection<String> ids) throws IOException {
 
 		String reqsWithIds = mallikasService.getSelectedRequirements(ids);
 
@@ -328,9 +330,9 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJira")
-	public ResponseEntity<?> importFromQtJira(@RequestBody String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public ResponseEntity<?> importFromQtJira(@RequestParam String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		
-		ProjectIssues projectIssues = new ProjectIssues(projectId, authService);
+		ProjectIssues projectIssues = new ProjectIssues(projectId, authService, jiraAddress);
 
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
@@ -369,7 +371,7 @@ public class MillaController {
 				// epicCount = epicCount + transformer.getEpicCount();
 				// subtaskCount = subtaskCount + transformer.getSubtaskCount();
 				requirementIds.addAll(transformer.getRequirementIds());
-				this.postRequirementsToMallikas(requirements);
+				this.postRequirementsToMallikas(requirements, projectId);
 				this.postDependenciesToMallikas(dependencies, false);
 				projectIssuesAsJson.clear();
 				issues.clear();
@@ -451,7 +453,7 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJiraUpdated")
-	public ResponseEntity<?> importUpdatedFromQtJira(@RequestBody String projectId) throws IOException {
+	public ResponseEntity<?> importUpdatedFromQtJira(@RequestParam String projectId) throws IOException {
 		
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
@@ -486,7 +488,7 @@ public class MillaController {
 			response = String.class)
 	@GetMapping(value = "getJiraAuthorizationAddress")
 	public ResponseEntity<?> jiraAuthorizationAddress() {
-		authService = new OAuthService();
+		authService = new OAuthService(jiraAddress);
 		try {
 			String response = authService.tempTokenAuthorization();
 			if(response == null) {
@@ -523,6 +525,27 @@ public class MillaController {
 		catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
+	}
+	
+	/**
+	 * Test if authorized, returns some user statistics on success
+	 * 
+	 * @return ResponseEntity
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Test if authorized for Jira", 
+			notes = "Test if successfully authorized for Jira, returns some user statistics on success",
+			response = String.class)
+	@GetMapping(value = "testJiraAuthorization")
+	public ResponseEntity<String> test() {
+		OAuthService tempService;
+		if (authService==null) {
+			tempService = new OAuthService(jiraAddress);
+		} else {
+			tempService = authService;
+		}
+		String result = tempService.authorizedJiraRequest("/rest/auth/latest/session");
+		return new ResponseEntity<String>(result, HttpStatus.OK);
 	}
 	 
 }

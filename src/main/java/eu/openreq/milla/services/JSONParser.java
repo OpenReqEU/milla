@@ -1,8 +1,6 @@
 package eu.openreq.milla.services;
 import java.util.List;
 
-import org.json.JSONException;
-
 import com.google.gson.Gson;
 
 import eu.openreq.milla.models.json.*;
@@ -17,18 +15,17 @@ public class JSONParser {
 	public static List<Dependency> dependencies;
 	public static InputExtractor input;
 	
-	public static void parseToOpenReqObjects(String jsonString) 
-			throws JSONException {
-			input = gson.fromJson(jsonString, InputExtractor.class);
-			project = input.getProject();
-			projects = input.getProjects();
-			requirement = input.getRequirement();
-			requirements = input.getRequirements();
-			dependencies = input.getDependencies();
-			dependent_requirements = input.getDependentRequirements();
-			if(dependencies!= null) {
-				fixDependencyIds(dependencies);
-			}
+	public static void parseToOpenReqObjects(String jsonString) throws com.google.gson.JsonSyntaxException {
+		input = gson.fromJson(jsonString, InputExtractor.class);
+		project = input.getProject();
+		projects = input.getProjects();
+		requirement = input.getRequirement();
+		requirements = input.getRequirements();
+		dependencies = input.getDependencies();
+		dependent_requirements = input.getDependentRequirements();
+		if(dependencies!= null) {
+			fixDependencyIds(dependencies);
+		}
 	}
 	
 	//Dependencies that come from UPC do not have IDs, so it is necessary to give them IDs before trying to save to the database

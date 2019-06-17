@@ -26,6 +26,9 @@ public class UpdateService {
 
 	@Value("${milla.mallikasAddress}")
 	private String mallikasAddress;
+	
+	@Value("${milla.jiraAddress}")
+	private String jiraAddress;
 
 	private UpdatedIssues updatedIssues;
 
@@ -44,14 +47,14 @@ public class UpdateService {
 	 */
 	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person, OAuthService authService) throws Exception {
 		try {
-			updatedIssues = new UpdatedIssues(projectId, authService);
+			updatedIssues = new UpdatedIssues(projectId, authService, jiraAddress);
 			int amount = getNumberOfUpdatedIssues(projectId, person);
 			System.out.println(amount);
 			for (int current = 0; current<=amount; current = current + 1000) {
 				updatedIssues.collectAllUpdatedIssues(projectId, current);
 				Collection<Requirement> requirements = processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
 				if (requirements!=null && !requirements.isEmpty()) {
-					mallikasService.updateRequirements(requirements);
+					mallikasService.updateRequirements(requirements, projectId);
 				}
 				if (dependencies!=null && !dependencies.isEmpty()) {
 					mallikasService.updateDependencies(dependencies, false, false);
