@@ -527,7 +527,15 @@ public class MillaController {
 		}
 	}
 	
-	
+	/**
+	 * Test if authorized, returns some user statistics on success
+	 * 
+	 * @return ResponseEntity
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Test if authorized for Jira", 
+			notes = "Test if successfully authorized for Jira, returns some user statistics on success",
+			response = String.class)
 	@GetMapping(value = "testJiraAuthorization")
 	public ResponseEntity<String> test() {
 		OAuthService tempService;

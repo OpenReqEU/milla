@@ -124,6 +124,12 @@ public class DetectionController {
 		return response;
 	}
 	
+	/**
+	 * Posts the requirements to UPC detection
+	 * @param projectId
+	 * @param urlTail
+	 * @return
+	 */
 	private ResponseEntity<String> postReqsToUPC(String projectId, String urlTail) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
@@ -200,7 +206,7 @@ public class DetectionController {
 	@PostMapping(value = "detectSimilarityProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionProject(@RequestParam Boolean compare, 
 			@RequestParam String projectId, @RequestParam(required = false, 
-			defaultValue = "0.3") String threshold)
+			defaultValue = "0.3") Double threshold)
 			throws IOException {
 		
 		String thisAddress = millaAddress + "/receiveSimilarities";
@@ -237,7 +243,7 @@ public class DetectionController {
 	@PostMapping(value = "detectSimilarityReqProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
 			@RequestParam String projectId, @RequestParam List<String> requirementId, @RequestParam(required = false, 
-			defaultValue = "0.3") String threshold)
+			defaultValue = "0.3") Double threshold)
 			throws IOException{
 		
 		String thisAddress = millaAddress + "/receiveSimilarities";

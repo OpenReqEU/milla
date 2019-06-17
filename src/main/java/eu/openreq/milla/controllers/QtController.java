@@ -93,7 +93,8 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getDependenciesOfRequirement")
 	public ResponseEntity<?> getDependenciesOfRequirement(@RequestParam String requirementId, 
-			@RequestParam(required = false) Double scoreThreshold, @RequestParam(required = false) Integer maxResults) throws IOException {
+			@RequestParam(required = false) Double scoreThreshold, 
+			@RequestParam(required = false) Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
 		List<String> reqIds = new ArrayList<String>();
@@ -144,15 +145,15 @@ public class QtController {
 
 	}
 	
-	@ApiOperation(value = "Get top X proposed dependencies of a requirement", notes = "Get the top dependencies as proposed by detection services", 
+	@ApiOperation(value = "Get top X proposed dependencies of a requirement saved in Mallikas", notes = "Get the top dependencies", 
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
-	@GetMapping(value = "/getTopProposedDependenciesOfRequirement")
-	public ResponseEntity<?> getTopProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, 
-			@RequestParam(required = false) Integer maxResults) throws IOException {
+	@GetMapping(value = "/getProposedDependenciesOfRequirement")
+	public ResponseEntity<?> getProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, 
+			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
 		params.setRequirementIds(requirementId);
@@ -172,13 +173,13 @@ public class QtController {
 	}
 	
 	@ApiOperation(value = "Detect and get top X proposed dependencies of a requirement", notes = "Get the top dependencies "
-			+ "as proposed by detection services, along with top scores", 
+			+ "as proposed by all detection services", 
 			response = String.class)
 	@ApiResponses(value = { 
 			@ApiResponse(code = 200, message = "Success, returns JSON model"),
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
-	@GetMapping(value = "/getTopProposedDependencies")
+	@GetMapping(value = "/getTopProposedDependenciesOfRequirement")
 	public ResponseEntity<?> getTopProposedDependencies(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
 		
