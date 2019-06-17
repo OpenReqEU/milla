@@ -52,6 +52,9 @@ public class DetectionController {
 	
 	@Value("${milla.detectionPostAddresses}")
 	private String[] detectionPostAddresses;
+	
+	@Value("${milla.organization}")
+	private String organization;
 
 	
 //	private List<String> requestIds;
@@ -66,8 +69,6 @@ public class DetectionController {
 	RestTemplate rt;
 	
 	Queue<String> responseIds;
-	
-	String org = "Qt";
 
 	/**
 	 * Post a Collection of OpenReq JSON Requirements to UPC for Similarity
@@ -87,7 +88,7 @@ public class DetectionController {
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetection(@RequestParam String projectId)
 			throws IOException {
 		String receiveAddress = millaAddress + "/receiveAddReqResponse";
-		return postReqsToUPC(projectId, "AddReqs?url=" + receiveAddress + "&organization=" + org);
+		return postReqsToUPC(projectId, "AddReqs?url=" + receiveAddress + "&organization=" + organization);
 	}
 	
 	/**
@@ -100,17 +101,21 @@ public class DetectionController {
 	@ApiOperation(value = "Post requirements to UPC dependency detection and compute all")
 	@PostMapping(value = "detectSimilarityAddReqsAndCompute")
 	public ResponseEntity<?> postToUPCAddReqsAndCompute(@RequestParam String projectId, 
-			@RequestParam(required = false) Double threshold) 
+			@RequestParam(required = false, defaultValue = "0.3") Double threshold) 
 			throws IOException {
 		String receiveAddress = millaAddress + "/receiveSimilarities";
 		ResponseEntity<String> response = postReqsToUPC(projectId, "AddReqsAndCompute?threshold=" + threshold 
-				+ "&url=" + receiveAddress + "&organization=" + org);
-		
-		if (responseIds==null) {
-			responseIds = new ArrayDeque<String>();
+				+ "&url=" + receiveAddress + "&organization=" + organization);
+		JSONObject object;
+		try {
+			object = new JSONObject(response.getBody());
+		} catch (JSONException e) {
+			return response;
 		}
-		JSONObject object = new JSONObject(response.getBody());
 		if (object.has("id")) {
+			if (responseIds==null) {
+				responseIds = new ArrayDeque<String>();
+			}
 			String responseId = object.getString("id");
 			System.out.println("Added ID to queue: " + responseId);
 			responseIds.add(responseId);				
@@ -194,14 +199,15 @@ public class DetectionController {
 					+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
 	@PostMapping(value = "detectSimilarityProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionProject(@RequestParam Boolean compare, 
-			@RequestParam String projectId, @RequestParam String threshold)
+			@RequestParam String projectId, @RequestParam(required = false, 
+			defaultValue = "0.3") String threshold)
 			throws IOException {
 		
 		String thisAddress = millaAddress + "/receiveSimilarities";
 		
 		String completeAddress = upcSimilarityAddress
 				+ "/upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
-				"&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + org;
+				"&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + organization;
 		
 		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
 		
@@ -230,7 +236,8 @@ public class DetectionController {
 			+ "<br>threshold: The minimum score for similarity detection (e.g. 0.3).")
 	@PostMapping(value = "detectSimilarityReqProject")
 	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqProject(@RequestParam Boolean compare, 
-			@RequestParam String projectId, @RequestParam List<String> requirementId, @RequestParam String threshold)
+			@RequestParam String projectId, @RequestParam List<String> requirementId, @RequestParam(required = false, 
+			defaultValue = "0.3") String threshold)
 			throws IOException{
 		
 		String thisAddress = millaAddress + "/receiveSimilarities";
@@ -242,7 +249,8 @@ public class DetectionController {
 		}
 		
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqProject?compare=" + 
-		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + org;
+		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + 
+				thisAddress + "&organization=" + organization;
 		
 		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
 		
@@ -266,13 +274,13 @@ public class DetectionController {
 	+ "<br>reqId1: The id of the requirement that is compared to other requirement (reqId2)."
 	+ "<br>reqId2: The id of the requirement that is compared to other requirement (reqId1).")
 	@PostMapping(value = "detectSimilarityReqReq")
-	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, @RequestParam String requirementId1, 
-			@RequestParam String requirementId2)
+	public ResponseEntity<?> postRequirementsToUPCSimilarityDetectionReqReq(@RequestParam Boolean compare, 
+			@RequestParam String requirementId1, @RequestParam String requirementId2)
 			throws IOException{
 
 		String thisAddress = millaAddress + "/receiveSimilarities";
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/ReqReq?compare=" + compare + 
-				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress + "&organization=" + org;
+				"&req1=" + requirementId1 + "&req2=" + requirementId2 + "&url=" + thisAddress + "&organization=" + organization;
 		
 		List<String> ids = Arrays.asList(requirementId1, requirementId2);
 		
@@ -368,7 +376,6 @@ public class DetectionController {
 				return responseObj.getString("error");
 			} else {
 				addDependenciesToMallikas(content);
-
 				return responseObj.toString();
 			}
 		} catch (JSONException e) {
@@ -523,7 +530,7 @@ public class DetectionController {
 		}
 
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/GetResponse?"
-				+ "organization=" + org + "&response=" + responseId;
+				+ "organization=" + organization + "&response=" + responseId;
 
 		try {
 			ResponseEntity<String> response = rt.getForEntity(completeAddress, String.class); 

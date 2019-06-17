@@ -137,7 +137,7 @@ public class OAuthService {
 		}
 	}
 
-	public String authorizedRequest(String url) {
+	private String authorizedRequest(String url) {
 		try {
 			HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(parameters);
 			HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(url));
@@ -147,7 +147,7 @@ public class OAuthService {
 			}
 			return parseResponse(response);
 		} catch (IOException e) {
-			// System.out.println(e.getMessage());
+			//System.out.println(e.getMessage());
 			return null;
 		}
 

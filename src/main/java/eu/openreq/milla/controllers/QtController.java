@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -130,7 +131,6 @@ public class QtController {
 			completeAddress += "&layerCount=" + layerCount;
 		}
 		
-		
 		try {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);
 			return new ResponseEntity<>(response, HttpStatus.OK);
@@ -180,11 +180,7 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTopProposedDependencies")
 	public ResponseEntity<?> getTopProposedDependencies(@RequestParam List<String> requirementId, 
-			@RequestParam(required = false) Integer maxResults) throws IOException {
-		
-		if (maxResults == null) {
-			maxResults = 50;
-		}
+			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
 		params.setRequirementIds(requirementId);
@@ -262,6 +258,8 @@ public class QtController {
 		for (TotalDependencyScore score : topScores) {
 			topDependencies.add(detectedWithTotalScore.get(score.getDependencyId()));
 		}
+		
+		//
 		
 		JSONObject topObj = new JSONObject();
 		topObj.put("dependencies", topDependencies);

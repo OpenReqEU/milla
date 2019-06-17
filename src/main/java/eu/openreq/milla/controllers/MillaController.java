@@ -164,10 +164,10 @@ public class MillaController {
 //			+ "<br><b>Parameter: </b>"
 //			+ "<br>requirements: An array of requirements in OpenReq JSON format.")
 //	@PostMapping(value = "requirements")
-	private ResponseEntity<?> postRequirementsToMallikas(@RequestBody Collection<Requirement> requirements)
+	private ResponseEntity<?> postRequirementsToMallikas(Collection<Requirement> requirements, String projectId)
 			throws IOException {
 		try {
-			mallikasService.updateRequirements(requirements);
+			mallikasService.updateRequirements(requirements, projectId);
 			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
 
 		} catch (HttpClientErrorException e) {
@@ -371,7 +371,7 @@ public class MillaController {
 				// epicCount = epicCount + transformer.getEpicCount();
 				// subtaskCount = subtaskCount + transformer.getSubtaskCount();
 				requirementIds.addAll(transformer.getRequirementIds());
-				this.postRequirementsToMallikas(requirements);
+				this.postRequirementsToMallikas(requirements, projectId);
 				this.postDependenciesToMallikas(dependencies, false);
 				projectIssuesAsJson.clear();
 				issues.clear();
@@ -525,6 +525,19 @@ public class MillaController {
 		catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Cannot authorize, exception: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
+	}
+	
+	
+	@GetMapping(value = "testJiraAuthorization")
+	public ResponseEntity<String> test() {
+		OAuthService tempService;
+		if (authService==null) {
+			tempService = new OAuthService(jiraAddress);
+		} else {
+			tempService = authService;
+		}
+		String result = tempService.authorizedJiraRequest("/rest/auth/latest/session");
+		return new ResponseEntity<String>(result, HttpStatus.OK);
 	}
 	 
 }

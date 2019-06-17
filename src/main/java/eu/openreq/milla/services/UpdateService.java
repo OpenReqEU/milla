@@ -54,7 +54,7 @@ public class UpdateService {
 				updatedIssues.collectAllUpdatedIssues(projectId, current);
 				Collection<Requirement> requirements = processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
 				if (requirements!=null && !requirements.isEmpty()) {
-					mallikasService.updateRequirements(requirements);
+					mallikasService.updateRequirements(requirements, projectId);
 				}
 				if (dependencies!=null && !dependencies.isEmpty()) {
 					mallikasService.updateDependencies(dependencies, false, false);

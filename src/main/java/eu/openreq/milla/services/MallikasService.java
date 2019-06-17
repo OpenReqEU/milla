@@ -126,9 +126,9 @@ public class MallikasService {
 	 * @param requirements
 	 * @return
 	 */
-	public String updateRequirements(Collection<Requirement> requirements) {
+	public String updateRequirements(Collection<Requirement> requirements, String projectId) {
 		try {
-			return rt.postForObject(mallikasAddress + "/updateRequirements", requirements, String.class);	
+			return rt.postForObject(mallikasAddress + "/updateRequirements?projectId=" + projectId, requirements, String.class);	
 		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();
