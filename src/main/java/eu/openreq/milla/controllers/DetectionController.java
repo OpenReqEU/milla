@@ -567,8 +567,9 @@ public class DetectionController {
 			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, requirementId);
 			try {
 				JSONObject result = new JSONObject(detectionResult.getBody());
-				for (String key : result.keySet()) {
-					results.accumulate(key, result.get(key));
+				for (Object key : result.keySet()) {
+					String keyString = key.toString();
+					results.accumulate(keyString, result.get(keyString));
 				}
 			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
