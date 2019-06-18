@@ -6,12 +6,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -192,7 +189,7 @@ public class QtController {
 			params.setMaxDependencies(maxResults);
 		}
 		
-		Set<Dependency> detected = new HashSet<Dependency>();
+		List<Dependency> detected = new ArrayList<Dependency>();
 		
 		for (String reqId : requirementId) {
 			try {
