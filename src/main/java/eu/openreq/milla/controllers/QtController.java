@@ -6,8 +6,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -190,21 +192,17 @@ public class QtController {
 			params.setMaxDependencies(maxResults);
 		}
 		
-		JSONArray results = new JSONArray();
-		JSONObject response = null;
-		
-		List<Dependency> detected = new ArrayList<Dependency>();
+		Set<Dependency> detected = new HashSet<Dependency>();
 		
 		for (String reqId : requirementId) {
 			try {
-				response = new JSONObject(detectionController.getDetectedFromServices(reqId).getBody());
+				JSONObject response = new JSONObject(detectionController.getDetectedFromServices(reqId).getBody());
 				JSONParser.parseToOpenReqObjects(response.getString("dependencies"));
 		        detected.addAll(JSONParser.dependencies);
 			} catch (com.google.gson.JsonSyntaxException e) {
 				System.out.println("No valid JSON received for " + reqId);
 			} catch (org.json.JSONException e) {
 				System.out.println("No dependencies received for " + reqId);
-				results.put(response);
 			}
 		}
 		
@@ -262,9 +260,8 @@ public class QtController {
 		
 		//
 		
-		JSONObject topObj = new JSONObject();
-		topObj.put("dependencies", topDependencies);
-		results.put(topObj);
+		JSONObject results = new JSONObject();
+		results.append("dependencies", topDependencies);
 		
 		return new ResponseEntity<>(results.toString(1), HttpStatus.OK);
 
