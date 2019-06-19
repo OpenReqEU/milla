@@ -6,8 +6,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import eu.openreq.milla.models.TotalDependencyScore;
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.RequestParams;
+import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.JSONParser;
 import eu.openreq.milla.services.MallikasService;
 
@@ -226,21 +229,19 @@ public class QtController {
 		for (Dependency dep : detected) {
 			if (detectedWithTotalScore.containsKey(dep.getId())) {
 				Dependency totalDep = detectedWithTotalScore.get(dep.getId());
-				totalDep.setDependency_score(totalDep.getDependency_score() + dep.getDependency_score());			
+				totalDep.setDependency_score(totalDep.getDependency_score() + dep.getDependency_score());		
 				List<String> desc = totalDep.getDescription();
 				desc.addAll(dep.getDescription());
 				totalDep.setDescription(desc);
-				dep = totalDep;
-				detectedWithTotalScore.put(dep.getId(), dep);
-			} else {
-				detectedWithTotalScore.put(dep.getId(), dep);
-			}
-			
+				dep = totalDep;	
+			} 
+			detectedWithTotalScore.put(dep.getId(), dep);			
 		}
 		
 		for (String key : detectedWithTotalScore.keySet()) { 
 			Dependency dep = detectedWithTotalScore.get(key);
-			topScores.add(new TotalDependencyScore(dep.getId(), dep.getDependency_score()));
+			topScores.add(new TotalDependencyScore(dep.getId(), dep.getFromid(), 
+					dep.getToid(), dep.getDependency_score()));
 		}
 
 		Collections.sort(topScores);
@@ -249,18 +250,29 @@ public class QtController {
 			maxResults = topScores.size();
 		}
 		topScores = topScores.subList(0, maxResults);
+		Set<String> reqIds = new HashSet<>();
 		
 		List<Dependency> topDependencies = new ArrayList<>();
 		for (TotalDependencyScore score : topScores) {
 			topDependencies.add(detectedWithTotalScore.get(score.getDependencyId()));
+			reqIds.add(score.getFromid());
+			reqIds.add(score.getToid());
 		}
 		
 		//
 		
 		JSONObject results = new JSONObject();
-		results.append("dependencies", topDependencies);
+		results.accumulate("dependencies", topDependencies);
 		
-		return new ResponseEntity<>(results.toString(1), HttpStatus.OK);
+		String requirementJson = mallikasService.getSelectedRequirements(reqIds);
+		try {
+			JSONParser.parseToOpenReqObjects(requirementJson);
+			results.accumulate("requirements", JSONParser.requirements);
+		} catch (com.google.gson.JsonSyntaxException e) {
+			System.out.println("Couldn't get requirements from Mallikas");
+		}
+		
+		return new ResponseEntity<>(results.toString(), HttpStatus.OK);
 
 	}
 	
