@@ -407,10 +407,9 @@ public class DetectionController {
 			}
 			response = (String)millaController.postDependenciesToMallikas(dependencies, true).getBody();
 		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<String>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<String>("Error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 		catch (JSONException|com.google.gson.JsonSyntaxException e) {
-			e.printStackTrace();
 			return new ResponseEntity<String>("Error in parsing JSON", HttpStatus.NO_CONTENT);
 		}
 
@@ -428,37 +427,14 @@ public class DetectionController {
 	@ApiOperation(value = "Get results from a detection service")
 	@ApiIgnore
 	@GetMapping(value = "getDetectedFromService")
-	private ResponseEntity<String> getDependenciesFromDetectionService(String url, String requirementId) {
+	private ResponseEntity<String> getDependenciesFromDetectionService(String url, String requirementId) throws IOException {
 		
-		ResponseEntity<String> response = null;
+		ResponseEntity<String> serviceResponse = rt.getForEntity(url + requirementId, String.class);
 		
-		try { 
-			response = rt.getForEntity(url + requirementId, String.class);
-		} catch (RestClientException e) {
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
-		}
-		String content = response.getBody();
+		ResponseEntity<String> mallikasResponse = addDependenciesToMallikas(serviceResponse.getBody());
 		
-		if (response.getStatusCode() != HttpStatus.ACCEPTED && response.getStatusCode() != HttpStatus.OK) {
-			return new ResponseEntity<String>(content, HttpStatus.BAD_REQUEST);
-		}
-		if (content.isEmpty()) {
-			return new ResponseEntity<String>("No response received!", HttpStatus.NOT_FOUND);
-		}
-		
-		ResponseEntity<?> resultEntity = null;
-		
-		try {
-			resultEntity = addDependenciesToMallikas(content);
-		} catch (IOException e) {
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		if (resultEntity.getStatusCode()!=HttpStatus.OK) {
-			return new ResponseEntity<String>(content, resultEntity.getStatusCode());
-		}
-		
-		return new ResponseEntity<String>(content, resultEntity.getStatusCode());	
+		return new ResponseEntity<String>(serviceResponse.getBody(), 
+				mallikasResponse.getStatusCode());	
 		
 	}
 
@@ -478,31 +454,19 @@ public class DetectionController {
 					+ "<br>url: The url of the service to be used.")
 	@ApiIgnore
 	@PostMapping(value = "postProjectToService")
-	private ResponseEntity<String> postRequirementsToDetectionService(@RequestParam String url, @RequestParam String projectId, 
-			@RequestBody(required = false) String jsonString) throws IOException {
+	private ResponseEntity<String> postRequirementsToDetectionService(@RequestParam String url, 
+			@RequestParam String projectId, @RequestBody(required = false) String jsonString) throws IOException {
 		
 		if (jsonString==null) {		
 			jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
 		}
 		
-		ResponseEntity<String> response = (ResponseEntity<String>)sendRequirementsForDetection(jsonString, url);
+		ResponseEntity<String> serviceResponse = (ResponseEntity<String>)sendRequirementsForDetection(jsonString, url);
 		
-		String content = response.getBody();
+		ResponseEntity<String> mallikasResponse = addDependenciesToMallikas(serviceResponse.getBody());
 		
-		if (response.getStatusCode() != HttpStatus.ACCEPTED && response.getStatusCode() != HttpStatus.OK) {
-			return new ResponseEntity<String>(content, response.getStatusCode());
-		}
-		if (content.isEmpty()) {
-			return new ResponseEntity<String>("No response received!", HttpStatus.NOT_FOUND);
-		}
-		
-		ResponseEntity<?> resultEntity = addDependenciesToMallikas(content);
-		
-		if (resultEntity.getStatusCode()!=HttpStatus.ACCEPTED) {
-			return new ResponseEntity<String>(response.getBody(), HttpStatus.OK);
-		}
-		
-		return new ResponseEntity<String>(resultEntity.getBody() + "\n" + content, resultEntity.getStatusCode());	
+		return new ResponseEntity<String>(mallikasResponse.getBody() + "\n" + serviceResponse.getBody(), 
+				mallikasResponse.getStatusCode());	
 		
 	}
 	
@@ -563,13 +527,11 @@ public class DetectionController {
 			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, requirementId);
 			try {
 				JSONObject result = new JSONObject(detectionResult.getBody());
-				for (Object key : result.keySet()) {
-					String keyString = key.toString();
-					results.accumulate(keyString, result.get(keyString));
-				}
+				JSONParser.parseToOpenReqObjects(result.toString());
+				results.accumulate("dependencies", JSONParser.dependencies);
 			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
-			}		
+			}
 		}		
 		return new ResponseEntity<String>(results.toString(), HttpStatus.OK);
 	}

@@ -29,7 +29,6 @@ import org.springframework.web.client.RestTemplate;
 import eu.openreq.milla.models.TotalDependencyScore;
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.RequestParams;
-import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.JSONParser;
 import eu.openreq.milla.services.MallikasService;
 
@@ -78,7 +77,7 @@ public class QtController {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);		
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<>("Error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 		catch (Exception e) {
 			return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -196,13 +195,12 @@ public class QtController {
 		
 		for (String reqId : requirementId) {
 			try {
-				JSONObject response = new JSONObject(detectionController.getDetectedFromServices(reqId).getBody());
-				JSONParser.parseToOpenReqObjects(response.getString("dependencies"));
+				String response = detectionController.getDetectedFromServices(reqId).getBody();
+				JSONParser.parseToOpenReqObjects(response);
+				System.out.println(response);
 		        detected.addAll(JSONParser.dependencies);
-			} catch (com.google.gson.JsonSyntaxException e) {
-				System.out.println("No valid JSON received for " + reqId);
-			} catch (org.json.JSONException e) {
-				System.out.println("No dependencies received for " + reqId);
+			} catch (com.google.gson.JsonSyntaxException|org.json.JSONException e) {
+				System.out.println("No dependencies received for " + reqId + ": " + e.getMessage());
 			}
 		}
 		
