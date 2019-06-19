@@ -446,10 +446,6 @@ public class DetectionController {
 			return new ResponseEntity<String>("No response received!", HttpStatus.NOT_FOUND);
 		}
 		
-		content = "{\"dependencies\":" + content + "}";
-		
-		System.out.println(content);
-		
 		ResponseEntity<?> resultEntity = null;
 		
 		try {
@@ -459,7 +455,7 @@ public class DetectionController {
 		}
 		
 		if (resultEntity.getStatusCode()!=HttpStatus.OK) {
-			return new ResponseEntity<String>(resultEntity.getBody().toString(), resultEntity.getStatusCode());
+			return new ResponseEntity<String>(content, resultEntity.getStatusCode());
 		}
 		
 		return new ResponseEntity<String>(content, resultEntity.getStatusCode());	
