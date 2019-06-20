@@ -435,13 +435,15 @@ public class DetectionController {
 	@ApiIgnore
 	@GetMapping(value = "getDetectedFromService")
 	private ResponseEntity<String> getDependenciesFromDetectionService(String url, String requirementId) throws IOException {
-		
-		ResponseEntity<String> serviceResponse = rt.getForEntity(url + requirementId, String.class);
-		
-		ResponseEntity<String> mallikasResponse = addDependenciesToMallikas(serviceResponse.getBody());
-		
-		return new ResponseEntity<String>(serviceResponse.getBody(), 
-				mallikasResponse.getStatusCode());	
+		try {
+			ResponseEntity<String> serviceResponse = rt.getForEntity(url + requirementId, String.class);	
+			ResponseEntity<String> mallikasResponse = addDependenciesToMallikas(serviceResponse.getBody());
+			
+			return new ResponseEntity<String>(serviceResponse.getBody(), 
+					mallikasResponse.getStatusCode());
+		} catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.NO_CONTENT);
+		}
 		
 	}
 
