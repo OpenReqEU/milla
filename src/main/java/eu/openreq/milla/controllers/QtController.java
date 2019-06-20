@@ -10,8 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.TotalDependencyScore;
 import eu.openreq.milla.models.json.Dependency;
@@ -197,7 +198,6 @@ public class QtController {
 			try {
 				String response = detectionController.getDetectedFromServices(reqId).getBody();
 				JSONParser.parseToOpenReqObjects(response);
-				System.out.println(response);
 		        detected.addAll(JSONParser.dependencies);
 			} catch (com.google.gson.JsonSyntaxException|org.json.JSONException e) {
 				System.out.println("No dependencies received for " + reqId + ": " + e.getMessage());
@@ -228,9 +228,9 @@ public class QtController {
 			if (detectedWithTotalScore.containsKey(dep.getId())) {
 				Dependency totalDep = detectedWithTotalScore.get(dep.getId());
 				totalDep.setDependency_score(totalDep.getDependency_score() + dep.getDependency_score());		
-				List<String> desc = totalDep.getDescription();
+				Set<String> desc = new HashSet<String>(totalDep.getDescription());
 				desc.addAll(dep.getDescription());
-				totalDep.setDescription(desc);
+				totalDep.setDescription(new ArrayList<String>(desc));
 				dep = totalDep;	
 			} 
 			detectedWithTotalScore.put(dep.getId(), dep);			
@@ -259,13 +259,13 @@ public class QtController {
 		
 		//
 		
-		JSONObject results = new JSONObject();
-		results.accumulate("dependencies", topDependencies);
+		JsonObject results = new JsonObject();
+		results.add("dependencies", new Gson().toJsonTree(topDependencies));
 		
 		String requirementJson = mallikasService.getSelectedRequirements(reqIds);
 		try {
 			JSONParser.parseToOpenReqObjects(requirementJson);
-			results.accumulate("requirements", JSONParser.requirements);
+			results.add("requirements", new Gson().toJsonTree(JSONParser.requirements));
 		} catch (com.google.gson.JsonSyntaxException e) {
 			System.out.println("Couldn't get requirements from Mallikas");
 		}

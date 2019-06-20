@@ -2,13 +2,13 @@ package eu.openreq.milla.controllers;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,8 +25,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.services.JSONParser;
@@ -103,20 +104,25 @@ public class DetectionController {
 		String receiveAddress = millaAddress + "/receiveSimilarities";
 		ResponseEntity<String> response = postReqsToUPC(projectId, "AddReqsAndCompute?threshold=" + threshold 
 				+ "&url=" + receiveAddress + "&organization=" + organization);
-		JSONObject object;
+		
 		try {
-			object = new JSONObject(response.getBody());
+			System.out.println(response);
+			JsonObject object = new Gson().fromJson(response.getBody(), JsonObject.class);
+			
+			if (object.has("id")) {
+				if (responseIds==null) {
+					responseIds = new ArrayDeque<String>();
+				}
+				String responseId = object.get("id").toString();
+				//responseId = responseId.replace("\"", "");
+				System.out.println("Added ID to queue: " + responseId);
+				responseIds.add(responseId);				
+			}
+			
 		} catch (JSONException e) {
 			return response;
 		}
-		if (object.has("id")) {
-			if (responseIds==null) {
-				responseIds = new ArrayDeque<String>();
-			}
-			String responseId = object.getString("id");
-			System.out.println("Added ID to queue: " + responseId);
-			responseIds.add(responseId);				
-		}
+		
 		
 		return response;
 	}
@@ -147,23 +153,22 @@ public class DetectionController {
 	}
 	
 	
-	/**
-	 * Receive the confirmation that adding requirements to similarity detection has begun
-	 * @param result
-	 * @throws IOException
-	 */
-	@ApiIgnore
-	@PostMapping(value = "receiveAddReqResponse")
-	public void receiveAddReqResponse(@RequestParam MultipartFile result)
-			throws IOException{
-		
-		String content = new String(result.getBytes());
-
-		JSONObject responseObj = null;
-		try {
-			responseObj = new JSONObject(content);
-			System.out.println(responseObj);
-			
+//	/**
+//	 * Receive the confirmation that adding requirements to similarity detection has begun
+//	 * @param result
+//	 * @throws IOException
+//	 */
+//	@ApiIgnore
+//	@PostMapping(value = "receiveAddReqResponse")
+//	public void receiveAddReqResponse(@RequestParam MultipartFile result)
+//			throws IOException{
+//		
+//		String content = new String(result.getBytes());
+//
+//		try {
+//			JsonObject object = new Gson().fromJson(content, JsonObject.class);
+//			System.out.println(object.toString());
+//			
 //			if (!responseObj.isNull("error")) {
 //				System.out.println(responseObj.getString("error"));
 //			} else {
@@ -174,12 +179,12 @@ public class DetectionController {
 //					System.out.println("Request received for key: " + key);
 //				}
 //			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//	}
 	
 	/**
 	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project 
@@ -341,9 +346,11 @@ public class DetectionController {
 					return new ResponseEntity<String>("No response", HttpStatus.NOT_FOUND);
 				}
 				try {
-					JSONObject object = new JSONObject(response.getBody());
+					JsonObject object = new Gson().fromJson(response.getBody(), JsonObject.class);
 					if (object.has("id")) {
-						String responseId = object.getString("id");
+						String responseId = object.get("id").getAsString();
+						//responseId = responseId.replace("\"", "");
+						
 						System.out.println("Added ID to queue: " + responseId);
 						
 						if (responseIds==null) {
@@ -373,13 +380,13 @@ public class DetectionController {
 		String content = new String(result.getBytes());
 		
 		try {
-			JSONObject responseObj = new JSONObject(content);
+			JsonObject object = new Gson().fromJson(content, JsonObject.class);
 			
-			if (!responseObj.isNull("error")) {
-				return responseObj.getString("error");
+			if (object.has("error")) {
+				return object.get("error").toString();
 			} else {
 				addDependenciesToMallikas(content);
-				return responseObj.toString();
+				return object.toString();
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -498,6 +505,7 @@ public class DetectionController {
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/GetResponse?"
 				+ "organization=" + organization + "&response=" + responseId;
 
+		System.out.println(completeAddress);
 		try {
 			ResponseEntity<String> response = rt.getForEntity(completeAddress, String.class); 
 			System.out.println(response);
@@ -522,18 +530,19 @@ public class DetectionController {
 	@ApiOperation(value = "Get results from all detection services for the requirement id")
 	@PostMapping("getDetectedFromServices")
 	public ResponseEntity<String> getDetectedFromServices(@RequestParam String requirementId) throws IOException {
-		JSONObject results = new JSONObject();
+		List<Dependency> dependencies = new ArrayList<>();
 		for (String url : detectionGetAddresses) {
 			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, requirementId);
 			try {
-				JSONObject result = new JSONObject(detectionResult.getBody());
-				JSONParser.parseToOpenReqObjects(result.toString());
-				results.accumulate("dependencies", JSONParser.dependencies);
+				JSONParser.parseToOpenReqObjects(detectionResult.getBody().toString());
+				dependencies.addAll(JSONParser.dependencies);
 			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
 			}
 		}		
-		return new ResponseEntity<String>(results.toString(), HttpStatus.OK);
+		JsonObject resultObj = new JsonObject();
+		resultObj.add("dependencies", new Gson().toJsonTree(dependencies));
+		return new ResponseEntity<String>(resultObj.toString(), HttpStatus.OK);
 	}
 	
 	/**
