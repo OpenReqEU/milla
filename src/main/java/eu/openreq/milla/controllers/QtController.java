@@ -30,7 +30,7 @@ import com.google.gson.JsonObject;
 import eu.openreq.milla.models.TotalDependencyScore;
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.RequestParams;
-import eu.openreq.milla.services.JSONParser;
+import eu.openreq.milla.services.OpenReqJSONParser;
 import eu.openreq.milla.services.MallikasService;
 
 import io.swagger.annotations.ApiOperation;
@@ -194,11 +194,13 @@ public class QtController {
 		
 		List<Dependency> detected = new ArrayList<Dependency>();
 		
+		OpenReqJSONParser parser = null;
+		
 		for (String reqId : requirementId) {
 			try {
 				String response = detectionController.getDetectedFromServices(reqId).getBody();
-				JSONParser.parseToOpenReqObjects(response);
-		        detected.addAll(JSONParser.dependencies);
+				parser = new OpenReqJSONParser(response);
+		        detected.addAll(parser.getDependencies());
 			} catch (com.google.gson.JsonSyntaxException|org.json.JSONException e) {
 				System.out.println("No dependencies received for " + reqId + ": " + e.getMessage());
 			}
@@ -208,8 +210,8 @@ public class QtController {
 				"dependencies");
 		
 		try {
-			JSONParser.parseToOpenReqObjects(proposedFromMallikas);
-	        detected.addAll(JSONParser.dependencies);
+			parser = new OpenReqJSONParser(proposedFromMallikas);
+	        detected.addAll(parser.getDependencies());
 		} catch (com.google.gson.JsonSyntaxException e) {
 			System.out.println("No dependencies saved in Mallikas");
 		}
@@ -264,8 +266,8 @@ public class QtController {
 		
 		String requirementJson = mallikasService.getSelectedRequirements(reqIds);
 		try {
-			JSONParser.parseToOpenReqObjects(requirementJson);
-			results.add("requirements", new Gson().toJsonTree(JSONParser.requirements));
+			parser = new OpenReqJSONParser(requirementJson);
+			results.add("requirements", new Gson().toJsonTree(parser.getRequirements()));
 		} catch (com.google.gson.JsonSyntaxException e) {
 			System.out.println("Couldn't get requirements from Mallikas");
 		}

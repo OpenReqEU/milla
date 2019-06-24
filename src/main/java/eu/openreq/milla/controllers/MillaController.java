@@ -396,9 +396,9 @@ public class MillaController {
 			return new ResponseEntity<String>("All requirements and dependencies downloaded",
 					HttpStatus.OK);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
 	}
@@ -468,9 +468,9 @@ public class MillaController {
 			
 			return updateService.getAllUpdatedIssues(projectId, person, authService);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
 	}
