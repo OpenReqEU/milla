@@ -168,7 +168,7 @@ public class OAuthService {
 		try (Scanner s = new Scanner(response.getContent()).useDelimiter("\\A")) {
 			return s.hasNext() ? s.next() : "";
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 			return null;
 		} 
 	}
