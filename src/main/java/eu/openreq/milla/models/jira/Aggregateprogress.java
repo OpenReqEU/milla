@@ -22,7 +22,7 @@ public class Aggregateprogress {
     @JsonProperty("total")
     private Integer total;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonProperty("progress")
     public Integer getProgress() {
