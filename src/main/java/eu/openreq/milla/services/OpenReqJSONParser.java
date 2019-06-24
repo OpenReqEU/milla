@@ -7,13 +7,12 @@ import eu.openreq.milla.models.json.*;
 
 public class OpenReqJSONParser {
 	static Gson gson = new Gson();
-	public Project project;
-	public Requirement requirement;
-	public List<Project> projects;
-	public List<Requirement> requirements;
-	public List<Requirement> dependent_requirements;
-	public List<Dependency> dependencies;
-	public InputExtractor input;
+	private Project project;
+	private Requirement requirement;
+	private List<Project> projects;
+	private List<Requirement> requirements;
+	private List<Requirement> dependent_requirements;
+	private List<Dependency> dependencies;
 	
 	public OpenReqJSONParser (String jsonString) throws com.google.gson.JsonSyntaxException {
 		InputExtractor input = gson.fromJson(jsonString, InputExtractor.class);
@@ -41,48 +40,25 @@ public class OpenReqJSONParser {
 		return project;
 	}
 
-	public void setProject(Project project) {
-		this.project = project;
-	}
-
 	public Requirement getRequirement() {
 		return requirement;
-	}
-
-	public void setRequirement(Requirement requirement) {
-		this.requirement = requirement;
 	}
 
 	public List<Project> getProjects() {
 		return projects;
 	}
 
-	public void setProjects(List<Project> projects) {
-		this.projects = projects;
-	}
-
 	public List<Requirement> getRequirements() {
 		return requirements;
-	}
-
-	public void setRequirements(List<Requirement> requirements) {
-		this.requirements = requirements;
 	}
 
 	public List<Requirement> getDependent_requirements() {
 		return dependent_requirements;
 	}
 
-	public void setDependent_requirements(List<Requirement> dependent_requirements) {
-		this.dependent_requirements = dependent_requirements;
-	}
-
 	public List<Dependency> getDependencies() {
 		return dependencies;
 	}
 
-	public void setDependencies(List<Dependency> dependencies) {
-		this.dependencies = dependencies;
-	}
 	
 }
