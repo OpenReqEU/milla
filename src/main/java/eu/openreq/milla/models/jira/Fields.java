@@ -98,7 +98,7 @@ public class Fields {
     @JsonProperty("resolution")
     private Resolution resolution;
     @JsonProperty("customfield_10027")
-    private Customfield10027 customfield10027;
+    private CustomField customfield10027;
     @JsonProperty("customfield_10302")
     private Object customfield10302;
     @JsonProperty("resolutiondate")
@@ -148,7 +148,7 @@ public class Fields {
     @JsonProperty("updated")
     private String updated;
     @JsonProperty("status")
-    private Status__ status;
+    private Status status;
     @JsonProperty("components")
     private List<Component> components = null;
     @JsonProperty("timeoriginalestimate")
@@ -171,8 +171,6 @@ public class Fields {
     private List<Subtask> subtasks = null;
     @JsonProperty("reporter")
     private Reporter reporter;
-    @JsonProperty("aggregateprogress")
-    private Aggregateprogress aggregateprogress;
     @JsonProperty("customfield_10200")
     private String customfield10200;
     @JsonProperty("customfield_10400")
@@ -183,6 +181,8 @@ public class Fields {
     private Object customfield10910;
     @JsonProperty("customfield_10911")
     private Object customfield10911;
+    @JsonProperty("aggregateprogress")
+    private Progress aggregateprogress;
     @JsonProperty("progress")
     private Progress progress;
     @JsonProperty("comment")
@@ -200,7 +200,7 @@ public class Fields {
     @JsonProperty("customfield_10184")
     private Object customfield10184;
     @JsonProperty("customfield_10401")
-    private Customfield10401 customfield10401;
+    private CustomField customfield10401;
     @JsonProperty("customfield_10402")
     private Object customfield10402;
     @JsonProperty("customfield_10403")
@@ -296,12 +296,12 @@ public class Fields {
     }
 
     @JsonProperty("customfield_10027")
-    public Customfield10027 getCustomfield10027() {
+    public CustomField getCustomfield10027() {
         return customfield10027;
     }
 
     @JsonProperty("customfield_10027")
-    public void setCustomfield10027(Customfield10027 customfield10027) {
+    public void setCustomfield10027(CustomField customfield10027) {
         this.customfield10027 = customfield10027;
     }
 
@@ -546,12 +546,12 @@ public class Fields {
     }
 
     @JsonProperty("status")
-    public Status__ getStatus() {
+    public Status getStatus() {
         return status;
     }
 
     @JsonProperty("status")
-    public void setStatus(Status__ status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
@@ -666,12 +666,12 @@ public class Fields {
     }
 
     @JsonProperty("aggregateprogress")
-    public Aggregateprogress getAggregateprogress() {
+    public Progress getAggregateprogress() {
         return aggregateprogress;
     }
 
     @JsonProperty("aggregateprogress")
-    public void setAggregateprogress(Aggregateprogress aggregateprogress) {
+    public void setAggregateprogress(Progress aggregateprogress) {
         this.aggregateprogress = aggregateprogress;
     }
 
@@ -807,12 +807,12 @@ public class Fields {
     }
 
     @JsonProperty("customfield_10401")
-    public Customfield10401 getCustomfield10401() {
+    public CustomField getCustomfield10401() {
         return customfield10401;
     }
 
     @JsonProperty("customfield_10401")
-    public void setCustomfield10401(Customfield10401 customfield10401) {
+    public void setCustomfield10401(CustomField customfield10401) {
         this.customfield10401 = customfield10401;
     }
 

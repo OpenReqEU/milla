@@ -13,23 +13,17 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "self",
-    "id",
-    "key",
-    "colorName",
-    "name"
+    "value",
+    "id"
 })
-public class StatusCategory___ {
+public class CustomField {
 
     @JsonProperty("self")
     private String self;
+    @JsonProperty("value")
+    private String value;
     @JsonProperty("id")
-    private Integer id;
-    @JsonProperty("key")
-    private String key;
-    @JsonProperty("colorName")
-    private String colorName;
-    @JsonProperty("name")
-    private String name;
+    private String id;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -43,44 +37,24 @@ public class StatusCategory___ {
         this.self = self;
     }
 
+    @JsonProperty("value")
+    public String getValue() {
+        return value;
+    }
+
+    @JsonProperty("value")
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     @JsonProperty("id")
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
-    }
-
-    @JsonProperty("key")
-    public String getKey() {
-        return key;
-    }
-
-    @JsonProperty("key")
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    @JsonProperty("colorName")
-    public String getColorName() {
-        return colorName;
-    }
-
-    @JsonProperty("colorName")
-    public void setColorName(String colorName) {
-        this.colorName = colorName;
-    }
-
-    @JsonProperty("name")
-    public String getName() {
-        return name;
-    }
-
-    @JsonProperty("name")
-    public void setName(String name) {
-        this.name = name;
     }
 
     @JsonAnyGetter
