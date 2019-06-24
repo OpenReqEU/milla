@@ -26,7 +26,7 @@ public class Subtask {
     @JsonProperty("self")
     private String self;
     @JsonProperty("fields")
-    private Fields___ fields;
+    private Fields fields;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -61,12 +61,12 @@ public class Subtask {
     }
 
     @JsonProperty("fields")
-    public Fields___ getFields() {
+    public Fields getFields() {
         return fields;
     }
 
     @JsonProperty("fields")
-    public void setFields(Fields___ fields) {
+    public void setFields(Fields fields) {
         this.fields = fields;
     }
 

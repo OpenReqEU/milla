@@ -29,7 +29,7 @@ public class Creator {
     @JsonProperty("key")
     private String key;
     @JsonProperty("avatarUrls")
-    private AvatarUrls__ avatarUrls;
+    private AvatarUrls avatarUrls;
     @JsonProperty("displayName")
     private String displayName;
     @JsonProperty("active")
@@ -70,12 +70,12 @@ public class Creator {
     }
 
     @JsonProperty("avatarUrls")
-    public AvatarUrls__ getAvatarUrls() {
+    public AvatarUrls getAvatarUrls() {
         return avatarUrls;
     }
 
     @JsonProperty("avatarUrls")
-    public void setAvatarUrls(AvatarUrls__ avatarUrls) {
+    public void setAvatarUrls(AvatarUrls avatarUrls) {
         this.avatarUrls = avatarUrls;
     }
 

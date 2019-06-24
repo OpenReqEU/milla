@@ -29,7 +29,7 @@ public class Reporter {
     @JsonProperty("key")
     private String key;
     @JsonProperty("avatarUrls")
-    private AvatarUrls___ avatarUrls;
+    private AvatarUrls avatarUrls;
     @JsonProperty("displayName")
     private String displayName;
     @JsonProperty("active")
@@ -70,12 +70,12 @@ public class Reporter {
     }
 
     @JsonProperty("avatarUrls")
-    public AvatarUrls___ getAvatarUrls() {
+    public AvatarUrls getAvatarUrls() {
         return avatarUrls;
     }
 
     @JsonProperty("avatarUrls")
-    public void setAvatarUrls(AvatarUrls___ avatarUrls) {
+    public void setAvatarUrls(AvatarUrls avatarUrls) {
         this.avatarUrls = avatarUrls;
     }
 

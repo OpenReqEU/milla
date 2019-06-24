@@ -29,7 +29,7 @@ public class Assignee {
     @JsonProperty("key")
     private String key;
     @JsonProperty("avatarUrls")
-    private AvatarUrls_ avatarUrls;
+    private AvatarUrls avatarUrls;
     @JsonProperty("displayName")
     private String displayName;
     @JsonProperty("active")
@@ -70,12 +70,12 @@ public class Assignee {
     }
 
     @JsonProperty("avatarUrls")
-    public AvatarUrls_ getAvatarUrls() {
+    public AvatarUrls getAvatarUrls() {
         return avatarUrls;
     }
 
     @JsonProperty("avatarUrls")
-    public void setAvatarUrls(AvatarUrls_ avatarUrls) {
+    public void setAvatarUrls(AvatarUrls avatarUrls) {
         this.avatarUrls = avatarUrls;
     }
 

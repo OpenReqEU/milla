@@ -2,6 +2,7 @@ package eu.openreq.milla.services;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -164,11 +165,12 @@ public class OAuthService {
 	 * @throws IOException
 	 */
 	private String parseResponse(HttpResponse response) throws IOException {
-		@SuppressWarnings("resource")
-		Scanner s = new Scanner(response.getContent()).useDelimiter("\\A");
-		String text = s.hasNext() ? s.next() : "";
-		s.close();
-		return text;
+		try (Scanner s = new Scanner(response.getContent()).useDelimiter("\\A")) {
+			return s.hasNext() ? s.next() : "";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} 
 	}
 
 }

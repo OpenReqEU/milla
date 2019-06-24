@@ -54,8 +54,9 @@ public class ProjectIssues {
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException 
 	 * @throws InvalidKeySpecException 
+	 * @throws InterruptedException 
 	 */
-	public Collection<JsonElement> collectIssues(int start, int end) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public Collection<JsonElement> collectIssues(int start, int end) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, InterruptedException {
 		
 		Gson issueJSON = new Gson();
 		
@@ -73,12 +74,8 @@ public class ProjectIssues {
 			customThreadPool.submit(
 			        () -> paths.parallelStream().forEach((url) -> {
 			        	String responseJSON = "";
-			//			try {
-							responseJSON = authService.authorizedJiraRequest(url);
-			//			} 
-//						catch (IOException e) {
-//							System.out.println("No issue found at " + url);
-//						}
+						responseJSON = authService.authorizedJiraRequest(url);
+
 						if (responseJSON != null) {
 							JsonElement element = issueJSON.fromJson(responseJSON, JsonElement.class);
 							if (element != null && element.isJsonObject()) {
@@ -93,9 +90,10 @@ public class ProjectIssues {
 						}
 			        })
 			).get();
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
 		}
 		paths.clear();
 		return issues.values();

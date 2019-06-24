@@ -12,36 +12,49 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "progress",
-    "total"
+    "self",
+    "value",
+    "id"
 })
-public class Aggregateprogress {
+public class CustomField {
 
-    @JsonProperty("progress")
-    private Integer progress;
-    @JsonProperty("total")
-    private Integer total;
+    @JsonProperty("self")
+    private String self;
+    @JsonProperty("value")
+    private String value;
+    @JsonProperty("id")
+    private String id;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("progress")
-    public Integer getProgress() {
-        return progress;
+    @JsonProperty("self")
+    public String getSelf() {
+        return self;
     }
 
-    @JsonProperty("progress")
-    public void setProgress(Integer progress) {
-        this.progress = progress;
+    @JsonProperty("self")
+    public void setSelf(String self) {
+        this.self = self;
     }
 
-    @JsonProperty("total")
-    public Integer getTotal() {
-        return total;
+    @JsonProperty("value")
+    public String getValue() {
+        return value;
     }
 
-    @JsonProperty("total")
-    public void setTotal(Integer total) {
-        this.total = total;
+    @JsonProperty("value")
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    @JsonProperty("id")
+    public String getId() {
+        return id;
+    }
+
+    @JsonProperty("id")
+    public void setId(String id) {
+        this.id = id;
     }
 
     @JsonAnyGetter

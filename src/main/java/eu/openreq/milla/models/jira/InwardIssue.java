@@ -26,7 +26,7 @@ public class InwardIssue {
     @JsonProperty("self")
     private String self;
     @JsonProperty("fields")
-    private Fields__ fields;
+    private Fields fields;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -61,12 +61,12 @@ public class InwardIssue {
     }
 
     @JsonProperty("fields")
-    public Fields__ getFields() {
+    public Fields getFields() {
         return fields;
     }
 
     @JsonProperty("fields")
-    public void setFields(Fields__ fields) {
+    public void setFields(Fields fields) {
         this.fields = fields;
     }
 
