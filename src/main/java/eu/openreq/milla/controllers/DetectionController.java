@@ -30,7 +30,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.json.Dependency;
-import eu.openreq.milla.services.JSONParser;
+import eu.openreq.milla.services.OpenReqJSONParser;
 import eu.openreq.milla.services.MallikasService;
 import io.swagger.annotations.ApiOperation;
 import springfox.documentation.annotations.ApiIgnore;
@@ -390,7 +390,7 @@ public class DetectionController {
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 			return null;
 		}
 	}
@@ -407,8 +407,8 @@ public class DetectionController {
 		String response = null;
 		
 		try {
-			JSONParser.parseToOpenReqObjects(content);
-			List<Dependency> dependencies = JSONParser.dependencies;
+			OpenReqJSONParser parser = new OpenReqJSONParser(content);
+			List<Dependency> dependencies = parser.getDependencies();
 			if (dependencies==null) {
 				return new ResponseEntity<String>("Dependencies null", HttpStatus.BAD_REQUEST);
 			}
@@ -518,7 +518,7 @@ public class DetectionController {
 			String result = receiveSimilarities(response.getBody());
 			return new ResponseEntity<String>("Dependencies received and saved: \n\n" + result, HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 			return new ResponseEntity<String>("Couldn't receive dependencies", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -536,8 +536,8 @@ public class DetectionController {
 		for (String url : detectionGetAddresses) {
 			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, requirementId);
 			try {
-				JSONParser.parseToOpenReqObjects(detectionResult.getBody().toString());
-				dependencies.addAll(JSONParser.dependencies);
+				OpenReqJSONParser parser = new OpenReqJSONParser(detectionResult.getBody().toString());
+				dependencies.addAll(parser.getDependencies());
 			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
 			}

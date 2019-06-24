@@ -125,8 +125,8 @@ public class UpdateService {
 		String requirementString = mallikasService.getSelectedRequirements(Arrays.asList(id));
 		if (requirementString != null) {
 			try {
-				JSONParser.parseToOpenReqObjects(requirementString);
-				List<Requirement> receivedReqs = JSONParser.requirements;
+				OpenReqJSONParser parser = new OpenReqJSONParser(requirementString);
+				List<Requirement> receivedReqs = parser.getRequirements();
 				Requirement oldReq = receivedReqs.get(0);
 				return oldReq;
 			} catch (JSONException e) {

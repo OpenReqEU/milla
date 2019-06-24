@@ -192,7 +192,7 @@ public class FormatTransformerService {
 				
 				manageSubtasks(issue, req);
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 		}
 
@@ -678,7 +678,7 @@ public class FormatTransformerService {
 				environmentString = mapper.writeValueAsString(issue.getFields().getEnvironment());
 			} catch (JsonProcessingException e) {
 				environmentString = "";
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			reqPart.setText(environmentString);
 		}
@@ -702,7 +702,7 @@ public class FormatTransformerService {
 				labelString = mapper.writeValueAsString(issue.getFields().getLabels());
 			} catch (JsonProcessingException e) {
 				labelString = "";
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			reqPart.setText(labelString);
 		}
@@ -731,7 +731,7 @@ public class FormatTransformerService {
 				versionsString = mapper.writeValueAsString(names);
 			} catch (JsonProcessingException e) {
 				versionsString = "";
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			reqPart.setText(versionsString);
 		}
@@ -761,7 +761,7 @@ public class FormatTransformerService {
 				componentsString = mapper.writeValueAsString(names);
 			} catch (JsonProcessingException e) {
 				componentsString = "";
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			reqPart.setText(componentsString);
 		}
@@ -790,7 +790,7 @@ public class FormatTransformerService {
 				platformsString = mapper.writeValueAsString(labels);
 			} catch (JsonProcessingException e) {
 				platformsString = "";
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			reqPart.setText(platformsString);
 		}
@@ -813,7 +813,7 @@ public class FormatTransformerService {
 				String versionString = fixVersion.getName();
 				reqPart.setText(versionString);
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 		} else {
 			reqPart.setId(req.getId() + "_FIXVERSION");

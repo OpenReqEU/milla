@@ -92,7 +92,7 @@ public class ProjectIssues {
 			).get();
 		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 			
 		}
 		paths.clear();
