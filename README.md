@@ -16,7 +16,7 @@ Milla is an orchestrator (broker) service used in the Qt Jira trial of OpenReq. 
 	
 ## Public APIs
 
-The API is documented by using Swagger2: https://api.openreq.eu/milla/swagger-ui.html
+The API is documented by using Swagger2: https://api.openreq.eu/#/services/milla
 
 ## How to Install
 
