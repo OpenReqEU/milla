@@ -1,5 +1,7 @@
 package eu.openreq.milla.models;
 
+import java.util.Objects;
+
 public class TotalDependencyScore implements Comparable<TotalDependencyScore> {
 
 	String dependencyId;
@@ -55,4 +57,9 @@ public class TotalDependencyScore implements Comparable<TotalDependencyScore> {
 		}
         return 0;
     }
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.dependencyId, this.fromid, this.toid, this.totalScore);
+	}
 }

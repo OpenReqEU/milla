@@ -197,17 +197,15 @@ public class QtController {
 		OpenReqJSONParser parser = null;
 		
 		for (String reqId : requirementId) {
-			try {
-				String response = detectionController.getDetectedFromServices(reqId).getBody();
-				parser = new OpenReqJSONParser(response);
-		        detected.addAll(parser.getDependencies());
-			} catch (com.google.gson.JsonSyntaxException|org.json.JSONException e) {
-				System.out.println("No dependencies received for " + reqId + ": " + e.getMessage());
-			}
+			detectionController.getDetectedFromServices(reqId);
 		}
 		
 		String proposedFromMallikas = mallikasService.requestWithParams(params,
 				"dependencies");
+		
+		if (proposedFromMallikas==null) {
+			return new ResponseEntity<String>("Search failed, no requirements found", HttpStatus.NOT_FOUND);
+		}
 		
 		try {
 			parser = new OpenReqJSONParser(proposedFromMallikas);
@@ -215,11 +213,10 @@ public class QtController {
 		} catch (com.google.gson.JsonSyntaxException e) {
 			System.out.println("No dependencies saved in Mallikas");
 		}
-        
-		if (detected.isEmpty()) {
-			return new ResponseEntity<String>("No dependencies found!", HttpStatus.NOT_FOUND);
-		}
 		
+		if (detected.isEmpty()) {
+			return new ResponseEntity<String>(proposedFromMallikas, HttpStatus.OK);
+		}
 		
 		//Sum the scores
 		
@@ -265,6 +262,7 @@ public class QtController {
 		results.add("dependencies", new Gson().toJsonTree(topDependencies));
 		
 		String requirementJson = mallikasService.getSelectedRequirements(reqIds);
+		
 		try {
 			parser = new OpenReqJSONParser(requirementJson);
 			results.add("requirements", new Gson().toJsonTree(parser.getRequirements()));
