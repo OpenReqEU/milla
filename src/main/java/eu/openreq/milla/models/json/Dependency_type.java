@@ -23,43 +23,5 @@ public enum Dependency_type {
 	DUPLICATES,
 	@SerializedName(value="replaces", alternate= {"REPLACES"})
 	REPLACES
-	
-//	@SerializedName("contributes")
-//	CONTRIBUTES,
-//	@SerializedName("damages")
-//	DAMAGES,
-//	@SerializedName("refines")
-//	REFINES,
-//	@SerializedName("requires")
-//	REQUIRES,
-//	@SerializedName("incompatible")
-//	INCOMPATIBLE,
-//	@SerializedName("decomposition")
-//	DECOMPOSITION,
-//	@SerializedName("similar")
-//	SIMILAR,
-//	@SerializedName("duplicates")
-//	DUPLICATES,
-//	@SerializedName("replaces")
-//	REPLACES
-	
-//	@JsonProperty("contributes")
-//	CONTRIBUTES,
-//	@JsonProperty("damages")
-//	DAMAGES,
-//	@JsonProperty("refines")
-//	REFINES,
-//	@JsonProperty("requires")
-//	REQUIRES,
-//	@JsonProperty("incompatible")
-//	INCOMPATIBLE,
-//	@JsonProperty("decomposition")
-//	DECOMPOSITION,
-//	@JsonProperty("similar")
-//	SIMILAR,
-//	@JsonProperty("duplicates")
-//	DUPLICATES,
-//	@JsonProperty("replaces")
-//	REPLACES
 
 }

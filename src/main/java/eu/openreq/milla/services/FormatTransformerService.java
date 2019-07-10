@@ -61,12 +61,14 @@ public class FormatTransformerService {
 	 */
 	private List<String> requirementIds;
 
+	/** Used to collect statistics on types of Jira issues **/
 	private int epicCount;
 
 	public int getEpicCount() {
 		return epicCount;
 	}
 
+	/** Used to collect statistics on types of Jira issues **/
 	private int subtaskCount;
 
 	public int getSubtaskCount() {
@@ -105,6 +107,7 @@ public class FormatTransformerService {
 	
 	/**
 	 * Adds certain customfields to Jira Issue, without this the fields would be null
+	 * @param issues
 	 * @param issue
 	 * @param gson
 	 * @param issueJSON
@@ -143,22 +146,27 @@ public class FormatTransformerService {
 		issue.getFields().setCustomfield11100(platforms);
 	}
 
-	
+/**
+ * A helper method for monitoring the duration of issues to json conversion and listing
+ */
 //	private void printProgress(long start, long end) {
 //		long durationSec = (end - start) / 1000000000;
 //		double durationMin = durationSec / 60.0;
 //		System.out.println("Lists done, it took " + durationSec + " second(s) or " + durationMin + " minute(s).");
 //	}
 	
+
 	/**
 	 * Converts a List of Jira Issues into OpenReq Json Requirements, and creates a
 	 * List of Requirement Ids (as Strings) that will be given to a Project.
 	 * Requirements do not know their Project, but the Project knows the Ids of its
 	 * Requirements
 	 * 
-	 * @param issues
-	 *            List of Jira Issues
+	 * @param issues List of Jira Issues
+	 * @param projectId
+	 * @param person A dummy placeholder necessary for OpenReq format
 	 * @return a collection of Requirement objects
+	 * @throws Exception
 	 */
 	public Collection<Requirement> convertIssuesToJson(Collection<Issue> issues, String projectId, Person person)
 			throws Exception {
@@ -219,7 +227,7 @@ public class FormatTransformerService {
 	}
 
 	/**
-	 * Add information stored in RequirementParts to the requirements
+	 * Add information stored in RequirementParts to a requirement's
 	 * RequirementParts-list
 	 * 
 	 * @param issue
@@ -261,8 +269,8 @@ public class FormatTransformerService {
 														// demo safety
 		String fixedName = name;
 		if (name != null && !name.equals("")) {
-			fixedName = name.replaceAll("[^\\x20-\\x7e]", ""); // TODO This is a quick fix, must be modified into a
-		} // better version
+			fixedName = name.replaceAll("[^\\x20-\\x7e]", ""); 
+		} 
 		return fixedName;
 	}
 
@@ -445,7 +453,7 @@ public class FormatTransformerService {
 		case "epic":
 			req.setRequirement_type(Requirement_type.EPIC);
 			break;
-		case "initiative": // Not necessary?
+		case "initiative":
 			req.setRequirement_type(Requirement_type.INITIATIVE);
 			break;
 		case "sub-task":
@@ -652,7 +660,7 @@ public class FormatTransformerService {
 
 		if (issue.getFields().getResolution() != null) {
 			reqPart.setText(issue.getFields().getResolution().getName());
-			reqPart.setCreated_at(new Date().getTime()); // Here issue.getFields().getResolutionDate()?
+			reqPart.setCreated_at(new Date().getTime()); // Should this be issue.getFields().getResolutionDate()?
 
 		} else {
 			reqPart.setText("Unresolved");
@@ -662,7 +670,7 @@ public class FormatTransformerService {
 	}
 
 	/**
-	 * 
+	 * Add information on Issue's Environment to RequirementParts 
 	 * @param issue
 	 * @param req
 	 */
@@ -686,7 +694,7 @@ public class FormatTransformerService {
 	}
 
 	/**
-	 * 
+	 * Add Issue's Labels to RequirementParts 
 	 * @param issue
 	 * @param req
 	 */
@@ -710,7 +718,7 @@ public class FormatTransformerService {
 	}
 
 	/**
-	 * 
+	 * Add Issue's Versions to RequirementParts
 	 * @param issue
 	 * @param req
 	 */
@@ -740,7 +748,7 @@ public class FormatTransformerService {
 	
 
 	/**
-	 * 
+	 * Add Issue's Components to RequirementParts
 	 * @param issue
 	 * @param req
 	 */
@@ -769,7 +777,7 @@ public class FormatTransformerService {
 	}
 
 	/**
-	 * 
+	 * Add Issue's Platforms to RequirementParts
 	 * @param issue
 	 * @param req
 	 */
@@ -871,3 +879,4 @@ public class FormatTransformerService {
 	}
 
 }
+

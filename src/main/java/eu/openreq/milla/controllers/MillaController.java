@@ -403,7 +403,7 @@ public class MillaController {
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
 	}
 	
-	// String might get too large for Swagger
+
 	/**
 	 * Fetch all Requirements and Dependencies from Mallikas
 	 * 

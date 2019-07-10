@@ -91,7 +91,6 @@ public class ProjectIssues {
 			        })
 			).get();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			System.out.println(e.getMessage());
 			
 		}

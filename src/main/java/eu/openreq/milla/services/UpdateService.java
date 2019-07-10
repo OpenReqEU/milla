@@ -42,7 +42,7 @@ public class UpdateService {
 	/**
 	 * Downloads at least 100 (latest) updated issues from Qt Jira and sends them as OpenReq JSON Requirements to Mallikas
 	 * @param projectId
-	 * @return
+	 * @return 
 	 * @throws Exception
 	 */
 	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person, OAuthService authService) throws Exception {
@@ -71,8 +71,9 @@ public class UpdateService {
 	}
 
 	/**
-	 * Returns an integer that tells how many of the Qt Jira issues have been updated 
+	 * Returns an integer that tells how many of the Qt Jira issues have been updated
 	 * @param projectId
+	 * @param person
 	 * @return
 	 * @throws Exception
 	 */
@@ -140,6 +141,7 @@ public class UpdateService {
 	 * Uses FormatTransformerService to convert JsonElements to OpenReq JSON Requirements
 	 * @param elements
 	 * @param projectId
+	 * @param person
 	 * @return
 	 * @throws Exception
 	 */

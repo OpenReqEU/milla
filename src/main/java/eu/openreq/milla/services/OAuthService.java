@@ -51,11 +51,6 @@ public class OAuthService {
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found: " + e.getMessage());
 		} 
-//		catch (InvalidKeySpecException e) {
-//			System.out.println("Invalid key: " + e.getMessage());
-//		} catch (NoSuchAlgorithmException e) {
-//			System.out.println(e.getMessage());
-//		} 
 		catch (IOException e) {
 			System.out.println("IO exception: " + e.getMessage());
 		}

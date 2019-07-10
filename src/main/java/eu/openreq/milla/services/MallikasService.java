@@ -60,7 +60,7 @@ public class MallikasService {
 		
 	/**
 	 * Send request to Mallikas to get a List of Requirements and their Dependencies as a String (based on a List of selected Requirement IDs) 
-	 * @param ids List<String> containing selected Requirement IDs
+	 * @param ids Collection<String> containing selected Requirement IDs
 	 * @return
 	 */
 	public String getSelectedRequirements(Collection<String> ids) {
@@ -77,6 +77,7 @@ public class MallikasService {
 	/**
 	 * Send request to Mallikas to get a String (List of Requirements that are in the same Project and their Dependencies)
 	 * @param projectId Id of the Project
+	 * @param includeProposed indicates if also proposed dependencies are included
 	 * @return String containing all requirements and their dependencies in the same project
 	 */
 	public String getAllRequirementsInProject(String projectId, boolean includeProposed) {	
@@ -124,6 +125,7 @@ public class MallikasService {
 	/**
 	 * Post the requirements to be updated in Mallikas
 	 * @param requirements
+	 * @param projectId
 	 * @return
 	 */
 	public String updateRequirements(Collection<Requirement> requirements, String projectId) {
