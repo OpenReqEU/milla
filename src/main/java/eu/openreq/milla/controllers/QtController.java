@@ -314,9 +314,9 @@ public class QtController {
 	@PostMapping(value = "updateRecentInProject")
 	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
 		try {
-			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);
+			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);			
 			if (response!=null) {
-				return millaController.sendProjectToMulperi(projectId);
+				return millaController.sendUpdatedToMulperi(response.getBody().toString());
 			}
 			return response;
 		} catch (HttpClientErrorException e) {
@@ -342,6 +342,9 @@ public class QtController {
 	public ResponseEntity<?> updateProposedDependencies(@RequestBody String dependencies) throws IOException {
 		try {
 			String updated = mallikasService.convertAndUpdateDependencies(dependencies, false, true);
+			ResponseEntity<String> orsiResponse = detectionController.acceptedAndRejectedToORSI((List<Dependency>)
+					mallikasService.parseStringToDependencies(dependencies));
+			System.out.println(orsiResponse.toString());
 			return new ResponseEntity<>(updated, HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());

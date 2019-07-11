@@ -73,16 +73,16 @@ public class MillaController {
 	 * @return
 	 * @throws IOException
 	 */
-	private ResponseEntity<?> postToMulperi(@RequestBody String data) throws IOException {
+	private ResponseEntity<?> postToMulperi(Object data, String urlTail) throws IOException {
 		
 		RestTemplate rt = new RestTemplate();
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		String completeAddress = mulperiAddress + "/models/requirementsToChoco";
+		String completeAddress = mulperiAddress + urlTail;
 
-		HttpEntity<String> entity = new HttpEntity<String>(data, headers);
+		HttpEntity<Object> entity = new HttpEntity<Object>(data, headers);
 		try {
 			return rt.postForEntity(completeAddress, entity, String.class);
 		} catch (HttpClientErrorException e) {
@@ -90,6 +90,7 @@ public class MillaController {
 		}
 
 	}
+	
 
 //	/**
 //	 * Fetch Requirements by params given from Mallikas, and send
@@ -145,7 +146,11 @@ public class MillaController {
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return this.postToMulperi(reqsInProject);
+		return this.postToMulperi(reqsInProject, "/models/requirementsToChoco");
+	}
+	
+	public ResponseEntity<?> sendUpdatedToMulperi(String project) throws IOException {
+		return postToMulperi(project, "/models/updateModel");				
 	}
 
 	/**
@@ -464,11 +469,8 @@ public class MillaController {
 			if (response==null || !response.contains(projectId)) {
 				Project project = transformer.createProject(projectId, new ArrayList<String>());
 				mallikasService.postProject(project);
-			}
-			
+			}			
 			return updateService.getAllUpdatedIssues(projectId, person, authService);
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

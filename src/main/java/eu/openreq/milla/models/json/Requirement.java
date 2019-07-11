@@ -85,7 +85,7 @@ public class Requirement {
 	* 
 	*/
 	@SerializedName("children")
-	@Expose
+	//@Expose
 	private List<Requirement> children = null;
 	
 	/**

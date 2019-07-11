@@ -198,7 +198,7 @@ public class MallikasService {
 	 * @param dependencies
 	 * @return
 	 */
-	private Collection<Dependency> parseStringToDependencies(String dependencies) {
+	public Collection<Dependency> parseStringToDependencies(String dependencies) {
 		Gson gson = new Gson();
 		JsonParser parser = new JsonParser();
 		JsonElement dependencyElement = parser.parse(dependencies);
