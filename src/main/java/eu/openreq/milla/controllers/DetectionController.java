@@ -194,7 +194,7 @@ public class DetectionController {
 	
 	/**
 	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project 
-	 * to UPC for Similarity detection.
+	 * to UPC for Similarity detection (whole project comparison).
 	 * @param compare
 	 * @param projectId
 	 * @param threshold
@@ -230,7 +230,8 @@ public class DetectionController {
 	}	
 	
 	/**
-	 * 
+	 *  Post OpenReq JSON Requirements and Dependencies in a project 
+	 * to UPC for Similarity detection (one requirement to project comparison).
 	 * @param compare
 	 * @param projectId
 	 * @param reqId

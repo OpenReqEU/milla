@@ -59,7 +59,7 @@ public class UpdatedIssues {
 	/**
 	 * Fetches ALL updated Issues from Qt Jira
 	 * @param project
-	 * @param amount
+	 * @param current
 	 * @throws IOException
 	 */
 	public void collectAllUpdatedIssues(String project, int current) throws IOException {
