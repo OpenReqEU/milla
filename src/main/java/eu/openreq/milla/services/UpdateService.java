@@ -3,7 +3,9 @@ package eu.openreq.milla.services;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.jira.Issue;
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.Person;
+import eu.openreq.milla.models.json.Project;
 import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.qtjiraimporter.UpdatedIssues;
 
@@ -37,12 +43,14 @@ public class UpdateService {
 	
 	private List<String> reqIds;
 	
+	private Collection<Requirement> requirements;
+	
 	private Collection<Dependency> dependencies;
 	
 	/**
 	 * Downloads at least 100 (latest) updated issues from Qt Jira and sends them as OpenReq JSON Requirements to Mallikas
 	 * @param projectId
-	 * @return
+	 * @return 
 	 * @throws Exception
 	 */
 	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person, OAuthService authService) throws Exception {
@@ -50,29 +58,50 @@ public class UpdateService {
 			updatedIssues = new UpdatedIssues(projectId, authService, jiraAddress);
 			int amount = getNumberOfUpdatedIssues(projectId, person);
 			System.out.println(amount);
+			Set<Requirement> totalRequirements = new HashSet<Requirement>();
+			Set<Dependency> totalDependencies = new HashSet<Dependency>();
+			Set<String> totalReqIds = new HashSet<String>();
+			
 			for (int current = 0; current<=amount; current = current + 1000) {
 				updatedIssues.collectAllUpdatedIssues(projectId, current);
-				Collection<Requirement> requirements = processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
+				processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
 				if (requirements!=null && !requirements.isEmpty()) {
 					mallikasService.updateRequirements(requirements, projectId);
+					totalRequirements.addAll(requirements);
 				}
 				if (dependencies!=null && !dependencies.isEmpty()) {
 					mallikasService.updateDependencies(dependencies, false, false);
+					totalDependencies.addAll(dependencies);
 				}
 				if (reqIds!=null && !reqIds.isEmpty()) {
 					mallikasService.updateReqIds(reqIds, projectId);
+					totalReqIds.addAll(totalReqIds);
 				}
 				updatedIssues.clearIssues();
 			}
-			return new ResponseEntity<>("About " + amount + " updated requirements downloaded along with dependencies", HttpStatus.OK);
+			
+			Project project = new Project();
+			
+			project.setId(projectId);
+			project.setSpecifiedRequirements(new ArrayList<String>(totalReqIds));
+			
+			Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();	
+			
+			JsonObject object = new JsonObject();
+			object.add("projects", gson.toJsonTree(Arrays.asList(project)));
+			object.add("requirements", gson.toJsonTree(totalRequirements));
+			object.add("dependencies", gson.toJsonTree(totalDependencies));
+			
+			return new ResponseEntity<>(object.toString(), HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 
 	/**
-	 * Returns an integer that tells how many of the Qt Jira issues have been updated 
+	 * Returns an integer that tells how many of the Qt Jira issues have been updated
 	 * @param projectId
+	 * @param person
 	 * @return
 	 * @throws Exception
 	 */
@@ -140,13 +169,13 @@ public class UpdateService {
 	 * Uses FormatTransformerService to convert JsonElements to OpenReq JSON Requirements
 	 * @param elements
 	 * @param projectId
+	 * @param person
 	 * @return
 	 * @throws Exception
 	 */
 	private Collection<Requirement> processJsonElementsToRequirements(Collection<JsonElement> elements,
 			String projectId, Person person) throws Exception {
 		FormatTransformerService transformer = new FormatTransformerService();
-		Collection<Requirement> requirements = new ArrayList<Requirement>();
 		if (!elements.isEmpty()) {
 			List<Issue> issues = transformer.convertJsonElementsToIssues(elements);
 			requirements = transformer.convertIssuesToJson(issues, projectId, person);

@@ -1,22 +1,29 @@
 package eu.openreq.milla.controllers;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -138,7 +146,7 @@ public class DetectionController {
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
-		String requirements = mallikasService.getAllRequirementsInProject(projectId, false);
+		String requirements = mallikasService.getAllRequirementsInProject(projectId, false, false);
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/" + urlTail;
 		
 		HttpEntity<String> entity = new HttpEntity<String>(requirements, headers);
@@ -153,42 +161,43 @@ public class DetectionController {
 	}
 	
 	
-//	/**
-//	 * Receive the confirmation that adding requirements to similarity detection has begun
-//	 * @param result
-//	 * @throws IOException
-//	 */
-//	@ApiIgnore
-//	@PostMapping(value = "receiveAddReqResponse")
-//	public void receiveAddReqResponse(@RequestParam MultipartFile result)
-//			throws IOException{
-//		
-//		String content = new String(result.getBytes());
-//
-//		try {
-//			JsonObject object = new Gson().fromJson(content, JsonObject.class);
-//			System.out.println(object.toString());
-//			
+	/**
+	 * Receive the confirmation that adding requirements to similarity detection has begun
+	 * @param result
+	 * @throws IOException
+	 */
+	@ApiIgnore
+	@PostMapping(value = "receiveAddReqResponse")
+	public void receiveAddReqResponse(@RequestParam MultipartFile result)
+			throws IOException{
+		
+		System.out.println("Received response");
+		String content = new String(result.getBytes());
+
+		try {
+			JsonObject object = new Gson().fromJson(content, JsonObject.class);
+			System.out.println(object.toString());
+			
 //			if (!responseObj.isNull("error")) {
 //				System.out.println(responseObj.getString("error"));
 //			} else {
 //				String key = responseObj.getString("id");
 //				
 //				if (requestIds.contains(key)) {
-//					requestIds.remove(key);
+//					//requestIds.remove(key);
 //					System.out.println("Request received for key: " + key);
 //				}
 //			}
-//		} catch (JSONException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//	}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	
 	/**
 	 * Post a Collection of OpenReq JSON Requirements and Dependencies in a project 
-	 * to UPC for Similarity detection.
+	 * to UPC for Similarity detection (whole project comparison).
 	 * @param compare
 	 * @param projectId
 	 * @param threshold
@@ -217,14 +226,15 @@ public class DetectionController {
 				+ "/upc/similarity-detection/Project?compare=" + compare + "&project=" + projectId  + 
 				"&threshold=" + threshold + "&url=" + thisAddress + "&organization=" + organization;
 		
-		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
 		
 		return sendRequirementsForDetection(jsonString, completeAddress);
 
 	}	
 	
 	/**
-	 * 
+	 *  Post OpenReq JSON Requirements and Dependencies in a project 
+	 * to UPC for Similarity detection (one requirement to project comparison).
 	 * @param compare
 	 * @param projectId
 	 * @param reqId
@@ -260,7 +270,7 @@ public class DetectionController {
 		compare + "&project=" + projectId + reqsString + "&threshold=" + threshold + "&url=" + 
 				thisAddress + "&organization=" + organization;
 		
-		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
 		
 		return sendRequirementsForDetection(jsonString, completeAddress);
 
@@ -467,9 +477,9 @@ public class DetectionController {
 			@RequestParam String projectId, @RequestBody(required = false) String jsonString) throws IOException {
 		
 		if (jsonString==null) {		
-			jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+			jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
 		}
-		
+
 		ResponseEntity<String> serviceResponse = (ResponseEntity<String>)sendRequirementsForDetection(jsonString, url);
 		
 		ResponseEntity<String> mallikasResponse = addDependenciesToMallikas(serviceResponse.getBody());
@@ -532,7 +542,7 @@ public class DetectionController {
 	@ApiOperation(value = "Get results from all detection services for the requirement id")
 	@PostMapping("getDetectedFromServices")
 	public ResponseEntity<String> getDetectedFromServices(@RequestParam String requirementId) throws IOException {
-		List<Dependency> dependencies = new ArrayList<>();
+			List<Dependency> dependencies = new ArrayList<>();
 		for (String url : detectionGetAddresses) {
 			ResponseEntity<String> detectionResult = getDependenciesFromDetectionService(url, requirementId);
 			try {
@@ -547,6 +557,7 @@ public class DetectionController {
 		return new ResponseEntity<String>(resultObj.toString(), HttpStatus.OK);
 	}
 	
+
 	/**
 	 * Fetch a project from Mallikas and post it to all services defined in properties
 	 * @param projectId
@@ -556,8 +567,10 @@ public class DetectionController {
 	@ApiOperation(value = "Post a project to all detection services")
 	@PostMapping("postProjectToServices")
 	public ResponseEntity<String> postProjectToServices(@RequestParam String projectId) throws IOException {
-		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true);
+		//String jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
 		String results = "";
+		
+		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
 		
 		for (String url : detectionPostAddresses) {
 			ResponseEntity<String> postResult = postRequirementsToDetectionService(url, null, jsonString);
@@ -567,6 +580,120 @@ public class DetectionController {
 		return new ResponseEntity<String>(results, HttpStatus.OK);
 		
 	}
+	
+	
+	/**
+	 * Fetch a project from Mallikas and post it to ORSI
+	 * @param projectId
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Post a project to ORSI cluster computation")
+	@PostMapping("projectToORSI")
+	public ResponseEntity<String> postProjectToORSI(@RequestParam String projectId, @RequestParam(required = false, 
+			defaultValue = "0.3") double threshold) throws IOException {
+		
+		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
+		String results = "";
+		
+		String receiveAddress = millaAddress + "/receiveAddReqResponse";
+		
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/BuildClustersAndCompute";
+		
+		Map<String, String> formParams = new HashMap<>();
+		
+		formParams.put("url", receiveAddress);
+		formParams.put("threshold", threshold + "");
+		formParams.put("organization", "Qt");
+		formParams.put("compare", "true");
+
+		ResponseEntity<String> response = postFileToService(projectId, jsonString, formParams, completeAddress);
+
+		results += "Response from " + receiveAddress + " \n" + response.toString() + "\n\n";
+		
+		
+		return new ResponseEntity<String>(results, HttpStatus.OK);
+		
+	}
+	
+	/**
+	 * Posts the requirements to UPC detection
+	 * @param projectId
+	 * @param urlTail
+	 * @return
+	 * @throws UnsupportedEncodingException 
+	 */
+	private ResponseEntity<String> postFileToService(String name, String file, Map<String, String> formParams, String completeAddress) throws UnsupportedEncodingException {
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		
+		LinkedMultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+		
+		ByteArrayResource contentsAsResource = new ByteArrayResource(file.getBytes("UTF-8")){
+            @Override
+            public String getFilename(){
+                return name;
+            }
+        };
+        
+	    params.add("file", contentsAsResource);
+	    
+	    for (String key : formParams.keySet()) {
+	    	params.add(key, formParams.get(key));
+	    }
+	
+	    HttpEntity<LinkedMultiValueMap<String, Object>> entity =
+	            new HttpEntity<>(params, headers);
+		
+		try {
+			ResponseEntity<String> response = rt.postForEntity(completeAddress, entity, String.class);
+			
+			return new ResponseEntity<String>(response.getBody() + "", HttpStatus.ACCEPTED);
+			
+		} catch (HttpClientErrorException e) {
+			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+		}
+	}
+	
+	/**
+	 * Post accepted/rejected dependencies to ORSI
+	 * @param projectId
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Post accepted and rejected to ORSI cluster computation")
+	@PostMapping("acceptedAndRejectedToORSI")
+	public ResponseEntity<String> acceptedAndRejectedToORSI(@RequestParam List<Dependency> dependencies) throws IOException {
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+		
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/TreatAcceptedAndRejectedDependencies?organization=Qt";
+		
+		String jsonString = new Gson().toJson(dependencies);
+		
+		jsonString = jsonString.replaceAll("[\\[\\]]","");
+		
+		System.out.println(jsonString);
+		
+		HttpEntity<String> entity = new HttpEntity<String>(jsonString, headers);
+		
+		ResponseEntity<String> response = null;
+		
+		try {
+			response = rt.postForEntity(completeAddress, entity, String.class);
+			
+			return new ResponseEntity<String>(response.getBody() + "", response.getStatusCode());
+			
+		} catch (HttpClientErrorException e) {
+			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+		}
+		
+	}
+	
 	
 	
 }

@@ -6,14 +6,14 @@ import com.google.gson.Gson;
 import eu.openreq.milla.models.json.*;
 
 public class OpenReqJSONParser {
-	static Gson gson = new Gson();
-	private Project project;
-	private Requirement requirement;
-	private List<Project> projects;
-	private List<Requirement> requirements;
-	private List<Requirement> dependent_requirements;
-	private List<Dependency> dependencies;
-	
+	static final Gson gson = new Gson();
+	private final Project project;
+	private final Requirement requirement;
+	private final List<Project> projects;
+	private final List<Requirement> requirements;
+	private final List<Requirement> dependent_requirements;
+	private final List<Dependency> dependencies;
+
 	public OpenReqJSONParser (String jsonString) throws com.google.gson.JsonSyntaxException {
 		InputExtractor input = gson.fromJson(jsonString, InputExtractor.class);
 		this.project = input.getProject();
