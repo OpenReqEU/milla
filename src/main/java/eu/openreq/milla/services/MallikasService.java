@@ -80,10 +80,10 @@ public class MallikasService {
 	 * @param includeProposed indicates if also proposed dependencies are included
 	 * @return String containing all requirements and their dependencies in the same project
 	 */
-	public String getAllRequirementsInProject(String projectId, boolean includeProposed) {	
+	public String getAllRequirementsInProject(String projectId, boolean includeProposed, boolean requirementsOnly) {	
 		try {
 			return rt.getForObject(mallikasAddress + "/projectRequirements?projectId=" + projectId + 
-					"&includeProposed=" + includeProposed, String.class);	
+					"&includeProposed=" + includeProposed + "&requirementsOnly=" + requirementsOnly, String.class);	
 		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();

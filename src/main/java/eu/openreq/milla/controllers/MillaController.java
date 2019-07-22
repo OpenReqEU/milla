@@ -141,7 +141,7 @@ public class MillaController {
 	@PostMapping(value = "sendProjectToMulperi")
 	public ResponseEntity<?> sendProjectToMulperi(@RequestParam String projectId) throws IOException {
 
-		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false);
+		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false, false);
 
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
@@ -252,7 +252,7 @@ public class MillaController {
 	public ResponseEntity<?> getRequirementsInProject(@RequestParam String projectId, @RequestParam(required = false)
 			boolean includeProposed) throws IOException {
 
-		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, includeProposed);
+		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, includeProposed, true);
 
 		if (reqsInProject == null || reqsInProject.equals("")) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
