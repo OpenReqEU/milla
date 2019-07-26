@@ -1,19 +1,11 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,27 +14,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
-import com.google.gson.JsonElement;
-
-import eu.openreq.milla.models.jira.Issue;
-import eu.openreq.milla.models.json.Dependency;
-import eu.openreq.milla.models.json.Person;
-import eu.openreq.milla.models.json.Project;
 import eu.openreq.milla.models.json.RequestParams;
-import eu.openreq.milla.models.json.Requirement;
-import eu.openreq.milla.services.FormatTransformerService;
+import eu.openreq.milla.services.ImportService;
 import eu.openreq.milla.services.MallikasService;
+import eu.openreq.milla.services.MulperiService;
 import eu.openreq.milla.services.OAuthService;
 import eu.openreq.milla.services.UpdateService;
-import eu.openreq.milla.qtjiraimporter.ProjectIssues;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import springfox.documentation.annotations.ApiIgnore;
 
-@SpringBootApplication
 @RestController
 @RequestMapping(value = "/")
 public class MillaController {
@@ -54,74 +37,22 @@ public class MillaController {
 	private String jiraAddress;
 
 	@Autowired
-	FormatTransformerService transformer;
+	ImportService importService;
 
+	@Autowired
+	MulperiService mulperiService;
+	
 	@Autowired
 	MallikasService mallikasService;
 	
 	@Autowired
 	UpdateService updateService;
 	
+	@Autowired
 	OAuthService authService;
 	
 
-	/**
-	 * Post Requirements and Dependencies to Mulperi.
-	 * 
-	 * @param data
-	 * @param path
-	 * @return
-	 * @throws IOException
-	 */
-	private ResponseEntity<?> postToMulperi(Object data, String urlTail) throws IOException {
-		
-		RestTemplate rt = new RestTemplate();
-		
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		String completeAddress = mulperiAddress + urlTail;
-
-		HttpEntity<Object> entity = new HttpEntity<Object>(data, headers);
-		try {
-			return rt.postForEntity(completeAddress, entity, String.class);
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
-		}
-
-	}
 	
-
-//	/**
-//	 * Fetch Requirements by params given from Mallikas, and send
-//	 * to Mulperi
-//	 * 
-//	 * @param
-//	 * @return ResponseEntity<?>
-//	 * @throws IOException
-//	 */
-//	@ApiOperation(value = "Construct a transitive closure by sending all requirements of the selected project to Mulperi", 
-//	notes = "<b>Functionality</b>: All requirements of a project are fetched from Mallikas database and sent to Mulperi to construct a transitive closure."
-//			+ "<br><b>Precondition</b>: The project, including its requirements, has been cached in Mallikas.<br>"
-//			+ "<b>Postcondition</b>: Mulperi has a transitive closure of each requirement for a project up to depth five.<br>"
-//			+ "<br><b>Parameters: </b>"
-//			+ "<br>projectId: The project id in Mallikas (e.g., QTWB)."
-//			+ "<br>includeProposedDependencies: Whether to fetch dependencies with the status 'proposed'")
-//	@PostMapping(value = "sendProjectToMulperiWithParams")
-//	public ResponseEntity<?> sendProjectToMulperiWithParams(@RequestParam String projectId, @RequestParam boolean includeProposedDependencies) throws IOException {
-//
-//		RequestParams params = new RequestParams();
-//		
-//		params.setProjectId(projectId);
-//		params.setIncludeProposed(includeProposedDependencies);
-//		
-//		String reqsInProject = mallikasService.requestWithParams(params, "requirements");
-//
-//		if (reqsInProject == null) {
-//			return new ResponseEntity<>("Requirements not found \n\n", HttpStatus.NOT_FOUND);
-//		}
-//		return this.postToMulperi(reqsInProject);
-//	}
 	
 	/**
 	 * Fetch Requirements that are in the selected Project from Mallikas, and send
@@ -139,103 +70,18 @@ public class MillaController {
 			+ "<br><b>Parameter: </b>"
 			+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
 	@PostMapping(value = "sendProjectToMulperi")
-	public ResponseEntity<?> sendProjectToMulperi(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<String> sendProjectToMulperi(@RequestParam String projectId) throws IOException {
 
 		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false, false);
-
+		
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return this.postToMulperi(reqsInProject, "/models/requirementsToChoco");
-	}
-	
-	public ResponseEntity<?> sendUpdatedToMulperi(String project) throws IOException {
-		return postToMulperi(project, "/models/updateModel");				
+		return mulperiService.postToMulperi(reqsInProject, "/models/requirementsToChoco");
 	}
 
 	/**
-	 * Post a Collection of OpenReq JSON Requirements to Mallikas database
-	 * 
-	 * @param requirements
-	 *            Collection<Requirement> received as a parameter, requirements to
-	 *            be saved into the database
-	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 */
-//	@ApiOperation(value = "Store (TBD or update?) requirements to Mallikas.", 
-//	notes = "<b>Functionality</b>: Add or update an array of requirements in OpenReq JSON format in Mallikas database. "
-//			+ "<br><b>Postcondition</b>: Requirements are stored in Mallikas."
-//			+ "<br><b>Note: </b> The project needs to be updated separately to contain references to the new requirements."
-//			+ "<br><b>Parameter: </b>"
-//			+ "<br>requirements: An array of requirements in OpenReq JSON format.")
-//	@PostMapping(value = "requirements")
-	private ResponseEntity<?> postRequirementsToMallikas(Collection<Requirement> requirements, String projectId)
-			throws IOException {
-		try {
-			mallikasService.updateRequirements(requirements, projectId);
-			return new ResponseEntity<String>("Mallikas update successful\n\n", HttpStatus.OK);
-
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-	}
-
-	/**
-	 * Post a Collection of OpenReq JSON Dependencies to Mallikas database
-	 * 
-	 * @param dependencies
-	 *            Collection<Dependency> received as a parameter, requirements to be
-	 *            saved into the database
-	 * @param isProposed           
-	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 */
-//	@ApiOperation(value = "Store (TBD or update?) dependencies to Mallikas", 
-//			notes = "<br><b>Functionality</b>: Add or update a set of dependencies as an array of dependencies in OpenReq JSON format. The dependencies are for the existing requirements in the Mallikas database."
-//					+ "<br><b>Postcondition</b>: The dependencies are added or updated to the existing requirements in Mallikas. If a dependency exist, it is updated."
-//					+ "<br><b>Parameters: </b>"
-//					+ "<br>dependencies: An array of dependencies in OpenReq JSON format."
-//					+ "<br>isProposed: Whether the dependencies being sent are proposed dependencies.")
-//	@PostMapping(value = "dependencies")
-	public ResponseEntity<?> postDependenciesToMallikas(@RequestBody Collection<Dependency> dependencies, 
-			@RequestParam(required = false) boolean isProposed)
-			throws IOException {
-		try {
-			mallikasService.updateDependencies(dependencies, isProposed, false);
-			return new ResponseEntity<String>("Mallikas update successful\n", HttpStatus.OK);
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-	}
-	
-	/**
-	 * Post an OpenReq JSON Project to Mallikas database
-	 * 
-	 * @param project
-	 *            Project received as a parameter
-	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 */
-//	@ApiOperation(value = "Store a project in Mallikas", 
-//			notes = "<br><b>Functionality</b>: Add or update a project in Mallikas. The project is in OpenReq JSON format primarily containing the IDs of requirements in the project. "
-//			+ "If the projects already exist in Mallikas, the existing data is updated."
-//			+ "<br><b>Postcondition</b>: The project is added or updated in Mallikas."
-//			+ "<br><b>Exception</b>: TBD: What is a requirement is removed from a project, does this remove it?"
-//			+ "<br><b>Parameter: </b>"
-//			+ "<br>project: A project in OpenReq JSON.")
-//	//@ResponseBody
-//	@PostMapping(value = "project")
-	private ResponseEntity<?> postProjectToMallikas(@RequestBody Project project) throws IOException {
-		try {
-			mallikasService.postProject(project);
-			return new ResponseEntity<String>("Mallikas update successful\n", HttpStatus.OK);
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-	}
-
-	/**
-	 * Fetch all requirements of the project defined
+	 * Fetch all requirements of the defined project
 	 * 
 	 * @param projectId
 	 * @return ResponseEntity<?>
@@ -278,6 +124,8 @@ public class MillaController {
 	public ResponseEntity<?> getRequirementsByIds(@RequestParam Collection<String> ids) throws IOException {
 
 		String reqsWithIds = mallikasService.getSelectedRequirements(ids);
+	
+		System.out.println(reqsWithIds);
 
 		if (reqsWithIds == null || reqsWithIds.equals("")) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
@@ -300,6 +148,11 @@ public class MillaController {
 					+ "<br>params: RequestParams object containing various parameters to be used in database query")
 	@PostMapping(value = "requirementsByParams")
 	public ResponseEntity<?> getRequirementsByParams(@RequestBody RequestParams params) throws IOException {
+		
+		System.out.println("Params:");
+		
+		System.out.println(params.getProjectId());
+		
 		String reqsWithDependencyType = mallikasService.requestWithParams(params,
 				"requirements");
 
@@ -316,9 +169,7 @@ public class MillaController {
 	 * @param projectId,
 	 *            ID of the selected project
 	 * @return ResponseEntity if successful
-	 * @throws IOException
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeySpecException 
+	 * @throws Exception 
 	 */
 	@ApiOperation(value = "Import a selected project from Qt Jira and store a cache of the project in Mallikas", 
 			notes = "<b>Functionality</b>: This is the full data import from Qt Jira. "
@@ -335,82 +186,13 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJira")
-	public ResponseEntity<?> importFromQtJira(@RequestParam String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-		
-		ProjectIssues projectIssues = new ProjectIssues(projectId, authService, jiraAddress);
-
-		Person person = new Person();
-		person.setUsername("user_" + projectId);
-		person.setEmail("dummyEmail");
-
-		int issueCount = projectIssues.getNumberOfIssues();
-		if(issueCount<=0) {
-			return new ResponseEntity<>("No issues found, download failed", HttpStatus.BAD_REQUEST);
-		}
-		int divided = issueCount;
-		if (issueCount > 10000) { // this is necessary for large Qt Jira projects
-			divided = issueCount / 10;
-		}
-		int start = 1;
-		int end = divided;
-
-		// int epicCount = 0; //these needed for counting epics and subtask
-		// relationships in projects
-		// int subtaskCount = 0; //Note! to use these, must uncomment lines in
-		// FormatTransformerService
-
-		long start1 = System.nanoTime();
-		
-		List<String> requirementIds = new ArrayList<>();
-		Collection<JsonElement> projectIssuesAsJson;
-		
-		try {
-			while (true) { // a loop needed for sending large projects in chunks to Mallikas
-				if (end >= issueCount + divided) {
-					break;
-				}
-				projectIssuesAsJson = projectIssues.collectIssues(start, end);
-				List<Issue> issues = transformer.convertJsonElementsToIssues(projectIssuesAsJson);
-				Collection<Requirement> requirements = transformer.convertIssuesToJson(issues, projectId, person);
-				Collection<Dependency> dependencies = transformer.getDependencies();
-				// epicCount = epicCount + transformer.getEpicCount();
-				// subtaskCount = subtaskCount + transformer.getSubtaskCount();
-				requirementIds.addAll(transformer.getRequirementIds());
-				this.postRequirementsToMallikas(requirements, projectId);
-				this.postDependenciesToMallikas(dependencies, false);
-				projectIssuesAsJson.clear();
-				issues.clear();
-				requirements.clear();
-				dependencies.clear();
-				System.out.println("End is " + end);
-				start = end + 1;
-				end = end + divided;
-			}
-
-			Project project = transformer.createProject(projectId, requirementIds);
-			this.postProjectToMallikas(project);
-
-			// System.out.println("Epic count is " + epicCount);
-			// System.out.println("Subtask count is " + subtaskCount);
-			
-			long end1 = System.nanoTime();
-			long durationSec = (end1 - start1) / 1000000000;
-			double durationMin = durationSec / 60.0;
-			System.out.println("Download done, it took " + durationSec + " second(s) or " + durationMin + " minute(s).");
-
-			return new ResponseEntity<String>("All requirements and dependencies downloaded",
-					HttpStatus.OK);
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
+	public ResponseEntity<?> importFromQtJira(@RequestParam String projectId) throws Exception {
+			return importService.importProjectIssues(projectId, authService);
 	}
 	
 
 	/**
-	 * Fetch all Requirements and Dependencies from Mallikas
+	 * Fetch ALL Requirements and Dependencies from Mallikas
 	 * 
 	 * @return ResponseEntity<String>
 	 * @throws IOException
@@ -459,18 +241,12 @@ public class MillaController {
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJiraUpdated")
 	public ResponseEntity<?> importUpdatedFromQtJira(@RequestParam String projectId) throws IOException {
-		
-		Person person = new Person();
-		person.setUsername("user_" + projectId);
-		person.setEmail("dummyEmail");
-		
 		try {
 			String response = mallikasService.getListOfProjects();
 			if (response==null || !response.contains(projectId)) {
-				Project project = transformer.createProject(projectId, new ArrayList<String>());
-				mallikasService.postProject(project);
+				mallikasService.postProject(importService.createProject(projectId));
 			}			
-			return updateService.getAllUpdatedIssues(projectId, person, authService);
+			return updateService.getAllUpdatedIssues(projectId, authService);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -490,7 +266,7 @@ public class MillaController {
 			response = String.class)
 	@GetMapping(value = "getJiraAuthorizationAddress")
 	public ResponseEntity<?> jiraAuthorizationAddress() {
-		authService = new OAuthService(jiraAddress);
+		authService.setInitialized(true);
 		try {
 			String response = authService.tempTokenAuthorization();
 			if(response == null) {
@@ -514,7 +290,9 @@ public class MillaController {
 			response = String.class)
 	@PostMapping(value = "verifyJiraAuthorization")
 	public ResponseEntity<?> sendSecret(@RequestBody String secret){
-		if (authService == null) {
+		System.out.println(secret);
+		System.out.println(authService.isInitialized());
+		if (authService.isInitialized()) {
 			return new ResponseEntity<>("No authorization process initialized", HttpStatus.EXPECTATION_FAILED);
 		}
 		try {
@@ -540,13 +318,10 @@ public class MillaController {
 			response = String.class)
 	@GetMapping(value = "testJiraAuthorization")
 	public ResponseEntity<String> test() {
-		OAuthService tempService;
-		if (authService==null) {
-			tempService = new OAuthService(jiraAddress);
-		} else {
-			tempService = authService;
+		if (!authService.isInitialized()) {
+			return new ResponseEntity<String>("Jira not authorized", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		String result = tempService.authorizedJiraRequest("/rest/auth/latest/session");
+		String result = authService.authorizedJiraRequest("/rest/auth/latest/session");
 		return new ResponseEntity<String>(result, HttpStatus.OK);
 	}
 	 

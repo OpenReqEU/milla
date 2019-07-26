@@ -12,6 +12,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Scanner;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.google.api.client.auth.oauth.OAuthCredentialsResponse;
 import com.google.api.client.auth.oauth.OAuthParameters;
 import com.google.api.client.auth.oauth.OAuthRsaSigner;
@@ -23,9 +26,13 @@ import com.google.api.client.http.apache.ApacheHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 
-public class OAuthService {
 
-	private static String JIRA_BASE_URL;
+@Service
+public class OAuthService {
+	
+	@Value("${milla.jiraAddress}")
+	private String JIRA_BASE_URL;
+
 	private static final String REQUEST_TOKEN_URL = "/plugins/servlet/oauth/request-token";
 	private static final String ACCESS_TOKEN_URL = "/plugins/servlet/oauth/access-token";
 	private static final String AUTHORIZATION_URL = "/plugins/servlet/oauth/authorize";
@@ -37,10 +44,9 @@ public class OAuthService {
 	private String SECRET;
 	private OAuthParameters parameters;
 	private OAuthRsaSigner signer;
-
-	public OAuthService(String jiraAddress) {
-		
-		JIRA_BASE_URL = jiraAddress;
+	private boolean initialized;
+	
+	public OAuthService() {
 		
 		try {
 			byte[] encoded = Files.readAllBytes(Paths.get("key.txt"));
@@ -166,5 +172,15 @@ public class OAuthService {
 			return null;
 		} 
 	}
+
+	public boolean isInitialized() {
+		return initialized;
+	}
+
+	public void setInitialized(boolean initialized) {
+		this.initialized = initialized;
+	}
+	
+	
 
 }

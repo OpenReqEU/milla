@@ -29,9 +29,6 @@ import eu.openreq.milla.qtjiraimporter.UpdatedIssues;
 
 @Service
 public class UpdateService {
-
-	@Value("${milla.mallikasAddress}")
-	private String mallikasAddress;
 	
 	@Value("${milla.jiraAddress}")
 	private String jiraAddress;
@@ -53,9 +50,14 @@ public class UpdateService {
 	 * @return 
 	 * @throws Exception
 	 */
-	public ResponseEntity<?> getAllUpdatedIssues(String projectId, Person person, OAuthService authService) throws Exception {
+	public ResponseEntity<?> getAllUpdatedIssues(String projectId, OAuthService authService) throws Exception {
+		
+		Person person = new Person();
+		person.setUsername("user_" + projectId);
+		person.setEmail("dummyEmail");
+		
 		try {
-			updatedIssues = new UpdatedIssues(projectId, authService, jiraAddress);
+			updatedIssues = new UpdatedIssues(projectId, authService);
 			int amount = getNumberOfUpdatedIssues(projectId, person);
 			System.out.println(amount);
 			Set<Requirement> totalRequirements = new HashSet<Requirement>();
@@ -75,7 +77,7 @@ public class UpdateService {
 				}
 				if (reqIds!=null && !reqIds.isEmpty()) {
 					mallikasService.updateReqIds(reqIds, projectId);
-					totalReqIds.addAll(totalReqIds);
+					totalReqIds.addAll(reqIds);
 				}
 				updatedIssues.clearIssues();
 			}

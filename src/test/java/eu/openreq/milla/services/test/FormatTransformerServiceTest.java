@@ -1,9 +1,6 @@
 package eu.openreq.milla.services.test;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.gson.Gson;
@@ -29,14 +26,6 @@ public class FormatTransformerServiceTest {
 	private List<JsonElement> testElements;
 	private String projectId;
 	private Person person;
-	
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
     
     @Before
     public void setUp() throws IOException {
@@ -64,10 +53,6 @@ public class FormatTransformerServiceTest {
     	testElements.add(issueElement3);
     	testElements.add(issueElement4);
     	
-    }
-    
-    @After
-    public void tearDown() {
     }
     
     @Test
@@ -122,11 +107,8 @@ public class FormatTransformerServiceTest {
 	    		System.out.println(reqp.getText());
 	    	}
     	}
-//    	assertEquals(reqList.get(2).getRequirementParts().get(6).getText(), "4.9.0 Beta 1"); 	
-//    	assertEquals(reqList.get(3).getRequirementParts().get(6).getText(), "4.9.0 Beta 1"); 	
     	assertEquals(reqList.get(2).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0-beta1"); 	
     	assertEquals(reqList.get(3).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0 (4.9 branch)"); 	
-
     }
     
 }

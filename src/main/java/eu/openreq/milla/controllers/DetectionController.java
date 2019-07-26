@@ -1,6 +1,5 @@
 package eu.openreq.milla.controllers;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
@@ -15,9 +14,7 @@ import java.util.Queue;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -43,7 +40,6 @@ import eu.openreq.milla.services.MallikasService;
 import io.swagger.annotations.ApiOperation;
 import springfox.documentation.annotations.ApiIgnore;
 
-@SpringBootApplication
 @RestController
 public class DetectionController {
 
@@ -422,11 +418,10 @@ public class DetectionController {
 			if (dependencies==null) {
 				return new ResponseEntity<String>("Dependencies null", HttpStatus.BAD_REQUEST);
 			}
-			response = (String)millaController.postDependenciesToMallikas(dependencies, true).getBody();
+			mallikasService.updateDependencies(dependencies, true, false);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<String>("Error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		catch (JSONException|com.google.gson.JsonSyntaxException e) {
+		} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 			return new ResponseEntity<String>("Error in parsing JSON", HttpStatus.NO_CONTENT);
 		}
 

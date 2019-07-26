@@ -1,8 +1,6 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +29,11 @@ import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.services.OpenReqJSONParser;
 import eu.openreq.milla.services.MallikasService;
-
+import eu.openreq.milla.services.MulperiService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-@SpringBootApplication
 @RestController
 public class QtController {
 	
@@ -46,6 +42,9 @@ public class QtController {
 
 	@Autowired
 	MallikasService mallikasService;
+	
+	@Autowired
+	MulperiService mulperiService;
 	
 	@Autowired
 	MillaController millaController;
@@ -281,14 +280,12 @@ public class QtController {
 	 * @param projectId
 	 *            Project received as a parameter
 	 * @return ResponseEntity<?>
-	 * @throws IOException
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeySpecException 
+	 * @throws Exception 
 	 */
 	@ApiOperation(value = "Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas", 
 			notes = "Post a Project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateProject")
-	public ResponseEntity<?> updateWholeProject(@RequestParam String projectId) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public ResponseEntity<?> updateWholeProject(@RequestParam String projectId) throws Exception {
 		try {
 			ResponseEntity<?> response = millaController.importFromQtJira(projectId);
 			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
@@ -316,7 +313,7 @@ public class QtController {
 		try {
 			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);			
 			if (response!=null) {
-				return millaController.sendUpdatedToMulperi(response.getBody().toString());
+				return mulperiService.postToMulperi(response.getBody(), "/models/updateModel");
 			}
 			return response;
 		} catch (HttpClientErrorException e) {

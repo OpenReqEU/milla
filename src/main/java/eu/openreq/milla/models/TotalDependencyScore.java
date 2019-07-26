@@ -62,4 +62,18 @@ public class TotalDependencyScore implements Comparable<TotalDependencyScore> {
 	public int hashCode() {
 		return Objects.hash(this.dependencyId, this.fromid, this.toid, this.totalScore);
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		
+		if (!(o instanceof TotalDependencyScore)) {
+	        	return false;
+	    }
+	        
+		TotalDependencyScore score = (TotalDependencyScore) o;
+		
+		return (this.getFromid()==score.getFromid() && this.getToid()==score.getToid() 
+				&& this.getTotalScore()==score.getTotalScore());	
+	}
+	
 }

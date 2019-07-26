@@ -21,12 +21,12 @@ public class UpdatedIssues {
 	private String singleIssueUrl;
 	private OAuthService authService;
 
-	public UpdatedIssues(String project, OAuthService service, String jiraAddress) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public UpdatedIssues(String project, OAuthService service) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		
 		if (service!=null) {
 			authService = service;
 		} else {
-			authService = new OAuthService(jiraAddress);
+			authService = new OAuthService();
 		}
 		
 		_projectIssues = new HashMap<String, JsonElement>();
