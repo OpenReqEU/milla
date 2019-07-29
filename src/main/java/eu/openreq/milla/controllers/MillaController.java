@@ -290,9 +290,7 @@ public class MillaController {
 			response = String.class)
 	@PostMapping(value = "verifyJiraAuthorization")
 	public ResponseEntity<?> sendSecret(@RequestBody String secret){
-		System.out.println(secret);
-		System.out.println(authService.isInitialized());
-		if (authService.isInitialized()) {
+		if (!authService.isInitialized()) {
 			return new ResponseEntity<>("No authorization process initialized", HttpStatus.EXPECTATION_FAILED);
 		}
 		try {

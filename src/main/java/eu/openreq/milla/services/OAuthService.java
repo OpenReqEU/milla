@@ -100,6 +100,8 @@ public class OAuthService {
 		getAcc.verifier = secret;
 		getAcc.temporaryToken = REQUEST_TOKEN;
 		getAcc.transport = new ApacheHttpTransport();
+		
+		System.out.println(getAcc.getRawPath());
 
 		try {
 			OAuthCredentialsResponse response = getAcc.execute();

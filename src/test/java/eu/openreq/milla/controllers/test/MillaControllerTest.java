@@ -53,6 +53,9 @@ public class MillaControllerTest {
 	@Value("${milla.mulperiAddress}")
 	private String mulperiAddress;
 	
+	@Value("${milla.jiraAddress}")
+	private String JIRA_BASE_URL;
+	
 	@MockBean
 	ImportService importService;
 	
@@ -67,7 +70,6 @@ public class MillaControllerTest {
 
 	@Autowired
 	MillaController controller;
-	
 
 	@Autowired
 	private RestTemplate rt;
@@ -76,6 +78,7 @@ public class MillaControllerTest {
 	
 	private MockRestServiceServer mockServer;
 	
+	@Autowired
 	private ObjectMapper mapper;
 	
 	@Before
@@ -96,7 +99,7 @@ public class MillaControllerTest {
 		Mockito.when(authService.isInitialized())
 			.thenReturn(true);
 		
-		Mockito.when(authService.authorizedJiraRequest("test"))
+		Mockito.when(authService.authorizedJiraRequest("/rest/auth/latest/session"))
 			.thenReturn("test");
 	}
 	
@@ -126,14 +129,12 @@ public class MillaControllerTest {
 		RequestParams params = new RequestParams();
 		params.setProjectId("test");
 		
-		ObjectMapper mapper = new ObjectMapper();
 	    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
 	    ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-	    String requestJson=ow.writeValueAsString(params );
+	    String requestJson = ow.writeValueAsString(params);
 	    
-	    System.out.println(requestJson);
-		
 		mockMvc.perform(post("/requirementsByParams")
+				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestJson))
 				.andExpect(status().isOk());
 	
@@ -182,7 +183,7 @@ public class MillaControllerTest {
 	@Test
 	public void qtJiraUpdateTest() throws Exception {
 		mockServer.expect(requestTo(mallikasAddress + "/listOfProjects"))
-			.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
+				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		mockMvc.perform(post("/qtJiraUpdated")
 				.param("projectId", "test"))
 				.andExpect(status().isOk());		
@@ -196,11 +197,20 @@ public class MillaControllerTest {
 	
 	@Test
 	public void jiraVerificationTest() throws Exception {
-		mockMvc.perform(get("/verifyJiraAuthorization")
-				.param("secret", "testSecret"))
+		mockServer.expect(requestTo(JIRA_BASE_URL + "/plugins/servlet/oauth/access-token"))
+				.andRespond(withSuccess("Success", MediaType.TEXT_PLAIN));
+		
+		mockMvc.perform(post("/verifyJiraAuthorization")
+				.contentType(MediaType.TEXT_PLAIN)
+				.content("testSecret"))
 				.andExpect(status().isOk());		
 	}
 
+	@Test
+	public void jiraAuthorizationTestTest() throws Exception {
+		mockMvc.perform(get("/testJiraAuthorization"))
+				.andExpect(status().isOk());		
+	}
 
   
 }
