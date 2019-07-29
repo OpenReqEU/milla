@@ -96,9 +96,9 @@ public class MillaController {
 					+ "<br>includeProposed: Whether to fetch proposed dependencies")
 	@GetMapping(value = "requirementsInProject")
 	public ResponseEntity<?> getRequirementsInProject(@RequestParam String projectId, @RequestParam(required = false)
-			boolean includeProposed) throws IOException {
+			boolean includeProposed, @RequestParam(required = false) boolean requirementsOnly) throws IOException {
 
-		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, includeProposed, true);
+		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, includeProposed, requirementsOnly);
 
 		if (reqsInProject == null || reqsInProject.equals("")) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
@@ -124,8 +124,6 @@ public class MillaController {
 	public ResponseEntity<?> getRequirementsByIds(@RequestParam Collection<String> ids) throws IOException {
 
 		String reqsWithIds = mallikasService.getSelectedRequirements(ids);
-	
-		System.out.println(reqsWithIds);
 
 		if (reqsWithIds == null || reqsWithIds.equals("")) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
@@ -148,10 +146,6 @@ public class MillaController {
 					+ "<br>params: RequestParams object containing various parameters to be used in database query")
 	@PostMapping(value = "requirementsByParams")
 	public ResponseEntity<?> getRequirementsByParams(@RequestBody RequestParams params) throws IOException {
-		
-		System.out.println("Params:");
-		
-		System.out.println(params.getProjectId());
 		
 		String reqsWithDependencyType = mallikasService.requestWithParams(params,
 				"requirements");

@@ -160,9 +160,7 @@ public class MallikasService {
 		}
 
 		try {
-			rt.postForObject(completeAddress, dependencies, String.class);
-			return "Update successful!";
-
+			return rt.postForObject(completeAddress, dependencies, String.class);
 		} catch (HttpClientErrorException e) {
 			System.out.println("Error " + e);
 			e.printStackTrace();

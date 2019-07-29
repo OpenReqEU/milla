@@ -155,7 +155,7 @@ public class MillaControllerTest {
 	@Test
 	public void requirementsInProjectTest() throws Exception { 
 		mockServer.expect(requestTo(mallikasAddress + "/projectRequirements?projectId=test&includeProposed=false"
-				+ "&requirementsOnly=true")).andRespond(withSuccess("{\"dummy\":\"test\"}", 
+				+ "&requirementsOnly=false")).andRespond(withSuccess("{\"dummy\":\"test\"}", 
 						MediaType.APPLICATION_JSON));
 		mockMvc.perform(get("/requirementsInProject")
 				.param("projectId","test"))
