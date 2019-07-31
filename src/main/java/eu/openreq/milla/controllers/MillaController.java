@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +27,6 @@ import springfox.documentation.annotations.ApiIgnore;
 @RestController
 @RequestMapping(value = "/")
 public class MillaController {
-
-	@Value("${milla.mulperiAddress}")
-	private String mulperiAddress;
-	
-	@Value("${milla.jiraAddress}")
-	private String jiraAddress;
 
 	@Autowired
 	ImportService importService;

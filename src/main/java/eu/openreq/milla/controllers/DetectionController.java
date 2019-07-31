@@ -111,7 +111,12 @@ public class DetectionController {
 	@ApiOperation(value = "Get results from all detection services for the requirement id")
 	@GetMapping("detectedFromServices")
 	public ResponseEntity<String> getDetectedFromServices(@RequestParam String requirementId) throws IOException {
-		return detectionService.getDetectedFromServices(requirementId);
+		List<Dependency> dependencies = detectionService.getDetectedFromServices(requirementId);
+		
+		JsonObject resultObj = new JsonObject();
+		resultObj.add("dependencies", new Gson().toJsonTree(dependencies));
+		
+		return new ResponseEntity<String>(resultObj.toString(), HttpStatus.OK);
 	}
 	
 

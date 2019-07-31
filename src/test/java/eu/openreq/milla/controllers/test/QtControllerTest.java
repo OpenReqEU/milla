@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.openreq.milla.MillaApplication;
 import eu.openreq.milla.controllers.QtController;
 import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.ImportService;
 import eu.openreq.milla.services.OAuthService;
 import eu.openreq.milla.services.UpdateService;
@@ -53,6 +54,9 @@ public class QtControllerTest {
 	
 	@Value("${milla.upcSimilarityAddress}")
 	private String upcSimilarityAddress;
+	
+	@Value("${milla.detectionGetAddresses}")
+	private String[] detectionGetAddresses;
 	
 	@Autowired
 	QtController controller;
@@ -133,13 +137,38 @@ public class QtControllerTest {
 	}
 	
 	@Test
-	public void topProposedDependencyTest() throws Exception {
+	public void topProposedDependencyTest() throws Exception {	
+		Dependency dep = new Dependency();
+		dep.setId("test");
+		dep.setDependency_score(1);
+		dep.setDescription(Arrays.asList("testDesc"));
+		ObjectMapper mapper = new ObjectMapper();
+		String content = mapper.writeValueAsString(Arrays.asList(dep));
+		content = "{\"dependencies\":" + content + "}";
+		
+		dep.setId("test2");
+		
+		String content2 = mapper.writeValueAsString(Arrays.asList(dep));
+		content2 = "{\"dependencies\":" + content2 + "}";
+		
+		Requirement req = new Requirement();
+		req.setId("testReq");
+		String reqContent = mapper.writeValueAsString(Arrays.asList(dep));
+		reqContent = "{\"requirements\":" + reqContent + "}";
+		
+		for (String url : detectionGetAddresses) {
+			mockServer.expect(requestTo(url + "testId"))
+					.andExpect(method(HttpMethod.GET))
+					.andRespond(withSuccess(content, MediaType.APPLICATION_JSON));
+		}
+		
 		mockServer.expect(requestTo(mallikasAddress + "/dependenciesByParams"))
-				.andExpect(method(HttpMethod.POST))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON_UTF8));
-
-		mockMvc.perform(get("/getProposedDependenciesOfRequirement")
+				.andRespond(withSuccess(content2, MediaType.APPLICATION_JSON));
+		
+		mockServer.expect(requestTo(mallikasAddress + "/selectedReqs"))
+		.andRespond(withSuccess(reqContent, MediaType.APPLICATION_JSON));
+		
+		mockMvc.perform(get("/getTopProposedDependenciesOfRequirement")
 				.param("requirementId", "testId"))
 				.andExpect(status().isOk());
 		mockServer.verify();

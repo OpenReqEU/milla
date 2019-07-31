@@ -24,7 +24,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.json.Dependency;
 
@@ -67,7 +66,7 @@ public class DetectionService {
 		}	
 	}
 	
-	public ResponseEntity<String> getDetectedFromServices(String requirementId)
+	public List<Dependency> getDetectedFromServices(String requirementId)
 	{
 		List<Dependency> dependencies = new ArrayList<>();
 		for (String url : detectionGetAddresses) {
@@ -82,9 +81,8 @@ public class DetectionService {
 				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
 			}
 		}		
-		JsonObject resultObj = new JsonObject();
-		resultObj.add("dependencies", new Gson().toJsonTree(dependencies));
-		return new ResponseEntity<String>(resultObj.toString(), HttpStatus.OK);
+
+		return dependencies;
 	}
 	/**
 	 * Retrieve the requirements from Mallikas based either on the given requirement IDs or project ID,

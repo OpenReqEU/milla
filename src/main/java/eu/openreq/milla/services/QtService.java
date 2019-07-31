@@ -24,6 +24,7 @@ import eu.openreq.milla.models.json.RequestParams;
 
 @Service
 public class QtService {
+	
 	@Autowired
 	DetectionService detectionService;
 
@@ -35,7 +36,7 @@ public class QtService {
 		List<Dependency> detected = new ArrayList<Dependency>();		
 		
 		for (String reqId : params.getRequirementIds()) {
-			detectionService.getDetectedFromServices(reqId);
+			detected.addAll(detectionService.getDetectedFromServices(reqId));
 		}
 		
 		String proposedFromMallikas = mallikasService.requestWithParams(params,
@@ -66,10 +67,12 @@ public class QtService {
 		for (Dependency dep : detected) {
 			if (detectedWithTotalScore.containsKey(dep.getId())) {
 				Dependency totalDep = detectedWithTotalScore.get(dep.getId());
-				totalDep.setDependency_score(totalDep.getDependency_score() + dep.getDependency_score());		
-				Set<String> desc = new HashSet<String>(totalDep.getDescription());
-				desc.addAll(dep.getDescription());
-				totalDep.setDescription(new ArrayList<String>(desc));
+				totalDep.setDependency_score(totalDep.getDependency_score() + dep.getDependency_score());	
+				if (totalDep.getDescription()!=null) {
+					Set<String> desc = new HashSet<String>(totalDep.getDescription());
+					desc.addAll(dep.getDescription());
+					totalDep.setDescription(new ArrayList<String>(desc));
+				}
 				dep = totalDep;	
 			} 
 			detectedWithTotalScore.put(dep.getId(), dep);			
