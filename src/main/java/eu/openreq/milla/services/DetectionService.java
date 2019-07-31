@@ -215,7 +215,7 @@ public class DetectionService {
 	public ResponseEntity<String> postProjectToServices(String projectId) {	
 		String jsonString;
 		
-		if (projectId == "ALL") {
+		if (projectId.equals("ALL")) {
 			jsonString = mallikasService.getAllRequirements();
 		} else {
 			jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
