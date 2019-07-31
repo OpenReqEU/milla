@@ -84,13 +84,28 @@ public class DetectionControllerTest {
 	@Test
 	public void getDetectedTest() throws Exception {
 		String testAddress = "http://localhost:9203/test?id=";
-		String testId = "id";
+		String testId = "testId";
 		
 		mockServer.expect(requestTo(testAddress + testId))
 				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
 		mockMvc.perform(get("/detectedFromService")
-				.param("url", testAddress)
+				.param("requirementId", testId)
+				.param("url", testAddress))
+				.andExpect(status().isOk());	
+		mockServer.verify();
+	}
+	
+	@Test
+	public void getDetectedsTest() throws Exception {
+		String testId = "testId";
+		
+		for (String testAddress : detectionGetAddresses) {
+			mockServer.expect(requestTo(testAddress + testId))
+					.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
+		}
+		
+		mockMvc.perform(get("/detectedFromServices")
 				.param("requirementId", testId))
 				.andExpect(status().isOk());	
 		mockServer.verify();
@@ -114,8 +129,54 @@ public class DetectionControllerTest {
 						MediaType.APPLICATION_JSON));
 		
 		mockMvc.perform(post("/projectToService")
-				.param("url", testAddress)
+				.param("projectId", testId)
+				.param("url", testAddress))
+				.andExpect(status().isOk());	
+		mockServer.verify();
+	}
+	
+
+	@Test
+	public void projectToServicesTest() throws Exception {
+		String testId = "testId";
+		
+		mockServer.expect(requestTo(mallikasAddress + "/projectRequirements?projectId=testId&includeProposed=true"
+				+ "&requirementsOnly=false")).andRespond(withSuccess("{\"dummy\":\"test\"}", 
+						MediaType.APPLICATION_JSON));
+		for (String testAddress : detectionPostAddresses) {
+			mockServer.expect(requestTo(testAddress))
+					.andExpect(content().string("{\"dummy\":\"test\"}"))
+					.andRespond(withSuccess("[{\"response\":\"test\"}]", MediaType.APPLICATION_JSON));
+			
+			mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?isProposed=true"))
+					.andRespond(withSuccess("{\"dummy\":\"test\"}", 
+							MediaType.APPLICATION_JSON));
+		}
+		
+		mockMvc.perform(post("/projectToServices")
 				.param("projectId", testId))
+				.andExpect(status().isOk());	
+		mockServer.verify();
+	}
+	
+	@Test
+	public void allProjectsToServicesTest() throws Exception {
+		
+		mockServer.expect(requestTo(mallikasAddress + "/allRequirements"))
+				.andRespond(withSuccess("{\"dummy\":\"test\"}", 
+						MediaType.APPLICATION_JSON));
+		for (String testAddress : detectionPostAddresses) {
+			mockServer.expect(requestTo(testAddress))
+					.andExpect(content().string("{\"dummy\":\"test\"}"))
+					.andRespond(withSuccess("[{\"response\":\"test\"}]", MediaType.APPLICATION_JSON));
+			
+			mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?isProposed=true"))
+					.andRespond(withSuccess("{\"dummy\":\"test\"}", 
+							MediaType.APPLICATION_JSON));
+		}
+		
+		mockMvc.perform(post("/projectToServices")
+				.param("projectId", "ALL"))
 				.andExpect(status().isOk());	
 		mockServer.verify();
 	}
@@ -165,6 +226,8 @@ public class DetectionControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(content))
 				.andExpect(status().isOk());	
+		
+		mockServer.verify();
 	}
 
   

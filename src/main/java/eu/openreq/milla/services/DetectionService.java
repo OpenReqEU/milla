@@ -2,11 +2,13 @@ package eu.openreq.milla.services;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -22,6 +24,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.json.Dependency;
 
@@ -34,6 +37,15 @@ public class DetectionService {
 	
 	@Value("${milla.upcCrossReferenceAddress}")
 	private String upcCrossReferenceAddress;
+
+	@Value("${milla.detectionGetAddresses}")
+	private String[] detectionGetAddresses;
+	
+	@Value("${milla.detectionPostAddresses}")
+	private String[] detectionPostAddresses;
+	
+	@Value("${milla.detectionUpdateAddresses}")
+	private String[] detectionUpdateAddresses;
 	
 	@Value("${milla.ownAddress}")
 	private String millaAddress;
@@ -44,6 +56,36 @@ public class DetectionService {
 	@Autowired
 	RestTemplate rt;
 	
+	public ResponseEntity<String> getDetectedFromService(String requirementId, String url) {
+		try {
+			ResponseEntity<String> serviceResponse = rt.getForEntity(url + requirementId, String.class);	
+			
+			return new ResponseEntity<String>(serviceResponse.getBody(), 
+					serviceResponse.getStatusCode());
+		} catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.NO_CONTENT);
+		}	
+	}
+	
+	public ResponseEntity<String> getDetectedFromServices(String requirementId)
+	{
+		List<Dependency> dependencies = new ArrayList<>();
+		for (String url : detectionGetAddresses) {
+			ResponseEntity<String> detectionResult = getDetectedFromService(requirementId, url);
+			try {
+				OpenReqJSONParser parser = new OpenReqJSONParser(detectionResult.getBody().toString());
+				List<Dependency> foundDeps = parser.getDependencies();
+				if (foundDeps!=null) {
+					dependencies.addAll(foundDeps);
+				}
+			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
+				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
+			}
+		}		
+		JsonObject resultObj = new JsonObject();
+		resultObj.add("dependencies", new Gson().toJsonTree(dependencies));
+		return new ResponseEntity<String>(resultObj.toString(), HttpStatus.OK);
+	}
 	/**
 	 * Retrieve the requirements from Mallikas based either on the given requirement IDs or project ID,
 	 * then send them to the similarity detection server. A URL has to be provided for 
@@ -54,7 +96,7 @@ public class DetectionService {
 	 * @return Response from the server, which contains the id of the request if successful. 
 	 * @throws IOException
 	 */
-	public ResponseEntity<String> sendRequirementsForDetection(String jsonString, String url) {
+	public ResponseEntity<String> postStringToService(String jsonString, String url) {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
@@ -158,4 +200,45 @@ public class DetectionService {
 			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}	
+	
+	public ResponseEntity<String> postProjectToService(String projectId, String url, String jsonString) {
+		
+		if (jsonString == null) {
+			jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
+		}
+		
+		ResponseEntity<String> serviceResponse = postStringToService(jsonString, url);
+		
+		String mallikasResponse = mallikasService.convertAndUpdateDependencies(serviceResponse.getBody(), true, false);
+		
+		return new ResponseEntity<String>(mallikasResponse + "\n" + serviceResponse.getBody(), serviceResponse.getStatusCode());	
+	}
+	
+	public ResponseEntity<String> postProjectToServices(String projectId) {	
+		String jsonString;
+		
+		if (projectId == "ALL") {
+			jsonString = mallikasService.getAllRequirements();
+		} else {
+			jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
+		}
+		
+		String results = "";
+		
+		for (String url : detectionPostAddresses) {
+			System.out.println(url);
+			ResponseEntity<String> postResult = postProjectToService(null, url, jsonString);
+			results += "Response from " + url + " \n" + postResult + "\n\n";
+		}
+		
+		return new ResponseEntity<String>(results, HttpStatus.OK);
+	}
+	
+	public String postUpdatesToService(String content) {
+		String response = "";
+		for (String url : detectionUpdateAddresses) {
+			response += postStringToService(content, url) + "\n";
+		}
+		return response;
+	}
 }

@@ -23,7 +23,10 @@ import eu.openreq.milla.qtjiraimporter.ProjectIssues;
 public class ImportService {
 	
 	@Autowired
-	MallikasService service;
+	MallikasService mallikasService;
+	
+	@Autowired
+	UpdateService updateService;
 	
 	@Autowired
 	FormatTransformerService transformer;
@@ -69,8 +72,8 @@ public class ImportService {
 				// epicCount = epicCount + transformer.getEpicCount();
 				// subtaskCount = subtaskCount + transformer.getSubtaskCount();
 				requirementIds.addAll(transformer.getRequirementIds());
-				service.updateRequirements(requirements, projectId);
-				service.updateDependencies(dependencies, false, false);
+				mallikasService.updateRequirements(requirements, projectId);
+				mallikasService.updateDependencies(dependencies, false, false);
 				projectIssuesAsJson.clear();
 				issues.clear();
 				requirements.clear();
@@ -81,7 +84,7 @@ public class ImportService {
 			}
 
 			Project project = transformer.createProject(projectId, requirementIds);
-			service.postProject(project);
+			mallikasService.postProject(project);
 
 			long end1 = System.nanoTime();
 			long durationSec = (end1 - start1) / 1000000000;
@@ -97,10 +100,18 @@ public class ImportService {
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
 	}
 	
-	public Project createProject(String projectId) {
-		return transformer.createProject(projectId, new ArrayList<String>());
-	}
-		
-		
 	
+	public ResponseEntity<String> importUpdatedIssues(String projectId, OAuthService authService) {
+		try {
+			String response = mallikasService.getListOfProjects();
+			if (response==null || !response.contains(projectId)) {
+				mallikasService.postProject(transformer.createProject(projectId, new ArrayList<String>()));
+			}			
+			return updateService.getAllUpdatedIssues(projectId, authService);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
+	}
+
 }

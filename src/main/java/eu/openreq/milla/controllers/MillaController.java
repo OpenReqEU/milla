@@ -20,7 +20,6 @@ import eu.openreq.milla.services.ImportService;
 import eu.openreq.milla.services.MallikasService;
 import eu.openreq.milla.services.MulperiService;
 import eu.openreq.milla.services.OAuthService;
-import eu.openreq.milla.services.UpdateService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -46,11 +45,7 @@ public class MillaController {
 	MallikasService mallikasService;
 	
 	@Autowired
-	UpdateService updateService;
-	
-	@Autowired
 	OAuthService authService;
-	
 
 	
 	
@@ -180,7 +175,7 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJira")
-	public ResponseEntity<?> importFromQtJira(@RequestParam String projectId) throws Exception {
+	public ResponseEntity<String> importFromQtJira(@RequestParam String projectId) throws Exception {
 			return importService.importProjectIssues(projectId, authService);
 	}
 	
@@ -229,22 +224,12 @@ public class MillaController {
 			+ "<br><b>Parameter: </b>"
 			+ "<br>projectId: The id of the Qt Jira project (e.g., QTWB).", 
 			response = String.class)
-
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success, all updated requirements and dependencies downloaded"),
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJiraUpdated")
 	public ResponseEntity<?> importUpdatedFromQtJira(@RequestParam String projectId) throws IOException {
-		try {
-			String response = mallikasService.getListOfProjects();
-			if (response==null || !response.contains(projectId)) {
-				mallikasService.postProject(importService.createProject(projectId));
-			}			
-			return updateService.getAllUpdatedIssues(projectId, authService);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
+		return importService.importUpdatedIssues(projectId, authService);
 	}
 	
 	
@@ -285,7 +270,7 @@ public class MillaController {
 	@PostMapping(value = "verifyJiraAuthorization")
 	public ResponseEntity<?> sendSecret(@RequestBody String secret){
 		if (!authService.isInitialized()) {
-			return new ResponseEntity<>("No authorization process initialized", HttpStatus.EXPECTATION_FAILED);
+			return new ResponseEntity<>("No authorization process initialized", HttpStatus.UNAUTHORIZED);
 		}
 		try {
 			String response = authService.accessTokenAuthorization(secret);
@@ -311,7 +296,7 @@ public class MillaController {
 	@GetMapping(value = "testJiraAuthorization")
 	public ResponseEntity<String> test() {
 		if (!authService.isInitialized()) {
-			return new ResponseEntity<String>("Jira not authorized", HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<String>("Not authorized for Jira", HttpStatus.UNAUTHORIZED);
 		}
 		String result = authService.authorizedJiraRequest("/rest/auth/latest/session");
 		return new ResponseEntity<String>(result, HttpStatus.OK);

@@ -38,6 +38,9 @@ public class UpdateService {
 	@Autowired
 	private MallikasService mallikasService;
 	
+	@Autowired
+	private DetectionService detectionService;
+	
 	private List<String> reqIds;
 	
 	private Collection<Requirement> requirements;
@@ -50,8 +53,7 @@ public class UpdateService {
 	 * @return 
 	 * @throws Exception
 	 */
-	public ResponseEntity<?> getAllUpdatedIssues(String projectId, OAuthService authService) throws Exception {
-		
+	public ResponseEntity<String> getAllUpdatedIssues(String projectId, OAuthService authService) throws Exception {		
 		Person person = new Person();
 		person.setUsername("user_" + projectId);
 		person.setEmail("dummyEmail");
@@ -93,6 +95,8 @@ public class UpdateService {
 			object.add("projects", gson.toJsonTree(Arrays.asList(project)));
 			object.add("requirements", gson.toJsonTree(totalRequirements));
 			object.add("dependencies", gson.toJsonTree(totalDependencies));
+			
+			System.out.println(detectionService.postUpdatesToService(object.getAsString()));
 			
 			return new ResponseEntity<>(object.toString(), HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
