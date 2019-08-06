@@ -1,1 +1,494 @@
-{"expand":"renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations","id":"254160","self":"https://bugreports.qt.io/rest/api/2/issue/254160","key":"QTCREATORBUG-19356","fields":{"issuetype":{"self":"https://bugreports.qt.io/rest/api/2/issuetype/1","id":"1","description":"A problem which impairs or prevents the functions of the product.","iconUrl":"https://bugreports.qt.io/secure/viewavatar?size=xsmall&avatarId=12173&avatarType=issuetype","name":"Bug","subtask":false,"avatarId":12173},"customfield_10190":null,"timespent":null,"customfield_10030":null,"project":{"self":"https://bugreports.qt.io/rest/api/2/project/10512","id":"10512","key":"QTCREATORBUG","name":"Qt Creator","avatarUrls":{"48x48":"https://bugreports.qt.io/secure/projectavatar?pid=10512&avatarId=10011","24x24":"https://bugreports.qt.io/secure/projectavatar?size=small&pid=10512&avatarId=10011","16x16":"https://bugreports.qt.io/secure/projectavatar?size=xsmall&pid=10512&avatarId=10011","32x32":"https://bugreports.qt.io/secure/projectavatar?size=medium&pid=10512&avatarId=10011"},"projectCategory":{"self":"https://bugreports.qt.io/rest/api/2/projectCategory/10010","id":"10010","description":"Active projects","name":"Active"}},"fixVersions":[{"self":"https://bugreports.qt.io/rest/api/2/version/17507","id":"17507","description":"4.8.1","name":"Qt Creator 4.8.1","archived":false,"released":true,"releaseDate":"2019-01-17"},{"self":"https://bugreports.qt.io/rest/api/2/version/16819","id":"16819","description":"4.9.0 Beta 1","name":"Qt Creator 4.9.0 (4.9 branch)","archived":false,"released":false}],"customfield_11200":"{summaryBean=com.atlassian.jira.plugin.devstatus.rest.SummaryBean@5fcda7b[summary={pullrequest=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@25551c65[overall=com.atlassian.jira.plugin.devstatus.summary.beans.PullRequestOverallBean@4ffaf1b1[stateCount=0,state=OPEN,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], build=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@2a436c91[overall=com.atlassian.jira.plugin.devstatus.summary.beans.BuildOverallBean@490f54a0[failedBuildCount=0,successfulBuildCount=0,unknownBuildCount=0,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], review=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@4434cfd0[overall=com.atlassian.jira.plugin.devstatus.summary.beans.ReviewsOverallBean@5cdbc99e[stateCount=0,state=<null>,dueDate=<null>,overDue=false,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], deployment-environment=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@6d4d1170[overall=com.atlassian.jira.plugin.devstatus.summary.beans.DeploymentOverallBean@5e54e22d[topEnvironments=[],showProjects=false,successfulCount=0,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], repository=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@3cfcfc78[overall=com.atlassian.jira.plugin.devstatus.summary.beans.CommitOverallBean@3e695540[count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], branch=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@3baa056c[overall=com.atlassian.jira.plugin.devstatus.summary.beans.BranchOverallBean@4296cdbe[count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}]},errors=[],configErrors=[]], devSummaryJson={\"cachedValue\":{\"errors\":[],\"configErrors\":[],\"summary\":{\"pullrequest\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"stateCount\":0,\"state\":\"OPEN\",\"open\":true},\"byInstanceType\":{}},\"build\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"failedBuildCount\":0,\"successfulBuildCount\":0,\"unknownBuildCount\":0},\"byInstanceType\":{}},\"review\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"stateCount\":0,\"state\":null,\"dueDate\":null,\"overDue\":false,\"completed\":false},\"byInstanceType\":{}},\"deployment-environment\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"topEnvironments\":[],\"showProjects\":false,\"successfulCount\":0},\"byInstanceType\":{}},\"repository\":{\"overall\":{\"count\":0,\"lastUpdated\":null},\"byInstanceType\":{}},\"branch\":{\"overall\":{\"count\":0,\"lastUpdated\":null},\"byInstanceType\":{}}}},\"isStale\":false}}","aggregatetimespent":null,"resolution":{"self":"https://bugreports.qt.io/rest/api/2/resolution/1","id":"1","description":"This issue is fixed/implemented.","name":"Done"},"customfield_10302":null,"resolutiondate":"2018-12-17T09:43:04.000+0000","workratio":-1,"customfield_10906":null,"customfield_10907":null,"customfield_10908":null,"customfield_10909":null,"lastViewed":"2019-02-21T11:59:11.366+0000","watches":{"self":"https://bugreports.qt.io/rest/api/2/issue/QTCREATORBUG-19356/watchers","watchCount":1,"isWatching":false},"customfield_10180":null,"customfield_10181":null,"created":"2017-11-23T11:01:27.000+0000","customfield_10183":null,"customfield_10142":"5a8b198b9a76d63854bebaa364aae9780890b2fb (qt-creator/qt-creator/4.8)","priority":{"self":"https://bugreports.qt.io/rest/api/2/priority/6","iconUrl":"https://bugreports.qt.io/images/icons/help_16.gif","name":"Not Evaluated","id":"6"},"customfield_10300":"9223372036854775807","labels":[],"customfield_10301":"9223372036854775807","timeestimate":null,"aggregatetimeoriginalestimate":null,"versions":[{"self":"https://bugreports.qt.io/rest/api/2/version/16721","id":"16721","description":"","name":"Qt Creator 4.4.1","archived":false,"released":true,"releaseDate":"2017-10-06"},{"self":"https://bugreports.qt.io/rest/api/2/version/16308","id":"16308","description":"","name":"Qt Creator 4.5.0-beta1","archived":false,"released":true,"releaseDate":"2017-10-12"},{"self":"https://bugreports.qt.io/rest/api/2/version/16744","id":"16744","description":"","name":"Qt Creator 4.5.0-rc1","archived":false,"released":true,"releaseDate":"2017-11-22"},{"self":"https://bugreports.qt.io/rest/api/2/version/16787","id":"16787","description":"4.5.1","name":"Qt Creator 4.5.1","archived":false,"released":true,"releaseDate":"2018-02-13"},{"self":"https://bugreports.qt.io/rest/api/2/version/16737","id":"16737","description":"4.6.0 Beta 1","name":"Qt Creator 4.6.0-beta1","archived":false,"released":true,"releaseDate":"2018-02-07"},{"self":"https://bugreports.qt.io/rest/api/2/version/16838","id":"16838","description":"4.6.0","name":"Qt Creator 4.6.0 ","archived":false,"released":true,"releaseDate":"2018-03-28"},{"self":"https://bugreports.qt.io/rest/api/2/version/16840","id":"16840","description":"4.6.1","name":"Qt Creator 4.6.1","archived":false,"released":true,"releaseDate":"2018-05-03"},{"self":"https://bugreports.qt.io/rest/api/2/version/16900","id":"16900","description":"4.6.2","name":"Qt Creator 4.6.2","archived":false,"released":true,"releaseDate":"2018-06-11"},{"self":"https://bugreports.qt.io/rest/api/2/version/16758","id":"16758","description":"4.7.0 Beta 1","name":"Qt Creator 4.7.0-beta1","archived":false,"released":true,"releaseDate":"2018-06-05"},{"self":"https://bugreports.qt.io/rest/api/2/version/16921","id":"16921","description":"4.7.0 Beta 2","name":"Qt Creator 4.7.0-beta2","archived":false,"released":true,"releaseDate":"2018-06-21"},{"self":"https://bugreports.qt.io/rest/api/2/version/16935","id":"16935","description":"4.7.0","name":"Qt Creator 4.7.0","archived":false,"released":true,"releaseDate":"2018-07-18"},{"self":"https://bugreports.qt.io/rest/api/2/version/16937","id":"16937","description":"4.7.1","name":"Qt Creator 4.7.1","archived":false,"released":true,"releaseDate":"2018-09-20"},{"self":"https://bugreports.qt.io/rest/api/2/version/16759","id":"16759","description":"4.8.0 Beta 1","name":"Qt Creator 4.8.0-beta1","archived":false,"released":true,"releaseDate":"2018-10-11"}],"issuelinks":[{"id":"110998","self":"https://bugreports.qt.io/rest/api/2/issueLink/110998","type":{"id":"10180","name":"Duplicate","inward":"is duplicated by","outward":"duplicates","self":"https://bugreports.qt.io/rest/api/2/issueLinkType/10180"},"inwardIssue":{"id":"263622","key":"QTCREATORBUG-20639","self":"https://bugreports.qt.io/rest/api/2/issue/263622","fields":{"summary":"Debugger displays multidimensional arrays incorrectly","status":{"self":"https://bugreports.qt.io/rest/api/2/status/6","description":"The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.","iconUrl":"https://bugreports.qt.io/images/icons/statuses/trash.png","name":"Closed","id":"6","statusCategory":{"self":"https://bugreports.qt.io/rest/api/2/statuscategory/3","id":3,"key":"done","colorName":"green","name":"Done"}},"priority":{"self":"https://bugreports.qt.io/rest/api/2/priority/6","iconUrl":"https://bugreports.qt.io/images/icons/help_16.gif","name":"Not Evaluated","id":"6"},"issuetype":{"self":"https://bugreports.qt.io/rest/api/2/issuetype/1","id":"1","description":"A problem which impairs or prevents the functions of the product.","iconUrl":"https://bugreports.qt.io/secure/viewavatar?size=xsmall&avatarId=12173&avatarType=issuetype","name":"Bug","subtask":false,"avatarId":12173}}}},{"id":"112929","self":"https://bugreports.qt.io/rest/api/2/issueLink/112929","type":{"id":"10040","name":"Work Breakdown","inward":"resulted from","outward":"resulted in","self":"https://bugreports.qt.io/rest/api/2/issueLinkType/10040"},"outwardIssue":{"id":"266794","key":"QTCREATORBUG-21074","self":"https://bugreports.qt.io/rest/api/2/issue/266794","fields":{"summary":"Debugger incorrectly says a std::vector has 0 elements","status":{"self":"https://bugreports.qt.io/rest/api/2/status/6","description":"The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.","iconUrl":"https://bugreports.qt.io/images/icons/statuses/trash.png","name":"Closed","id":"6","statusCategory":{"self":"https://bugreports.qt.io/rest/api/2/statuscategory/3","id":3,"key":"done","colorName":"green","name":"Done"}},"priority":{"self":"https://bugreports.qt.io/rest/api/2/priority/6","iconUrl":"https://bugreports.qt.io/images/icons/help_16.gif","name":"Not Evaluated","id":"6"},"issuetype":{"self":"https://bugreports.qt.io/rest/api/2/issuetype/1","id":"1","description":"A problem which impairs or prevents the functions of the product.","iconUrl":"https://bugreports.qt.io/secure/viewavatar?size=xsmall&avatarId=12173&avatarType=issuetype","name":"Bug","subtask":false,"avatarId":12173}}}}],"assignee":{"self":"https://bugreports.qt.io/rest/api/2/user?username=hjk","name":"hjk","key":"hjk","avatarUrls":{"48x48":"https://bugreports.qt.io/secure/useravatar?avatarId=10292","24x24":"https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292","16x16":"https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292","32x32":"https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"},"displayName":"hjk","active":true,"timeZone":"Europe/Berlin"},"updated":"2019-01-07T12:44:25.000+0000","status":{"self":"https://bugreports.qt.io/rest/api/2/status/6","description":"The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.","iconUrl":"https://bugreports.qt.io/images/icons/statuses/trash.png","name":"Closed","id":"6","statusCategory":{"self":"https://bugreports.qt.io/rest/api/2/statuscategory/3","id":3,"key":"done","colorName":"green","name":"Done"}},"components":[{"self":"https://bugreports.qt.io/rest/api/2/component/19120","id":"19120","name":"Debugger","description":"Issues with the GDB, CDB, LLDB debugger integration"}],"timeoriginalestimate":null,"description":"Using the Python dumper, when an array inside a struct is accessed with the same name\r\nas a local array. The debugger shows the wrong contents in the local array, it shows the data of the array inside the struct.\r\n\r\nSee the attached example code and the output screenshots of the debugger with the Debug helper enabled / disabled\r\n","customfield_11100":null,"timetracking":{},"customfield_10600":null,"customfield_10601":null,"customfield_10800":"0|i0h6rr:","attachment":[{"self":"https://bugreports.qt.io/rest/api/2/attachment/68012","id":"68012","filename":"test.cpp","author":{"self":"https://bugreports.qt.io/rest/api/2/user?username=marc_philippens","name":"marc_philippens","key":"marc_philippens","avatarUrls":{"48x48":"https://bugreports.qt.io/secure/useravatar?avatarId=10292","24x24":"https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292","16x16":"https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292","32x32":"https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"},"displayName":"Marc Philippens","active":true,"timeZone":"Europe/Amsterdam"},"created":"2017-11-23T11:04:20.000+0000","size":238,"mimeType":"text/plain","content":"https://bugreports.qt.io/secure/attachment/68012/test.cpp"},{"self":"https://bugreports.qt.io/rest/api/2/attachment/68010","id":"68010","filename":"withoutPythonDumper.PNG","author":{"self":"https://bugreports.qt.io/rest/api/2/user?username=marc_philippens","name":"marc_philippens","key":"marc_philippens","avatarUrls":{"48x48":"https://bugreports.qt.io/secure/useravatar?avatarId=10292","24x24":"https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292","16x16":"https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292","32x32":"https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"},"displayName":"Marc Philippens","active":true,"timeZone":"Europe/Amsterdam"},"created":"2017-11-23T11:00:24.000+0000","size":8780,"mimeType":"image/png","content":"https://bugreports.qt.io/secure/attachment/68010/withoutPythonDumper.PNG","thumbnail":"https://bugreports.qt.io/secure/thumbnail/68010/_thumb_68010.png"},{"self":"https://bugreports.qt.io/rest/api/2/attachment/68009","id":"68009","filename":"withPythonDumper.PNG","author":{"self":"https://bugreports.qt.io/rest/api/2/user?username=marc_philippens","name":"marc_philippens","key":"marc_philippens","avatarUrls":{"48x48":"https://bugreports.qt.io/secure/useravatar?avatarId=10292","24x24":"https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292","16x16":"https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292","32x32":"https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"},"displayName":"Marc Philippens","active":true,"timeZone":"Europe/Amsterdam"},"created":"2017-11-23T11:00:24.000+0000","size":9698,"mimeType":"image/png","content":"https://bugreports.qt.io/secure/attachment/68009/withPythonDumper.PNG","thumbnail":"https://bugreports.qt.io/secure/thumbnail/68009/_thumb_68009.png"}],"aggregatetimeestimate":null,"summary":"Python dumper shows wrong array contents","creator":{"self":"https://bugreports.qt.io/rest/api/2/user?username=marc_philippens","name":"marc_philippens","key":"marc_philippens","avatarUrls":{"48x48":"https://bugreports.qt.io/secure/useravatar?avatarId=10292","24x24":"https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292","16x16":"https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292","32x32":"https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"},"displayName":"Marc Philippens","active":true,"timeZone":"Europe/Amsterdam"},"subtasks":[],"reporter":{"self":"https://bugreports.qt.io/rest/api/2/user?username=marc_philippens","name":"marc_philippens","key":"marc_philippens","avatarUrls":{"48x48":"https://bugreports.qt.io/secure/useravatar?avatarId=10292","24x24":"https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292","16x16":"https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292","32x32":"https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"},"displayName":"Marc Philippens","active":true,"timeZone":"Europe/Amsterdam"},"aggregateprogress":{"progress":0,"total":0},"customfield_10200":"9223372036854775807","customfield_10400":null,"environment":"Windows 10 64 bits \r\nVisual Studio 2015 C++ compiler ","customfield_10910":null,"customfield_10911":null,"progress":{"progress":0,"total":0},"comment":{"comments":[],"maxResults":0,"total":0,"startAt":0},"votes":{"self":"https://bugreports.qt.io/rest/api/2/issue/QTCREATORBUG-19356/votes","votes":1,"hasVoted":false},"worklog":{"startAt":0,"maxResults":20,"total":0,"worklogs":[]}}}
+{
+	"expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+	"id": "254160",
+	"self": "https://bugreports.qt.io/rest/api/2/issue/254160",
+	"key": "QTCREATORBUG-19356",
+	"fields": {
+		"issuetype": {
+			"self": "https://bugreports.qt.io/rest/api/2/issuetype/1",
+			"id": "1",
+			"description": "A problem which impairs or prevents the functions of the product.",
+			"iconUrl": "https://bugreports.qt.io/secure/viewavatar?size=xsmall&avatarId=12173&avatarType=issuetype",
+			"name": "Bug",
+			"subtask": false,
+			"avatarId": 12173
+		},
+		"customfield_10190": null,
+		"timespent": null,
+		"customfield_10030": null,
+		"project": {
+			"self": "https://bugreports.qt.io/rest/api/2/project/10512",
+			"id": "10512",
+			"key": "QTCREATORBUG",
+			"name": "Qt Creator",
+			"avatarUrls": {
+				"48x48": "https://bugreports.qt.io/secure/projectavatar?pid=10512&avatarId=10011",
+				"24x24": "https://bugreports.qt.io/secure/projectavatar?size=small&pid=10512&avatarId=10011",
+				"16x16": "https://bugreports.qt.io/secure/projectavatar?size=xsmall&pid=10512&avatarId=10011",
+				"32x32": "https://bugreports.qt.io/secure/projectavatar?size=medium&pid=10512&avatarId=10011"
+			},
+			"projectCategory": {
+				"self": "https://bugreports.qt.io/rest/api/2/projectCategory/10010",
+				"id": "10010",
+				"description": "Active projects",
+				"name": "Active"
+			}
+		},
+		"fixVersions": [
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/17507",
+				"id": "17507",
+				"description": "4.8.1",
+				"name": "Qt Creator 4.8.1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2019-01-17"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16819",
+				"id": "16819",
+				"description": "4.9.0 Beta 1",
+				"name": "Qt Creator 4.9.0 (4.9 branch)",
+				"archived": false,
+				"released": false
+			}
+		],
+		"customfield_11200": "{summaryBean=com.atlassian.jira.plugin.devstatus.rest.SummaryBean@5fcda7b[summary={pullrequest=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@25551c65[overall=com.atlassian.jira.plugin.devstatus.summary.beans.PullRequestOverallBean@4ffaf1b1[stateCount=0,state=OPEN,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], build=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@2a436c91[overall=com.atlassian.jira.plugin.devstatus.summary.beans.BuildOverallBean@490f54a0[failedBuildCount=0,successfulBuildCount=0,unknownBuildCount=0,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], review=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@4434cfd0[overall=com.atlassian.jira.plugin.devstatus.summary.beans.ReviewsOverallBean@5cdbc99e[stateCount=0,state=<null>,dueDate=<null>,overDue=false,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], deployment-environment=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@6d4d1170[overall=com.atlassian.jira.plugin.devstatus.summary.beans.DeploymentOverallBean@5e54e22d[topEnvironments=[],showProjects=false,successfulCount=0,count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], repository=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@3cfcfc78[overall=com.atlassian.jira.plugin.devstatus.summary.beans.CommitOverallBean@3e695540[count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}], branch=com.atlassian.jira.plugin.devstatus.rest.SummaryItemBean@3baa056c[overall=com.atlassian.jira.plugin.devstatus.summary.beans.BranchOverallBean@4296cdbe[count=0,lastUpdated=<null>,lastUpdatedTimestamp=<null>],byInstanceType={}]},errors=[],configErrors=[]], devSummaryJson={\"cachedValue\":{\"errors\":[],\"configErrors\":[],\"summary\":{\"pullrequest\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"stateCount\":0,\"state\":\"OPEN\",\"open\":true},\"byInstanceType\":{}},\"build\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"failedBuildCount\":0,\"successfulBuildCount\":0,\"unknownBuildCount\":0},\"byInstanceType\":{}},\"review\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"stateCount\":0,\"state\":null,\"dueDate\":null,\"overDue\":false,\"completed\":false},\"byInstanceType\":{}},\"deployment-environment\":{\"overall\":{\"count\":0,\"lastUpdated\":null,\"topEnvironments\":[],\"showProjects\":false,\"successfulCount\":0},\"byInstanceType\":{}},\"repository\":{\"overall\":{\"count\":0,\"lastUpdated\":null},\"byInstanceType\":{}},\"branch\":{\"overall\":{\"count\":0,\"lastUpdated\":null},\"byInstanceType\":{}}}},\"isStale\":false}}",
+		"aggregatetimespent": null,
+		"resolution": {
+			"self": "https://bugreports.qt.io/rest/api/2/resolution/1",
+			"id": "1",
+			"description": "This issue is fixed/implemented.",
+			"name": "Done"
+		},
+		"customfield_10302": null,
+		"resolutiondate": "2018-12-17T09:43:04.000+0000",
+		"workratio": -1,
+		"customfield_10906": null,
+		"customfield_10907": null,
+		"customfield_10908": null,
+		"customfield_10909": null,
+		"lastViewed": "2019-02-21T11:59:11.366+0000",
+		"watches": {
+			"self": "https://bugreports.qt.io/rest/api/2/issue/QTCREATORBUG-19356/watchers",
+			"watchCount": 1,
+			"isWatching": false
+		},
+		"customfield_10180": null,
+		"customfield_10181": null,
+		"created": "2017-11-23T11:01:27.000+0000",
+		"customfield_10183": null,
+		"customfield_10142": "5a8b198b9a76d63854bebaa364aae9780890b2fb (qt-creator/qt-creator/4.8)",
+		"priority": {
+			"self": "https://bugreports.qt.io/rest/api/2/priority/6",
+			"iconUrl": "https://bugreports.qt.io/images/icons/help_16.gif",
+			"name": "Not Evaluated",
+			"id": "6"
+		},
+		"customfield_10300": "9223372036854775807",
+		"labels": [
+		],
+		"customfield_10301": "9223372036854775807",
+		"timeestimate": null,
+		"aggregatetimeoriginalestimate": null,
+		"versions": [
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16721",
+				"id": "16721",
+				"description": "",
+				"name": "Qt Creator 4.4.1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2017-10-06"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16308",
+				"id": "16308",
+				"description": "",
+				"name": "Qt Creator 4.5.0-beta1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2017-10-12"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16744",
+				"id": "16744",
+				"description": "",
+				"name": "Qt Creator 4.5.0-rc1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2017-11-22"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16787",
+				"id": "16787",
+				"description": "4.5.1",
+				"name": "Qt Creator 4.5.1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-02-13"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16737",
+				"id": "16737",
+				"description": "4.6.0 Beta 1",
+				"name": "Qt Creator 4.6.0-beta1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-02-07"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16838",
+				"id": "16838",
+				"description": "4.6.0",
+				"name": "Qt Creator 4.6.0 ",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-03-28"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16840",
+				"id": "16840",
+				"description": "4.6.1",
+				"name": "Qt Creator 4.6.1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-05-03"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16900",
+				"id": "16900",
+				"description": "4.6.2",
+				"name": "Qt Creator 4.6.2",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-06-11"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16758",
+				"id": "16758",
+				"description": "4.7.0 Beta 1",
+				"name": "Qt Creator 4.7.0-beta1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-06-05"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16921",
+				"id": "16921",
+				"description": "4.7.0 Beta 2",
+				"name": "Qt Creator 4.7.0-beta2",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-06-21"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16935",
+				"id": "16935",
+				"description": "4.7.0",
+				"name": "Qt Creator 4.7.0",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-07-18"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16937",
+				"id": "16937",
+				"description": "4.7.1",
+				"name": "Qt Creator 4.7.1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-09-20"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/version/16759",
+				"id": "16759",
+				"description": "4.8.0 Beta 1",
+				"name": "Qt Creator 4.8.0-beta1",
+				"archived": false,
+				"released": true,
+				"releaseDate": "2018-10-11"
+			}
+		],
+		"issuelinks": [
+			{
+				"id": "110998",
+				"self": "https://bugreports.qt.io/rest/api/2/issueLink/110998",
+				"type": {
+					"id": "10180",
+					"name": "Duplicate",
+					"inward": "is duplicated by",
+					"outward": "duplicates",
+					"self": "https://bugreports.qt.io/rest/api/2/issueLinkType/10180"
+				},
+				"inwardIssue": {
+					"id": "263622",
+					"key": "QTCREATORBUG-20639",
+					"self": "https://bugreports.qt.io/rest/api/2/issue/263622",
+					"fields": {
+						"summary": "Debugger displays multidimensional arrays incorrectly",
+						"status": {
+							"self": "https://bugreports.qt.io/rest/api/2/status/6",
+							"description": "The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.",
+							"iconUrl": "https://bugreports.qt.io/images/icons/statuses/trash.png",
+							"name": "Closed",
+							"id": "6",
+							"statusCategory": {
+								"self": "https://bugreports.qt.io/rest/api/2/statuscategory/3",
+								"id": 3,
+								"key": "done",
+								"colorName": "green",
+								"name": "Done"
+							}
+						},
+						"priority": {
+							"self": "https://bugreports.qt.io/rest/api/2/priority/6",
+							"iconUrl": "https://bugreports.qt.io/images/icons/help_16.gif",
+							"name": "Not Evaluated",
+							"id": "6"
+						},
+						"issuetype": {
+							"self": "https://bugreports.qt.io/rest/api/2/issuetype/1",
+							"id": "1",
+							"description": "A problem which impairs or prevents the functions of the product.",
+							"iconUrl": "https://bugreports.qt.io/secure/viewavatar?size=xsmall&avatarId=12173&avatarType=issuetype",
+							"name": "Bug",
+							"subtask": false,
+							"avatarId": 12173
+						}
+					}
+				}
+			},
+			{
+				"id": "112929",
+				"self": "https://bugreports.qt.io/rest/api/2/issueLink/112929",
+				"type": {
+					"id": "10040",
+					"name": "Work Breakdown",
+					"inward": "resulted from",
+					"outward": "resulted in",
+					"self": "https://bugreports.qt.io/rest/api/2/issueLinkType/10040"
+				},
+				"outwardIssue": {
+					"id": "266794",
+					"key": "QTCREATORBUG-21074",
+					"self": "https://bugreports.qt.io/rest/api/2/issue/266794",
+					"fields": {
+						"summary": "Debugger incorrectly says a std::vector has 0 elements",
+						"status": {
+							"self": "https://bugreports.qt.io/rest/api/2/status/6",
+							"description": "The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.",
+							"iconUrl": "https://bugreports.qt.io/images/icons/statuses/trash.png",
+							"name": "Closed",
+							"id": "6",
+							"statusCategory": {
+								"self": "https://bugreports.qt.io/rest/api/2/statuscategory/3",
+								"id": 3,
+								"key": "done",
+								"colorName": "green",
+								"name": "Done"
+							}
+						},
+						"priority": {
+							"self": "https://bugreports.qt.io/rest/api/2/priority/6",
+							"iconUrl": "https://bugreports.qt.io/images/icons/help_16.gif",
+							"name": "Not Evaluated",
+							"id": "6"
+						},
+						"issuetype": {
+							"self": "https://bugreports.qt.io/rest/api/2/issuetype/1",
+							"id": "1",
+							"description": "A problem which impairs or prevents the functions of the product.",
+							"iconUrl": "https://bugreports.qt.io/secure/viewavatar?size=xsmall&avatarId=12173&avatarType=issuetype",
+							"name": "Bug",
+							"subtask": false,
+							"avatarId": 12173
+						}
+					}
+				}
+			}
+		],
+		"assignee": {
+			"self": "https://bugreports.qt.io/rest/api/2/user?username=hjk",
+			"name": "hjk",
+			"key": "hjk",
+			"avatarUrls": {
+				"48x48": "https://bugreports.qt.io/secure/useravatar?avatarId=10292",
+				"24x24": "https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292",
+				"16x16": "https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292",
+				"32x32": "https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"
+			},
+			"displayName": "hjk",
+			"active": true,
+			"timeZone": "Europe/Berlin"
+		},
+		"updated": "2019-01-07T12:44:25.000+0000",
+		"status": {
+			"self": "https://bugreports.qt.io/rest/api/2/status/6",
+			"description": "The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.",
+			"iconUrl": "https://bugreports.qt.io/images/icons/statuses/trash.png",
+			"name": "Closed",
+			"id": "6",
+			"statusCategory": {
+				"self": "https://bugreports.qt.io/rest/api/2/statuscategory/3",
+				"id": 3,
+				"key": "done",
+				"colorName": "green",
+				"name": "Done"
+			}
+		},
+		"components": [
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/component/19120",
+				"id": "19120",
+				"name": "Debugger",
+				"description": "Issues with the GDB, CDB, LLDB debugger integration"
+			}
+		],
+		"timeoriginalestimate": null,
+		"description": "Using the Python dumper, when an array inside a struct is accessed with the same name\r\nas a local array. The debugger shows the wrong contents in the local array, it shows the data of the array inside the struct.\r\n\r\nSee the attached example code and the output screenshots of the debugger with the Debug helper enabled / disabled\r\n",
+		"customfield_11100": null,
+		"timetracking": {
+		},
+		"customfield_10600": null,
+		"customfield_10601": null,
+		"customfield_10800": "0|i0h6rr:",
+		"attachment": [
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/attachment/68012",
+				"id": "68012",
+				"filename": "test.cpp",
+				"author": {
+					"self": "https://bugreports.qt.io/rest/api/2/user?username=marc_philippens",
+					"name": "marc_philippens",
+					"key": "marc_philippens",
+					"avatarUrls": {
+						"48x48": "https://bugreports.qt.io/secure/useravatar?avatarId=10292",
+						"24x24": "https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292",
+						"16x16": "https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292",
+						"32x32": "https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"
+					},
+					"displayName": "Marc Philippens",
+					"active": true,
+					"timeZone": "Europe/Amsterdam"
+				},
+				"created": "2017-11-23T11:04:20.000+0000",
+				"size": 238,
+				"mimeType": "text/plain",
+				"content": "https://bugreports.qt.io/secure/attachment/68012/test.cpp"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/attachment/68010",
+				"id": "68010",
+				"filename": "withoutPythonDumper.PNG",
+				"author": {
+					"self": "https://bugreports.qt.io/rest/api/2/user?username=marc_philippens",
+					"name": "marc_philippens",
+					"key": "marc_philippens",
+					"avatarUrls": {
+						"48x48": "https://bugreports.qt.io/secure/useravatar?avatarId=10292",
+						"24x24": "https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292",
+						"16x16": "https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292",
+						"32x32": "https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"
+					},
+					"displayName": "Marc Philippens",
+					"active": true,
+					"timeZone": "Europe/Amsterdam"
+				},
+				"created": "2017-11-23T11:00:24.000+0000",
+				"size": 8780,
+				"mimeType": "image/png",
+				"content": "https://bugreports.qt.io/secure/attachment/68010/withoutPythonDumper.PNG",
+				"thumbnail": "https://bugreports.qt.io/secure/thumbnail/68010/_thumb_68010.png"
+			},
+			{
+				"self": "https://bugreports.qt.io/rest/api/2/attachment/68009",
+				"id": "68009",
+				"filename": "withPythonDumper.PNG",
+				"author": {
+					"self": "https://bugreports.qt.io/rest/api/2/user?username=marc_philippens",
+					"name": "marc_philippens",
+					"key": "marc_philippens",
+					"avatarUrls": {
+						"48x48": "https://bugreports.qt.io/secure/useravatar?avatarId=10292",
+						"24x24": "https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292",
+						"16x16": "https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292",
+						"32x32": "https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"
+					},
+					"displayName": "Marc Philippens",
+					"active": true,
+					"timeZone": "Europe/Amsterdam"
+				},
+				"created": "2017-11-23T11:00:24.000+0000",
+				"size": 9698,
+				"mimeType": "image/png",
+				"content": "https://bugreports.qt.io/secure/attachment/68009/withPythonDumper.PNG",
+				"thumbnail": "https://bugreports.qt.io/secure/thumbnail/68009/_thumb_68009.png"
+			}
+		],
+		"aggregatetimeestimate": null,
+		"summary": "Python dumper shows wrong array contents",
+		"creator": {
+			"self": "https://bugreports.qt.io/rest/api/2/user?username=marc_philippens",
+			"name": "marc_philippens",
+			"key": "marc_philippens",
+			"avatarUrls": {
+				"48x48": "https://bugreports.qt.io/secure/useravatar?avatarId=10292",
+				"24x24": "https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292",
+				"16x16": "https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292",
+				"32x32": "https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"
+			},
+			"displayName": "Marc Philippens",
+			"active": true,
+			"timeZone": "Europe/Amsterdam"
+		},
+		"subtasks": [
+		],
+		"reporter": {
+			"self": "https://bugreports.qt.io/rest/api/2/user?username=marc_philippens",
+			"name": "marc_philippens",
+			"key": "marc_philippens",
+			"avatarUrls": {
+				"48x48": "https://bugreports.qt.io/secure/useravatar?avatarId=10292",
+				"24x24": "https://bugreports.qt.io/secure/useravatar?size=small&avatarId=10292",
+				"16x16": "https://bugreports.qt.io/secure/useravatar?size=xsmall&avatarId=10292",
+				"32x32": "https://bugreports.qt.io/secure/useravatar?size=medium&avatarId=10292"
+			},
+			"displayName": "Marc Philippens",
+			"active": true,
+			"timeZone": "Europe/Amsterdam"
+		},
+		"aggregateprogress": {
+			"progress": 0,
+			"total": 0
+		},
+		"customfield_10200": "9223372036854775807",
+		"customfield_10400": null,
+		"environment": "Windows 10 64 bits \r\nVisual Studio 2015 C++ compiler ",
+		"customfield_10910": null,
+		"customfield_10911": null,
+		"progress": {
+			"progress": 0,
+			"total": 0
+		},
+		"comment": {
+			"comments": [
+			],
+			"maxResults": 0,
+			"total": 0,
+			"startAt": 0
+		},
+		"votes": {
+			"self": "https://bugreports.qt.io/rest/api/2/issue/QTCREATORBUG-19356/votes",
+			"votes": 1,
+			"hasVoted": false
+		},
+		"worklog": {
+			"startAt": 0,
+			"maxResults": 20,
+			"total": 0,
+			"worklogs": [
+			]
+		}
+	}
+}

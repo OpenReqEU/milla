@@ -114,7 +114,6 @@ public class FormatTransformerService {
 	 */
 	private void addFieldsToIssue(List<Issue> issues, Issue issue, Gson gson, JsonObject issueJSON) {
 		issue.getFields().setCustomfield10400(issueJSON.getAsJsonObject("fields").get("customfield_10400"));
-
 		if (issueJSON.getAsJsonObject("fields").get("customfield_11100") != null
 				&& !issueJSON.getAsJsonObject("fields").get("customfield_11100").isJsonNull()) {
 			addPlatformsToIssue(gson, issueJSON, issue);
@@ -412,7 +411,7 @@ public class FormatTransformerService {
 	 */
 	private void updateParentEpic(HashMap<String, Requirement> requirements, Issue issue, Requirement req) {
 		Object epicKeyObject = issue.getFields().getCustomfield10400();
-		if (epicKeyObject.toString().equals("null")) {
+		if (epicKeyObject == null || epicKeyObject.toString().equals("null")) {
 			return; // No parent
 		}
 		String epicKey = cleanEpicKey(epicKeyObject.toString());

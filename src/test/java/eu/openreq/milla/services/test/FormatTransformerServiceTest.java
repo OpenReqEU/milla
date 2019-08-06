@@ -3,11 +3,18 @@ package eu.openreq.milla.services.test;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
+import eu.openreq.milla.models.jira.Fields;
 import eu.openreq.milla.models.jira.Issue;
+import eu.openreq.milla.models.jira.Issuetype;
+import eu.openreq.milla.models.jira.Priority;
+import eu.openreq.milla.models.jira.Status;
 import eu.openreq.milla.models.json.*;
 import eu.openreq.milla.services.FormatTransformerService;
 
@@ -109,6 +116,89 @@ public class FormatTransformerServiceTest {
     	}
     	assertEquals(reqList.get(2).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0-beta1"); 	
     	assertEquals(reqList.get(3).getRequirementParts().get(6).getText(), "Qt Creator 4.9.0 (4.9 branch)"); 	
+    }
+    
+    @Test
+    public void testWithPlatforms() throws Exception {
+    	String dirPath = System.getProperty("user.dir") + "/src/test/resources/";
+		String jsonString = new String(Files.readAllBytes(Paths.get(dirPath.toString() + 
+				"platforms.json"))); 
+		
+		JsonObject issueElement = new Gson().fromJson(jsonString, JsonElement.class).getAsJsonObject();
+    	List<JsonElement> elements = new ArrayList<>();
+    	elements.add(issueElement);
+    	
+    	List<Issue> issues = transformerService.convertJsonElementsToIssues(elements);
+    	Collection<Requirement> reqCollection = transformerService.convertIssuesToJson(issues, "QTBUG", person);
+    	List<Requirement> reqList = new ArrayList<Requirement>(reqCollection);
+    	
+    	RequirementPart part = reqList.get(0).getRequirementParts().get(6);
+    	assertTrue(part.getText().contains("Black Label"));
+    }
+    
+    @Test
+    public void testMakingIssuesWithTypesAndStatuses() throws Exception {
+    	List<Issue> issues = new ArrayList<Issue>();
+
+    	issues.add(addStatusToIssue("reopened", issueWithType("initiative")));
+    	issues.add(addStatusToIssue("open", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("todo", issueWithType("task")));
+    	issues.add(addStatusToIssue("accepted", issueWithType("technical task")));
+    	issues.add(addStatusToIssue("blocked", issueWithType("change request")));
+    	issues.add(addStatusToIssue("need more info", issueWithType("user story")));
+    	issues.add(addStatusToIssue("waiting for 3rd party", issueWithType("initiative")));
+    	issues.add(addStatusToIssue("on hold", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("in progress", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("implemented", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("withdrawn", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("verified", issueWithType("sub-task")));
+    	
+    	List<JsonElement> elements = elementsFromIssues(issues);
+    	
+    	issues = transformerService.convertJsonElementsToIssues(elements);
+    	
+    	Collection<Requirement> reqCollection = transformerService.convertIssuesToJson(issues, projectId, person);
+    	List<Requirement> reqList = new ArrayList<Requirement>(reqCollection);
+    	Requirement testReq = reqList.get(0);
+    	assertEquals(transformerService.getEpicCount(), transformerService.getEpicCount());
+    	assertEquals(transformerService.getSubtaskCount(), transformerService.getSubtaskCount());
+    	assertEquals(testReq.getStatus(), Requirement_status.COMPLETED);
+    }
+    
+    public Issue issueWithType(String typeName) {
+    	Issuetype type = new Issuetype();
+    	type.setName(typeName);
+    	Priority priority = new Priority();
+    	priority.setId("5");
+    	Fields fields = new Fields();
+    	fields.setIssuetype(type);
+    	fields.setPriority(priority);
+    	fields.setCreated("2012-06-15T15:46:03.000+0000");
+    	fields.setUpdated("2012-06-15T15:46:03.000+0000");
+    	Issue issue = new Issue();
+    	issue.setFields(fields);
+    	issue.setId("TEST");
+    	issue.setKey("TEST-1");
+    	return issue;
+    }
+    
+    public Issue addStatusToIssue(String statusName, Issue issue) {
+    	Status status = new Status();
+    	status.setName(statusName);    	
+    	issue.getFields().setStatus(status);
+    	return issue;
+    }
+    
+    public List<JsonElement> elementsFromIssues(List<Issue> issues) throws JsonSyntaxException, JsonProcessingException {
+    	ObjectMapper mapper = new ObjectMapper();
+    	List<JsonElement> elements = new ArrayList<>();
+    	
+    	for (Issue issue : issues) {
+    		JsonObject issueElement = new Gson().fromJson(mapper.writeValueAsString(issue), JsonElement.class).getAsJsonObject();
+    		elements.add(issueElement);
+    	}
+    	
+    	return elements;
     }
     
 }

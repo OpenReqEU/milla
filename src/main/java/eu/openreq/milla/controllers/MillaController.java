@@ -38,9 +38,7 @@ public class MillaController {
 	MallikasService mallikasService;
 	
 	@Autowired
-	OAuthService authService;
-
-	
+	OAuthService authService;	
 	
 	/**
 	 * Fetch Requirements that are in the selected Project from Mallikas, and send
@@ -65,7 +63,7 @@ public class MillaController {
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return mulperiService.postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaas");
+		return mulperiService.postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaaS");
 	}
 
 	/**

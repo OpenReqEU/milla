@@ -181,7 +181,7 @@ public class QtControllerTest {
 				+ "&requirementsOnly=false"))
 				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
-		mockServer.expect(requestTo(mulperiAddress + "/models/murmeliModelToKeljuCaas"))
+		mockServer.expect(requestTo(mulperiAddress + "/models/murmeliModelToKeljuCaaS"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));

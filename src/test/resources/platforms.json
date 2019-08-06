@@ -4,6 +4,24 @@
 	"self": "https://bugreports-test.qt.io/rest/api/2/issue/189275",
 	"key": "QTBUG-26171",
 	"fields": {
+		"customfield_11100": [ 
+          {
+            "id": 0,
+            "label": "Black Label",
+            "avatarId": 5,
+            "sequence": 0,
+            "disabled": false
+          },
+          {
+            "id": 0,
+            "self": "testSelf",
+            "label": "Red Label",
+            "avatarId": 6,
+            "sequence": 5,
+            "disabled": false
+          }
+        
+        ],
 		"issuetype": {
 			"self": "https://bugreports-test.qt.io/rest/api/2/issuetype/25",
 			"id": "25",
@@ -158,7 +176,6 @@
 		],
 		"timeoriginalestimate": null,
 		"description": "Need lighting expertise, and it would be great if we could fit your car in the closing scene as well",
-		"customfield_11100": null,
 		"timetracking": {
 		},
 		"customfield_10600": null,
@@ -203,7 +220,7 @@
 			"total": 0
 		},
 		"customfield_10200": "33149",
-		"customfield_10400": null,
+		"customfield_10400": "31337",
 		"environment": null,
 		"customfield_10910": null,
 		"customfield_10911": null,
@@ -337,3 +354,5 @@
 		}
 	}
 }
+
+ 
