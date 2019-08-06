@@ -32,7 +32,21 @@ public class OAuthServiceTest {
 	private OAuthService authService = new OAuthService();
 	
 	String responseJson = "{\"token\":\"Success\"}";
-    
+	
+	String testKey = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAJgZpnp0gZ+lJvG3" + 
+			"m9oSGRQP93zrxobQxiDZGFxQ70x3wk394bSbkPk0Oun6DlKAZn1WNyRFu1YZPQnh" + 
+			"k5ND/zM1TpVxnG4ha8GEYD43+W/Zwr8DLEhEeN06AaJxpX6neZHSXOn6HwJ+5Ayr" + 
+			"KSQScQ/2RTj9dF46wR75hs7ghmwdAgMBAAECgYAaWl9g2izXV0sPGGv1datIsZeE" + 
+			"2mkUVLnvWQ4CeLdtfVZ6IuHnZAjTVLxca8nte3fGgZiePUK/ITJVMvNZ0a82kMWa" + 
+			"Xyc6+NoBhJHJikRDpx4g32bcDKwjEJvakZhe5UTZjed+pPyA36LbHJs4V6akOWz6" + 
+			"0Kf43cVSFiSdsjlz4QJBAMZ3LIAChB1zSODt948DU6O7dDGI8ntpCasTiwloaKhE" + 
+			"CUhuhaiQrr1zFmTb5Ukv1hgG3/NH0cYTnA/pvuTgB/UCQQDEMYrKHHKXkvb36od/" + 
+			"o/rnPPjyEGAwcxk6gBb3/N3HCEoMmgnEN5lk95tz0BkvC+MXJJLDdGkn6EottN+s" + 
+			"IUKJAkEAhhV73hxVD+SUZ0q+x0NTHbqGvPSuBkynuIoilD+S/aPBtcrdyE2/kMUR" + 
+			"ayDZXsHP3jm+0glCo5UaCfI9AzqMhQJAaluRKdASLyl0ySFTI1b6BbGAI3nNK3a6" + 
+			"DoSx7u4eLG/J9NrswHqDpcC1fSsq+94t1bX1+g95kjDTRcPwHZhKQQJAF+aWMHQc" + 
+			"8Syn66ahwLCm209FJQ2rIkh8TPWWsREspLgeH0rVCVclqag3olFTqH+vjaG0sFA5" + 
+			"sXhexmsE5DNTVA==";
     @Before
     public void setUp() throws IOException {
     	authService.setJiraBaseUrl(JIRA_BASE_URL);   	
@@ -47,7 +61,7 @@ public class OAuthServiceTest {
     
     @Test
     public void testTempTokenAuthorization() throws ClientProtocolException, IOException {	
-    	authService.setPrivateKey("testKey");
+    	authService.setPrivateKey(testKey);
     	stubFor(post(urlEqualTo(REQUEST_TOKEN_URL))
     			.willReturn(aResponse().withStatus(200)
     		    .withHeader("Content-Type", "application/json").withBody(responseJson)));
@@ -65,7 +79,8 @@ public class OAuthServiceTest {
     
     @Test
     public void testAccessTokenAuthorization() throws IOException {  
-    	authService.setPrivateKey("testKey");
+    	authService.setPrivateKey(testKey);
+    	
     	String secret = "secret";
     	stubFor(post(urlEqualTo(ACCESS_TOKEN_URL))
     			.willReturn(aResponse().withStatus(200)
@@ -84,7 +99,7 @@ public class OAuthServiceTest {
     
     @Test
     public void testAuthorizedRequest() {
-    	authService.setPrivateKey("testKey");
+    	authService.setPrivateKey(testKey);
     	stubFor(get(urlEqualTo(AUTHORIZATION_URL))
     			.willReturn(aResponse().withStatus(200)
     		    .withHeader("Content-Type", "application/json").withBody(responseJson)));

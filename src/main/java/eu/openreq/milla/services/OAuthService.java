@@ -38,7 +38,7 @@ public class OAuthService {
 	private static final String AUTHORIZATION_URL = "/plugins/servlet/oauth/authorize";
 
 	private static final String CONSUMER_KEY = "milla-oauth";
-	private static String PRIVATE_KEY;
+	private String PRIVATE_KEY;
 	private String REQUEST_TOKEN;
 	private String ACCESS_TOKEN;
 	private String SECRET;
@@ -189,6 +189,10 @@ public class OAuthService {
 	
 	public void setPrivateKey(String key) {
 		PRIVATE_KEY = key;
+		if (key != null) {
+			signer = new OAuthRsaSigner();
+			signer.privateKey = encodedPrivateKey();
+		}
 	}
 	
 
