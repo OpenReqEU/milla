@@ -34,12 +34,20 @@ public class OAuthServiceTest {
 	String responseJson = "{\"token\":\"Success\"}";
     
     @Before
-    public void setUp() throws IOException {    	
+    public void setUp() throws IOException {
     	authService.setJiraBaseUrl(JIRA_BASE_URL);   	
     }
     
     @Test
+    public void testTempTokenAuthorizationNoKey() throws ClientProtocolException, IOException {	
+    	authService.setPrivateKey(null);
+    	String response = authService.tempTokenAuthorization();;
+    	assertEquals(response, null);
+    }
+    
+    @Test
     public void testTempTokenAuthorization() throws ClientProtocolException, IOException {	
+    	authService.setPrivateKey("testKey");
     	stubFor(post(urlEqualTo(REQUEST_TOKEN_URL))
     			.willReturn(aResponse().withStatus(200)
     		    .withHeader("Content-Type", "application/json").withBody(responseJson)));
@@ -49,7 +57,15 @@ public class OAuthServiceTest {
     }
     
     @Test
-    public void testAccessTokenAuthorization() throws IOException {   	
+    public void testAccessTokenAuthorizationNoKey() throws ClientProtocolException, IOException {	
+    	authService.setPrivateKey(null);
+    	String response = authService.accessTokenAuthorization("secret");;
+    	assertEquals(response, null);
+    }
+    
+    @Test
+    public void testAccessTokenAuthorization() throws IOException {  
+    	authService.setPrivateKey("testKey");
     	String secret = "secret";
     	stubFor(post(urlEqualTo(ACCESS_TOKEN_URL))
     			.willReturn(aResponse().withStatus(200)
@@ -60,7 +76,15 @@ public class OAuthServiceTest {
     }
     
     @Test
+    public void testAuthorizedRequestNoKey() throws ClientProtocolException, IOException {	
+    	authService.setPrivateKey(null);
+    	String response = authService.authorizedJiraRequest(AUTHORIZATION_URL);
+    	assertEquals(response, null);
+    }
+    
+    @Test
     public void testAuthorizedRequest() {
+    	authService.setPrivateKey("testKey");
     	stubFor(get(urlEqualTo(AUTHORIZATION_URL))
     			.willReturn(aResponse().withStatus(200)
     		    .withHeader("Content-Type", "application/json").withBody(responseJson)));

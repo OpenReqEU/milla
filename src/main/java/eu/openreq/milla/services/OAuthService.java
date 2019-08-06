@@ -187,5 +187,9 @@ public class OAuthService {
 		JIRA_BASE_URL = url;
 	}
 	
+	public void setPrivateKey(String key) {
+		PRIVATE_KEY = key;
+	}
+	
 
 }
