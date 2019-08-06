@@ -61,11 +61,9 @@ public class UpdateService {
 		try {
 			updatedIssues = new UpdatedIssues(projectId, authService);
 			int amount = getNumberOfUpdatedIssues(projectId, person);
-			System.out.println(amount);
 			Set<Requirement> totalRequirements = new HashSet<Requirement>();
 			Set<Dependency> totalDependencies = new HashSet<Dependency>();
 			Set<String> totalReqIds = new HashSet<String>();
-			
 			for (int current = 0; current<=amount; current = current + 1000) {
 				updatedIssues.collectAllUpdatedIssues(projectId, current);
 				processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
@@ -96,7 +94,7 @@ public class UpdateService {
 			object.add("requirements", gson.toJsonTree(totalRequirements));
 			object.add("dependencies", gson.toJsonTree(totalDependencies));
 			
-			System.out.println(detectionService.postUpdatesToService(object.getAsString()));
+			System.out.println(detectionService.postUpdatesToService(object.toString()));
 			
 			return new ResponseEntity<>(object.toString(), HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
@@ -116,15 +114,17 @@ public class UpdateService {
 		int number = -1;
 		int sum = 0;
 		while (number != 0) {
-			JsonElement element = updatedIssues.getLatestUpdatedIssue(start);
+			JsonElement element = updatedIssues.getLatestUpdatedIssue(start);	
 			if (element==null) {
 				break;
 			}
+			System.out.println("Element: " + element.toString());
 			List<Requirement> reqs = new ArrayList<Requirement>(processJsonElementsToRequirements(Arrays.asList(element), projectId, person));
 			if (reqs.isEmpty()) { 
 				break;
 			}
 			number = compareUpdatedIssueWithTheIssueInMallikas(reqs.get(0));
+			System.out.println("Number:" + number);
 			sum++;
 			//System.out.println("Sum (how many times 100 updated issues must be fetched): " + sum);
 			start = start + 100;

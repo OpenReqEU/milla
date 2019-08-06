@@ -60,9 +60,7 @@ public class DetectionControllerTest {
 	MallikasService mallikasService;
 
 	@Autowired
-	DetectionController controller;
-	
-	
+	DetectionController controller;	
 
 	@Autowired
 	private RestTemplate rt;

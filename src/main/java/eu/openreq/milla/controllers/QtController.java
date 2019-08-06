@@ -230,7 +230,7 @@ public class QtController {
 		try {
 			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);			
 			if (response!=null) {
-				return mulperiService.postToMulperi(response.getBody(), "/models/updateModel");
+				return mulperiService.postToMulperi(response.getBody(), "/models/updateMurmeliModelInKeljuCaas");
 			}
 			return response;
 		} catch (HttpClientErrorException e) {

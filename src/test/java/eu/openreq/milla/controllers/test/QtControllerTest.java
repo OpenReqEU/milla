@@ -181,7 +181,7 @@ public class QtControllerTest {
 				+ "&requirementsOnly=false"))
 				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
-		mockServer.expect(requestTo(mulperiAddress + "/models/requirementsToChoco"))
+		mockServer.expect(requestTo(mulperiAddress + "/models/murmeliModelToKeljuCaas"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
@@ -195,7 +195,7 @@ public class QtControllerTest {
 	@Test
 	public void updateRecentInProjectTest() throws Exception {
 		
-		mockServer.expect(requestTo(mulperiAddress + "/models/updateModel"))
+		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));

@@ -40,6 +40,9 @@ public class DetectionService {
 	@Value("${milla.detectionGetAddresses}")
 	private String[] detectionGetAddresses;
 	
+	@Value("${milla.detectionGetPostAddress}")
+	private String[] detectionGetPostAddress;
+	
 	@Value("${milla.detectionPostAddresses}")
 	private String[] detectionPostAddresses;
 	

@@ -143,7 +143,13 @@ public class DetectionController {
 	@PostMapping("projectToORSI")
 	public ResponseEntity<String> postProjectToORSI(@RequestParam String projectId, @RequestParam(required = false, 
 			defaultValue = "0.3") double threshold) throws IOException {
-		String jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
+		String jsonString;
+		
+		if (projectId.equals("ALL")) {
+			jsonString = mallikasService.getAllRequirements();
+		} else {
+			jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
+		}
 		
 		return detectionService.postFileToOrsi(projectId, jsonString, threshold);
 	}
@@ -155,6 +161,7 @@ public class DetectionController {
 	 * @return
 	 * @throws IOException
 	 */
+	@ApiIgnore
 	@ApiOperation(value = "Post accepted and rejected to ORSI cluster computation")
 	@PostMapping("acceptedAndRejectedToORSI")
 	public ResponseEntity<String> acceptedAndRejectedToORSI(@RequestBody List<Dependency> dependencies) throws IOException {

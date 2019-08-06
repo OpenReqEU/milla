@@ -30,7 +30,8 @@ public class NumberOfIssuesHTML
 
         if(page!=null && page.contains("\\\"issueKeys\\\":"))
         {
-            String text = (page.substring(page.indexOf("\\\"issueKeys\\\":")+17+projectStringlength, page.indexOf("\\\"issueKeys\\\":")+26+projectStringlength));
+            String text = (page.substring(page.indexOf("\\\"issueKeys\\\":")+17+projectStringlength, 
+            		page.indexOf("\\\"issueKeys\\\":")+26+projectStringlength));
             int numberOfIssues = Integer.parseInt(text.replaceAll("[^0-9.]", ""));
             return numberOfIssues;
         }

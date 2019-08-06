@@ -33,7 +33,6 @@ public class ProjectIssues {
 	
 
 	public ProjectIssues(String project, OAuthService service) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-	
 		if (service!=null) {
 			authService = service;
 		} else {

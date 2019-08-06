@@ -109,7 +109,7 @@ public class MillaControllerTest {
 				+ "&requirementsOnly=false"))
 				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
-		mockServer.expect(requestTo(mulperiAddress + "/models/requirementsToChoco"))
+		mockServer.expect(requestTo(mulperiAddress + "/models/murmeliModelToKeljuCaas"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));

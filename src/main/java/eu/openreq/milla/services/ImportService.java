@@ -65,6 +65,7 @@ public class ImportService {
 				if (end >= issueCount + divided) {
 					break;
 				}
+				
 				projectIssuesAsJson = projectIssues.collectIssues(start, end);
 				List<Issue> issues = transformer.convertJsonElementsToIssues(projectIssuesAsJson);
 				Collection<Requirement> requirements = transformer.convertIssuesToJson(issues, projectId, person);

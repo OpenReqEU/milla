@@ -46,8 +46,7 @@ public class OAuthService {
 	private OAuthRsaSigner signer;
 	private boolean initialized;
 	
-	public OAuthService() {
-		
+	public OAuthService() {	
 		try {
 			byte[] encoded = Files.readAllBytes(Paths.get("key.txt"));
 			PRIVATE_KEY = new String(encoded, StandardCharsets.UTF_8);
@@ -71,8 +70,8 @@ public class OAuthService {
 			getTemp.consumerKey = CONSUMER_KEY;
 			getTemp.callback = "oob";
 			getTemp.signer = signer;
-			getTemp.transport = new ApacheHttpTransport();
-
+			getTemp.transport = new ApacheHttpTransport();	
+			
 			OAuthCredentialsResponse response = getTemp.execute();
 
 			System.out.println("Request token: " + response.token);
@@ -94,16 +93,17 @@ public class OAuthService {
 			System.out.println("No private key loaded, cannot authorize");
 			return null;
 		}
-		JiraOAuthGetAccessToken getAcc = new JiraOAuthGetAccessToken(JIRA_BASE_URL + ACCESS_TOKEN_URL);
-		getAcc.consumerKey = CONSUMER_KEY;
-		getAcc.signer = signer;
-		getAcc.verifier = secret;
-		getAcc.temporaryToken = REQUEST_TOKEN;
-		getAcc.transport = new ApacheHttpTransport();
-		
-		System.out.println(getAcc.getRawPath());
 
 		try {
+			JiraOAuthGetAccessToken getAcc = new JiraOAuthGetAccessToken(JIRA_BASE_URL + ACCESS_TOKEN_URL);
+			getAcc.consumerKey = CONSUMER_KEY;
+			getAcc.signer = signer;
+			getAcc.verifier = secret;
+			getAcc.temporaryToken = REQUEST_TOKEN;
+			getAcc.transport = new ApacheHttpTransport();
+			
+			//getAcc.transport.createRequestFactory();
+
 			OAuthCredentialsResponse response = getAcc.execute();
 
 			ACCESS_TOKEN = response.token;
@@ -183,6 +183,9 @@ public class OAuthService {
 		this.initialized = initialized;
 	}
 	
+	public void setJiraBaseUrl(String url) {
+		JIRA_BASE_URL = url;
+	}
 	
 
 }
