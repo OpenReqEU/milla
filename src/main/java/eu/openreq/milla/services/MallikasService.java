@@ -12,8 +12,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -156,7 +156,11 @@ public class MallikasService {
 	}
 	
 	public String convertAndUpdateDependencies(String dependencies, Boolean proposed, Boolean userInput) {
+	
 		Collection<Dependency> convertedDependencies = parseStringToDependencies(dependencies);
+		if (convertedDependencies==null) {
+			return "No dependencies found";
+		}
 		return updateDependencies(convertedDependencies, proposed, userInput);
 	}
 	
@@ -187,10 +191,12 @@ public class MallikasService {
 		Gson gson = new Gson();
 		JsonParser parser = new JsonParser();
 		JsonElement dependencyElement = parser.parse(dependencies);
-		JsonArray dependenciesJSON = dependencyElement.getAsJsonArray();
+		JsonObject dependenciesJSON = dependencyElement.getAsJsonObject();
 		Type listType = new TypeToken<List<Dependency>>(){}.getType();
 		
-		Collection<Dependency> updatedDependencies = gson.fromJson(dependenciesJSON, listType);
+		JsonElement element = dependenciesJSON.get("dependencies");
+		
+		Collection<Dependency> updatedDependencies = gson.fromJson(element, listType);
 		
 		return updatedDependencies;
 	}
