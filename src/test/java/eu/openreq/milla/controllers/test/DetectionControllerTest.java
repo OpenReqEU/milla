@@ -3,12 +3,13 @@ package eu.openreq.milla.controllers.test;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
-
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
@@ -23,16 +24,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.openreq.milla.MillaApplication;
 import eu.openreq.milla.controllers.DetectionController;
 import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.models.json.Dependency_status;
+import eu.openreq.milla.services.FileService;
 import eu.openreq.milla.services.MallikasService;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,11 +54,17 @@ public class DetectionControllerTest {
 	@Value("${milla.detectionGetAddresses}")
 	private String[] detectionGetAddresses;
 	
+	@Value("${milla.detectionGetPostAddress}")
+	private String detectionGetPostAddress;
+	
 	@Value("${milla.detectionPostAddresses}")
 	private String[] detectionPostAddresses;
 	
 	@Value("${milla.mallikasAddress}")
 	private String mallikasAddress;
+	
+	@MockBean
+	FileService fs;
 	
 	@Autowired
 	MallikasService mallikasService;
@@ -77,6 +87,9 @@ public class DetectionControllerTest {
 		mockServer = MockRestServiceServer.createServer(rt);
 		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 		mapper = new ObjectMapper();
+		
+		Mockito.when(fs.logDependencies(new ArrayList<Dependency>()))
+			.thenReturn("Success");
 	}
 	
 	@Test
@@ -102,6 +115,10 @@ public class DetectionControllerTest {
 			mockServer.expect(requestTo(testAddress + testId))
 					.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		}
+		
+		mockServer.expect(requestTo(detectionGetPostAddress + "testId"))
+			.andExpect(method(HttpMethod.POST))
+			.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
 		mockMvc.perform(get("/detectedFromServices")
 				.param("requirementId", testId))
@@ -210,10 +227,16 @@ public class DetectionControllerTest {
 	
 	@Test
 	public void acceptedAndRejectedTest() throws Exception {
-		
-		Dependency dep = new Dependency();
+  
+    	Dependency dep = new Dependency();
 		dep.setId("test");
-		String content = mapper.writeValueAsString(Arrays.asList(dep));
+		dep.setStatus(Dependency_status.ACCEPTED);
+		
+		Dependency dep2 = new Dependency();
+		dep.setId("test2");
+		dep.setStatus(Dependency_status.REJECTED);
+		
+		String content = mapper.writeValueAsString(Arrays.asList(dep, dep2));
 		
 		mockServer.expect(requestTo(upcSimilarityAddress + "/upc/similarity-detection/TreatAcceptedAnd"
 				+ "RejectedDependencies?organization=Qt")).andRespond(withSuccess("{\"response\":\"test\"}", 

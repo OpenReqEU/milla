@@ -41,7 +41,7 @@ public class DetectionService {
 	private String[] detectionGetAddresses;
 	
 	@Value("${milla.detectionGetPostAddress}")
-	private String[] detectionGetPostAddress;
+	private String detectionGetPostAddress;
 	
 	@Value("${milla.detectionPostAddresses}")
 	private String[] detectionPostAddresses;
@@ -83,10 +83,30 @@ public class DetectionService {
 			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
 			}
-		}		
+		}	
+		
+		dependencies.addAll(getPostDetected(requirementId));
 
 		return dependencies;
 	}
+	
+	private List<Dependency> getPostDetected(String requirementId) {
+		ResponseEntity<String> serviceResponse = rt.postForEntity(detectionGetPostAddress + 
+				requirementId, null, String.class);
+		try {
+			OpenReqJSONParser parser = new OpenReqJSONParser(serviceResponse.getBody().toString());
+			List<Dependency> foundDeps = parser.getDependencies();
+			if (foundDeps!=null) {
+				return foundDeps;
+			}
+			return new ArrayList<Dependency>();
+		} catch (JSONException|com.google.gson.JsonSyntaxException e) {
+			System.out.println("Did not receive valid JSON from " + 
+					detectionGetPostAddress + " :\n" + serviceResponse.getBody());
+			return new ArrayList<Dependency>();
+		}
+	}
+	
 	/**
 	 * Retrieve the requirements from Mallikas based either on the given requirement IDs or project ID,
 	 * then send them to the similarity detection server. A URL has to be provided for 

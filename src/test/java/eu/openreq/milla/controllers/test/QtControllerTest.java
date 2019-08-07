@@ -25,7 +25,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.openreq.milla.MillaApplication;
 import eu.openreq.milla.controllers.QtController;
 import eu.openreq.milla.models.json.Dependency;
+import eu.openreq.milla.models.json.Dependency_status;
 import eu.openreq.milla.models.json.Requirement;
+import eu.openreq.milla.services.FileService;
 import eu.openreq.milla.services.ImportService;
 import eu.openreq.milla.services.OAuthService;
 import eu.openreq.milla.services.UpdateService;
@@ -33,11 +35,13 @@ import eu.openreq.milla.services.UpdateService;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -45,7 +49,7 @@ import java.util.Arrays;
 @SpringBootTest
 @AutoConfigureWebClient
 public class QtControllerTest {
-
+	
 	@Value("${milla.mulperiAddress}")
 	private String mulperiAddress;
 	
@@ -57,6 +61,9 @@ public class QtControllerTest {
 	
 	@Value("${milla.detectionGetAddresses}")
 	private String[] detectionGetAddresses;
+	
+	@Value("${milla.detectionGetPostAddress}")
+	private String detectionGetPostAddress;
 	
 	@Autowired
 	QtController controller;
@@ -73,6 +80,9 @@ public class QtControllerTest {
 	@MockBean
 	private UpdateService updateService;
 	
+	@MockBean
+	FileService fs;
+	
 	private MockMvc mockMvc;
 	
 	private MockRestServiceServer mockServer;
@@ -87,11 +97,13 @@ public class QtControllerTest {
 		
 		Mockito.when(importService.importUpdatedIssues("testId", authService))
 				.thenReturn(new ResponseEntity<String>("Success", HttpStatus.OK));
+		
+		Mockito.when(fs.logDependencies(new ArrayList<Dependency>()))
+				.thenReturn("Success");
 	}
 	
 	@Test
 	public void transitiveClosureTest() throws Exception {
-		
 		mockServer.expect(requestTo(mulperiAddress + "/models/findTransitiveClosureOfRequirement?layerCount=4"))
 				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
@@ -99,6 +111,19 @@ public class QtControllerTest {
 				.param("requirementId", "testId")
 				.param("layerCount", "4"))
 				.andExpect(status().isOk());	
+		mockServer.verify();
+	}
+	
+	@Test
+	public void transitiveClosureTestError() throws Exception {
+		
+		mockServer.expect(requestTo(mulperiAddress + "/models/findTransitiveClosureOfRequirement?layerCount=4"))
+				.andRespond(withServerError());
+		
+		mockMvc.perform(get("/getTransitiveClosureOfRequirement")
+				.param("requirementId", "testId")
+				.param("layerCount", "4"))
+				.andExpect(status().is5xxServerError());	
 		mockServer.verify();
 	}
 	
@@ -111,6 +136,17 @@ public class QtControllerTest {
 				.param("requirementId", "testId")
 				.param("scoreThreshold", "0.4"))
 				.andExpect(status().isOk());	
+		mockServer.verify();
+	}
+	
+	@Test
+	public void consistencyCheckForRequirementTestError() throws Exception {
+		mockServer.expect(requestTo(mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=false&timeOut=0"))
+				.andRespond(withServerError());
+		
+		mockMvc.perform(get("/getConsistencyCheckForRequirement")
+				.param("requirementId", "testId"))
+				.andExpect(status().is5xxServerError());
 		mockServer.verify();
 	}
 	
@@ -162,6 +198,10 @@ public class QtControllerTest {
 					.andRespond(withSuccess(content, MediaType.APPLICATION_JSON));
 		}
 		
+		mockServer.expect(requestTo(detectionGetPostAddress + "testId"))
+			.andExpect(method(HttpMethod.POST))
+			.andRespond(withSuccess(content, MediaType.APPLICATION_JSON));
+		
 		mockServer.expect(requestTo(mallikasAddress + "/dependenciesByParams"))
 				.andRespond(withSuccess(content2, MediaType.APPLICATION_JSON));
 		
@@ -192,6 +232,19 @@ public class QtControllerTest {
 		mockServer.verify();
 	}
 	
+	
+	@Test
+	public void updateProjectTestError() throws Exception {
+		mockServer.expect(requestTo(mallikasAddress + "/projectRequirements?projectId=testId&includeProposed=false"
+				+ "&requirementsOnly=false"))
+				.andRespond(withServerError());
+		
+		mockMvc.perform(post("/updateProject")
+				.param("projectId", "testId"))
+				.andExpect(status().is5xxServerError());
+		mockServer.verify();
+	}
+	
 	@Test
 	public void updateRecentInProjectTest() throws Exception {
 		
@@ -205,13 +258,32 @@ public class QtControllerTest {
 				.andExpect(status().isOk());
 		mockServer.verify();
 	}
+	
+	@Test
+	public void updateRecentInProjectTestError() throws Exception {
+		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
+				.andExpect(method(HttpMethod.POST))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andRespond(withServerError());
+		
+		mockMvc.perform(post("/updateRecentInProject")
+				.param("projectId", "testId"))
+				.andExpect(status().is5xxServerError());
+		mockServer.verify();
+	}
 
 	@Test
 	public void updateProposedTest() throws Exception {	
 		Dependency dep = new Dependency();
 		dep.setId("test");
+		dep.setStatus(Dependency_status.ACCEPTED);
+		
+		Dependency dep2 = new Dependency();
+		dep.setId("test2");
+		dep.setStatus(Dependency_status.REJECTED);
+		
 		ObjectMapper mapper = new ObjectMapper();
-		String content = mapper.writeValueAsString(Arrays.asList(dep));
+		String content = mapper.writeValueAsString(Arrays.asList(dep, dep2));
 
 		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
 				.andExpect(method(HttpMethod.POST))
@@ -226,6 +298,19 @@ public class QtControllerTest {
 		mockMvc.perform(post("/updateProposedDependencies")
 				.content(content))
 				.andExpect(status().isOk());
+		mockServer.verify();
+	}
+	
+	@Test
+	public void updateProposedTestError() throws Exception {	
+		String content = "[{\"test\":\"asd\"}]";
+		
+		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
+				.andRespond(withServerError());
+		
+		mockMvc.perform(post("/updateProposedDependencies")
+				.content(content))
+				.andExpect(status().is5xxServerError());
 		mockServer.verify();
 	}
   

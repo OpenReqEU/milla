@@ -32,14 +32,15 @@ public class MallikasService {
 	@Autowired
 	RestTemplate rt;
 	
+	@Autowired
+	FileService fs;
+	
 	public String getListOfProjects() {
 		try {
 			return rt.getForObject(mallikasAddress + "/listOfProjects", String.class);
 		}
 		catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 	}
 	
@@ -52,9 +53,7 @@ public class MallikasService {
 			return rt.getForObject(mallikasAddress + "/allRequirements", String.class);
 		}
 		catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 	}
 		
@@ -68,9 +67,7 @@ public class MallikasService {
 			return rt.postForObject(mallikasAddress + "/selectedReqs", ids, String.class);
 		}
 		catch (HttpClientErrorException e) { 
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 	}
 	
@@ -85,9 +82,7 @@ public class MallikasService {
 			return rt.getForObject(mallikasAddress + "/projectRequirements?projectId=" + projectId + 
 					"&includeProposed=" + includeProposed + "&requirementsOnly=" + requirementsOnly, String.class);	
 		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 	}
 	/**
@@ -100,9 +95,7 @@ public class MallikasService {
 		try {
 			return rt.postForObject(mallikasAddress + "/" + objectType + "ByParams", params, String.class);		
 		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 	}
 	
@@ -116,9 +109,7 @@ public class MallikasService {
 			return rt.postForObject(mallikasAddress + "/importProject", project, String.class);
 
 		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 	}
 	
@@ -132,9 +123,7 @@ public class MallikasService {
 		try {
 			return rt.postForObject(mallikasAddress + "/updateRequirements?projectId=" + projectId, requirements, String.class);	
 		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 			
 	}
@@ -151,20 +140,18 @@ public class MallikasService {
 		String completeAddress = mallikasAddress + "/updateDependencies";
 		
 		if (proposed) {
-			FileService fs = new FileService();
 			fs.logDependencies(dependencies);
 			completeAddress += "?isProposed=true";
 		}
 		if (userInput) {
+			fs.logDependencies(dependencies);
 			completeAddress += "?userInput=true";
 		}
 
 		try {
 			return rt.postForObject(completeAddress, dependencies, String.class);
 		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 	}
 	
@@ -186,9 +173,7 @@ public class MallikasService {
 		try {	
 			return rt.postForObject(mallikasAddress + "/updateProjectSpecifiedRequirements?projectId=" + projectId, updatedReqs, String.class);
 		} catch (HttpClientErrorException e) {
-			System.out.println("Error " + e);
-			e.printStackTrace();
-			return e.getResponseBodyAsString();
+			return errorResponse(e);
 		}
 		
 	}
@@ -209,23 +194,12 @@ public class MallikasService {
 		
 		return updatedDependencies;
 	}
-	
-	/**
-	 * Parse JSON String to Requirements
-	 * @param requirements
-	 * @return
-	 */
-//	private Collection<Requirement> parseStringToRequirements(String requirements) {
-//		Gson gson = new Gson();
-//		JsonParser parser = new JsonParser();
-//		JsonElement reqElement = parser.parse(requirements);
-//		JsonArray requirementsJSON = reqElement.getAsJsonArray();
-//		Type listType = new TypeToken<List<Dependency>>(){}.getType();
-//		
-//		Collection<Requirement> updatedRequirements = gson.fromJson(requirementsJSON, listType);
-//		
-//		return updatedRequirements;
-//	}
+
+	private String errorResponse(HttpClientErrorException e) {
+		System.out.println("Error " + e);
+		e.printStackTrace();
+		return e.getResponseBodyAsString();
+	}
 
 
 }

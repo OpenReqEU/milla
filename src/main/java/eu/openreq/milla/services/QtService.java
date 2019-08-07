@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -126,7 +127,7 @@ public class QtService {
 					mallikasService.parseStringToDependencies(dependencyString));
 			System.out.println(orsiResponse);
 			return new ResponseEntity<>(updated, HttpStatus.OK);
-		} catch (HttpClientErrorException e) {
+		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}

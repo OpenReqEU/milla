@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import eu.openreq.milla.models.json.RequestParams;
@@ -70,13 +71,9 @@ public class QtController {
 		try {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);		
 			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (HttpClientErrorException e) {
+		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
-		catch (Exception e) {
-			return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-
 	}
 	
 	@ApiOperation(value = "Get the dependencies of a requirement", notes = "Get the dependencies of a requirement, with "
@@ -130,11 +127,8 @@ public class QtController {
 		try {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);
 			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (HttpClientErrorException e) {
+		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		catch (Exception e) {
-			return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		
 
@@ -186,8 +180,6 @@ public class QtController {
 		}
 		
 		return qtService.sumScoresAndGetTopProposed(params);
-		
-
 	}
 	
 
@@ -209,7 +201,7 @@ public class QtController {
 				return millaController.sendProjectToMulperi(projectId);
 			}
 			return response;
-		} catch (HttpClientErrorException e) {
+		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Error in updating the whole project " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
@@ -233,7 +225,7 @@ public class QtController {
 				return mulperiService.postToMulperi(response.getBody(), "/models/updateMurmeliModelInKeljuCaas");
 			}
 			return response;
-		} catch (HttpClientErrorException e) {
+		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Error in updating the most recent issues " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
@@ -255,7 +247,6 @@ public class QtController {
 	@PostMapping(value = "updateProposedDependencies")
 	public ResponseEntity<?> updateProposedDependencies(@RequestBody String dependencies) throws IOException {
 		return qtService.updateProposed(dependencies);
-
 	}
 
 }
