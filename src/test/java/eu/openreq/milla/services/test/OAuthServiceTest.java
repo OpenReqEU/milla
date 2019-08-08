@@ -47,6 +47,9 @@ public class OAuthServiceTest {
 			"DoSx7u4eLG/J9NrswHqDpcC1fSsq+94t1bX1+g95kjDTRcPwHZhKQQJAF+aWMHQc" + 
 			"8Syn66ahwLCm209FJQ2rIkh8TPWWsREspLgeH0rVCVclqag3olFTqH+vjaG0sFA5" + 
 			"sXhexmsE5DNTVA==";
+	
+	String badKey = "asdasdasd";
+	
     @Before
     public void setUp() throws IOException {
     	authService.setJiraBaseUrl(JIRA_BASE_URL);   	
@@ -57,6 +60,12 @@ public class OAuthServiceTest {
     	authService.setPrivateKey(null);
     	String response = authService.tempTokenAuthorization();;
     	assertEquals(response, null);
+    }
+    
+    @Test
+    public void setBadKeyFirst() throws ClientProtocolException, IOException {	
+    	authService.setPrivateKey(badKey);
+    	authService.setPrivateKey(testKey);
     }
     
     @Test

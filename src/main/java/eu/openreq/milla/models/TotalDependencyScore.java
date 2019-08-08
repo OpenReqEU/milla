@@ -20,32 +20,16 @@ public class TotalDependencyScore implements Comparable<TotalDependencyScore> {
 		return fromid;
 	}
 
-	public void setFromid(String fromid) {
-		this.fromid = fromid;
-	}
-
 	public String getToid() {
 		return toid;
-	}
-
-	public void setToid(String toid) {
-		this.toid = toid;
 	}
 
 	public String getDependencyId() {
 		return dependencyId;
 	}
 
-	public void setDependencyId(String dependencyId) {
-		this.dependencyId = dependencyId;
-	}
-
 	public double getTotalScore() {
 		return totalScore;
-	}
-
-	public void setTotalScore(double totalScore) {
-		this.totalScore = totalScore;
 	}
 
 	@Override

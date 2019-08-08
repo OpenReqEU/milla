@@ -6,9 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Scanner;
 
@@ -131,13 +129,10 @@ public class OAuthService {
 			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateBytes);
 			KeyFactory kf = KeyFactory.getInstance("RSA");
 			return kf.generatePrivate(keySpec);
-		} catch (InvalidKeySpecException e) {
+		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			return null;
-		} catch (NoSuchAlgorithmException e) {
-			System.out.println(e.getMessage());
-			return null;
-		}
+		} 
 	}
 
 	private String authorizedRequest(String url) {

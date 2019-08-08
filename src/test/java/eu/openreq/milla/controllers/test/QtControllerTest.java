@@ -87,6 +87,8 @@ public class QtControllerTest {
 	
 	private MockRestServiceServer mockServer;
 	
+	private String depsJson;
+	
 	@Before
 	public void setup() throws Exception {
 		mockServer = MockRestServiceServer.createServer(rt);
@@ -100,6 +102,17 @@ public class QtControllerTest {
 		
 		Mockito.when(fs.logDependencies(new ArrayList<Dependency>()))
 				.thenReturn("Success");
+		
+		Dependency dep = new Dependency();
+		dep.setId("test");
+		dep.setStatus(Dependency_status.ACCEPTED);
+		
+		Dependency dep2 = new Dependency();
+		dep.setId("test2");
+		dep.setStatus(Dependency_status.REJECTED);
+		
+		ObjectMapper mapper = new ObjectMapper();
+		depsJson = mapper.writeValueAsString(Arrays.asList(dep, dep2));
 	}
 	
 	@Test
@@ -274,16 +287,8 @@ public class QtControllerTest {
 
 	@Test
 	public void updateProposedTest() throws Exception {	
-		Dependency dep = new Dependency();
-		dep.setId("test");
-		dep.setStatus(Dependency_status.ACCEPTED);
 		
-		Dependency dep2 = new Dependency();
-		dep.setId("test2");
-		dep.setStatus(Dependency_status.REJECTED);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		String content = mapper.writeValueAsString(Arrays.asList(dep, dep2));
+		System.out.println(depsJson);
 
 		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
 				.andExpect(method(HttpMethod.POST))
@@ -296,20 +301,20 @@ public class QtControllerTest {
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
 		
 		mockMvc.perform(post("/updateProposedDependencies")
-				.content(content))
+				.content(depsJson)
+				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 		mockServer.verify();
 	}
 	
 	@Test
-	public void updateProposedTestError() throws Exception {	
-		String content = "[{\"test\":\"asd\"}]";
-		
+	public void updateProposedTestError() throws Exception {		
 		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
 				.andRespond(withServerError());
 		
 		mockMvc.perform(post("/updateProposedDependencies")
-				.content(content))
+				.content(depsJson)
+				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().is5xxServerError());
 		mockServer.verify();
 	}

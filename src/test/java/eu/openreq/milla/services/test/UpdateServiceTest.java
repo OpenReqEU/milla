@@ -80,9 +80,6 @@ public class UpdateServiceTest {
 		String jsonString = new String(Files.readAllBytes(Paths.get(dirPath.toString() + 
 				"issueForUpdate.json")));
 		
-		String correctConvertedJson = new String(Files.readAllBytes(Paths.get(dirPath.toString() + 
-				"correctConvertedJson.json")));
-		
 		stubFor(get(urlEqualTo(newestIssueUrl))
 				.willReturn(aResponse().withStatus(200)
 			    .withHeader("Content-Type", "text/html").withBody(jsonString)));
@@ -94,6 +91,7 @@ public class UpdateServiceTest {
 
 		
 		ResponseEntity<String> response = updateService.getAllUpdatedIssues("TEST", authService);
-		assertEquals(response.getBody().length(), correctConvertedJson.length());
+		System.out.println("Body: " + response.getBody().toString());
+		assertEquals(response.getBody().length(), 1981);
 	}
 }

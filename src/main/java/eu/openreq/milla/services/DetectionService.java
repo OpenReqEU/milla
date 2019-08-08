@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
@@ -82,6 +81,8 @@ public class DetectionService {
 				}
 			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
+			} catch (Exception e) {
+				System.out.println("Error: " + e.getMessage());
 			}
 		}	
 		
@@ -91,10 +92,14 @@ public class DetectionService {
 	}
 	
 	private List<Dependency> getPostDetected(String requirementId) {
-		ResponseEntity<String> serviceResponse = rt.postForEntity(detectionGetPostAddress + 
-				requirementId, null, String.class);
+		String responseBody = "No response";
 		try {
-			OpenReqJSONParser parser = new OpenReqJSONParser(serviceResponse.getBody().toString());
+			ResponseEntity<String> serviceResponse = rt.postForEntity(detectionGetPostAddress + 
+				requirementId, null, String.class);
+			
+			responseBody = serviceResponse.getBody();
+			
+			OpenReqJSONParser parser = new OpenReqJSONParser(responseBody.toString());
 			List<Dependency> foundDeps = parser.getDependencies();
 			if (foundDeps!=null) {
 				return foundDeps;
@@ -102,7 +107,10 @@ public class DetectionService {
 			return new ArrayList<Dependency>();
 		} catch (JSONException|com.google.gson.JsonSyntaxException e) {
 			System.out.println("Did not receive valid JSON from " + 
-					detectionGetPostAddress + " :\n" + serviceResponse.getBody());
+					detectionGetPostAddress + " :\n" + responseBody);
+			return new ArrayList<Dependency>();
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
 			return new ArrayList<Dependency>();
 		}
 	}
@@ -129,7 +137,7 @@ public class DetectionService {
 					return new ResponseEntity<String>("No response", HttpStatus.NOT_FOUND);
 				}
 				return new ResponseEntity<String>(response.getBody() + "", response.getStatusCode());
-			} catch (RestClientException e) {
+			} catch (Exception e) {
 				return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 
@@ -198,7 +206,6 @@ public class DetectionService {
 	
 	}
 	
-	
 	public ResponseEntity<String> acceptedAndRejectedToORSI(List<Dependency> dependencies) {
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -223,13 +230,14 @@ public class DetectionService {
 	}	
 	
 	public ResponseEntity<String> postProjectToService(String projectId, String url, String jsonString) {
-		
 		if (jsonString == null) {
 			jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
 		}
 		
-		ResponseEntity<String> serviceResponse = postStringToService(jsonString, url);
-		
+		ResponseEntity<String> serviceResponse;
+	
+		serviceResponse = postStringToService(jsonString, url);
+
 		String mallikasResponse = mallikasService.convertAndUpdateDependencies(serviceResponse.getBody(), true, false);
 		
 		return new ResponseEntity<String>(mallikasResponse + "\n" + serviceResponse.getBody(), serviceResponse.getStatusCode());	
@@ -247,7 +255,6 @@ public class DetectionService {
 		String results = "";
 		
 		for (String url : detectionPostAddresses) {
-			System.out.println(url);
 			ResponseEntity<String> postResult = postProjectToService(null, url, jsonString);
 			results += "Response from " + url + " \n" + postResult + "\n\n";
 		}

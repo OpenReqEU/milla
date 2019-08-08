@@ -118,13 +118,11 @@ public class UpdateService {
 			if (element==null) {
 				break;
 			}
-			System.out.println("Element: " + element.toString());
 			List<Requirement> reqs = new ArrayList<Requirement>(processJsonElementsToRequirements(Arrays.asList(element), projectId, person));
 			if (reqs.isEmpty()) { 
 				break;
 			}
 			number = compareUpdatedIssueWithTheIssueInMallikas(reqs.get(0));
-			System.out.println("Number:" + number);
 			sum++;
 			//System.out.println("Sum (how many times 100 updated issues must be fetched): " + sum);
 			start = start + 100;

@@ -13,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.util.NestedServletException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -120,15 +119,14 @@ public class QtService {
 		return new ResponseEntity<>(results.toString(), HttpStatus.OK);
 	}
 	
-	public ResponseEntity<String> updateProposed(String dependencyString) throws IOException {
+	public ResponseEntity<String> updateProposed(List<Dependency> dependencies) throws IOException, NestedServletException {
 		try {
-			String updated = mallikasService.convertAndUpdateDependencies(dependencyString, false, true);
-			ResponseEntity<String> orsiResponse = detectionService.acceptedAndRejectedToORSI((List<Dependency>)
-					mallikasService.parseStringToDependencies(dependencyString));
+			String updated = mallikasService.updateDependencies(dependencies, false, true);
+			ResponseEntity<String> orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies);
 			System.out.println(orsiResponse);
 			return new ResponseEntity<>(updated, HttpStatus.OK);
-		} catch (HttpClientErrorException|HttpServerErrorException e) {
-			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+		} catch (Exception e) {
+			return new ResponseEntity<>("Error:\n\n" + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }

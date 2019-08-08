@@ -152,6 +152,9 @@ public class FormatTransformerServiceTest {
     	issues.add(addStatusToIssue("implemented", issueWithType("sub-task")));
     	issues.add(addStatusToIssue("withdrawn", issueWithType("sub-task")));
     	issues.add(addStatusToIssue("verified", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("resolved", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("rejected", issueWithType("sub-task")));
+    	issues.add(addStatusToIssue("done", issueWithType("sub-task")));
     	
     	List<JsonElement> elements = elementsFromIssues(issues);
     	

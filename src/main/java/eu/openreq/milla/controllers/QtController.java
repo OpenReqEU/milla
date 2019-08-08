@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.NestedServletException;
 
+import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.services.QtService;
 import eu.openreq.milla.services.ImportService;
@@ -236,6 +238,7 @@ public class QtController {
 	 * @param dependencies
 	 * @return ResponseEntity
 	 * @throws IOException
+	 * @throws NestedServletException 
 	 */
 	@ApiOperation(value = "Update proposed dependencies by user input", notes = "Update proposed dependencies, were they accepted or rejected? "
 			+ "If accepted, what is the type?",
@@ -245,7 +248,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@PostMapping(value = "updateProposedDependencies")
-	public ResponseEntity<?> updateProposedDependencies(@RequestBody String dependencies) throws IOException {
+	public ResponseEntity<String> updateProposedDependencies(@RequestBody List<Dependency> dependencies) throws NestedServletException, IOException {
 		return qtService.updateProposed(dependencies);
 	}
 

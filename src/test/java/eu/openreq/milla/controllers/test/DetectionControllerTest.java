@@ -127,6 +127,25 @@ public class DetectionControllerTest {
 	}
 	
 	@Test
+	public void getDetectedsBadJsonDoesntCauseErrorTest() throws Exception {
+		String testId = "testId";
+		
+		for (String testAddress : detectionGetAddresses) {
+			mockServer.expect(requestTo(testAddress + testId))
+					.andRespond(withSuccess(":\"test\"}", MediaType.APPLICATION_JSON));
+		}
+		
+		mockServer.expect(requestTo(detectionGetPostAddress + "testId"))
+			.andExpect(method(HttpMethod.POST))
+			.andRespond(withSuccess(":\"test\"}", MediaType.APPLICATION_JSON));
+		
+		mockMvc.perform(get("/detectedFromServices")
+				.param("requirementId", testId))
+				.andExpect(status().isOk());	
+		mockServer.verify();
+	}
+	
+	@Test
 	public void postProjectTest() throws Exception {
 		String testAddress = "http://localhost:9203/test";
 		String testId = "testId";

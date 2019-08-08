@@ -86,6 +86,8 @@ public class MillaControllerTest {
 		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 		mapper = new ObjectMapper();
 		
+		authService.setJiraBaseUrl(JIRA_BASE_URL);
+		
 		Mockito.when(importService.importProjectIssues("test", new OAuthService()))
 			.thenReturn(new ResponseEntity<String>("test", HttpStatus.OK));
 		
@@ -95,11 +97,11 @@ public class MillaControllerTest {
 		Mockito.when(authService.accessTokenAuthorization("testSecret"))
 			.thenReturn("testUrl");
 		
-		Mockito.when(authService.isInitialized())
-			.thenReturn(true);
-		
 		Mockito.when(authService.authorizedJiraRequest("/rest/auth/latest/session"))
 			.thenReturn("test");
+		
+		Mockito.when(authService.isInitialized())
+			.thenReturn(true);
 	}
 	
 	@Test
@@ -189,7 +191,7 @@ public class MillaControllerTest {
 	}
 	
 	@Test
-	public void jiraAuthorizationTest() throws Exception {
+	public void jiraAuthorizationAddressTest() throws Exception {
 		mockMvc.perform(get("/getJiraAuthorizationAddress"))
 				.andExpect(status().isOk());	
 	}

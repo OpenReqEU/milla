@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.NestedServletException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -156,8 +157,12 @@ public class MallikasService {
 	}
 	
 	public String convertAndUpdateDependencies(String dependencies, Boolean proposed, Boolean userInput) {
-		Collection<Dependency> convertedDependencies = parseStringToDependencies(dependencies);
-		return updateDependencies(convertedDependencies, proposed, userInput);
+		try {
+			Collection<Dependency> convertedDependencies = parseStringToDependencies(dependencies);
+			return updateDependencies(convertedDependencies, proposed, userInput);
+		} catch (Exception e) {
+			return e.getMessage();
+		}
 	}
 	
 	/**
@@ -183,7 +188,7 @@ public class MallikasService {
 	 * @param dependencies
 	 * @return
 	 */
-	public Collection<Dependency> parseStringToDependencies(String dependencies) {
+	public Collection<Dependency> parseStringToDependencies(String dependencies) throws NestedServletException, IllegalStateException {
 		Gson gson = new Gson();
 		JsonParser parser = new JsonParser();
 		JsonElement dependencyElement = parser.parse(dependencies);
