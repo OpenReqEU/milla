@@ -27,6 +27,7 @@ import eu.openreq.milla.services.MulperiService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 public class QtController {
@@ -143,6 +144,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getProposedDependenciesOfRequirement")
+	@ApiIgnore
 	public ResponseEntity<?> getProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
 		

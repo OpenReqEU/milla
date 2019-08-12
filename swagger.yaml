@@ -12,228 +12,27 @@ tags:
   - name: detection-controller
     description: Detection Controller
 paths:
-  /detectCrossReferenceProject:
-    post:
+  /detectedFromServices:
+    get:
       tags:
         - detection-controller
-      summary: Detect cross-references in all requirements of a project using UPC Cross-Reference Detection
-      description: '<b>Functionality</b>: Post all requirements and dependencies in a project as a String to UPC for Cross-Reference Detection. Requires projectId <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, detected cross references are stored in Mallikas as proposed dependencies.<br><b>Parameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
-      operationId: postRequirementsToUPCCrossReferenceDetectionProjectUsingPOST
+      summary: Get results from all detection services for the requirement id
+      operationId: getDetectedFromServicesUsingGET
       consumes:
         - application/json
       produces:
         - '*/*'
       parameters:
-        - name: projectId
-          in: query
-          description: projectId
-          required: true
-          type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /detectSimilarityAddReqs:
-    post:
-      tags:
-        - detection-controller
-      summary: Cache requirements for UPC dependency Detection
-      description: '<b>Functionality</b>: Post all requirements and dependencies in a project as a String to UPC services in order to be cached for dependency detection purposes. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successfully caching requirements in UPC service, similarity detection can be carried out.<br><br><b>Parameter: </b><br>projectId: The project id in Mallikas (e.g., QTWB).'
-      operationId: postRequirementsToUPCSimilarityDetectionUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: projectId
-          in: query
-          description: projectId
-          required: true
-          type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /detectSimilarityAddReqsAndCompute:
-    post:
-      tags:
-        - detection-controller
-      summary: Post requirements to UPC dependency detection and compute all
-      operationId: postToUPCAddReqsAndComputeUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: projectId
-          in: query
-          description: projectId
-          required: true
-          type: string
-        - name: threshold
-          in: query
-          description: threshold
-          required: false
-          type: number
-          default: 0.3
-          format: double
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /detectSimilarityProject:
-    post:
-      tags:
-        - detection-controller
-      summary: Detect similarity between all requirements of a project using UPC Similarity Detection
-      description: '<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between all requirements. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>compare: Whether text attribute is used in comparison<br>projectId: The project id in Mallikas.<br>threshold: The minimum score for similarity detection (e.g. 0.3).'
-      operationId: postRequirementsToUPCSimilarityDetectionProjectUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: compare
-          in: query
-          description: compare
-          required: true
-          type: boolean
-        - name: projectId
-          in: query
-          description: projectId
-          required: true
-          type: string
-        - name: threshold
-          in: query
-          description: threshold
-          required: false
-          type: number
-          default: 0.3
-          format: double
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /detectSimilarityReqProject:
-    post:
-      tags:
-        - detection-controller
-      summary: Detect similarity of one requirement against all other requirements of a project using UPC Similarity Detection
-      description: '<b>Functionality</b>: All requirements of a given project are posted to UPC Similarity Detection in order to detect similarity between one specified requirements in to project to all other requirements. <br><b>Precondition</b>: The project has been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the detected new similarities are stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>compare: Whether the text attribute is used in comparison<br>projectId: The project id in Mallikas.<br>requirementId: The ids of the requirements that are to be compared to other requirements in the project.<br>threshold: The minimum score for similarity detection (e.g. 0.3).'
-      operationId: postRequirementsToUPCSimilarityDetectionReqProjectUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: compare
-          in: query
-          description: compare
-          required: true
-          type: boolean
-        - name: projectId
-          in: query
-          description: projectId
-          required: true
-          type: string
         - name: requirementId
           in: query
           description: requirementId
           required: true
-          type: array
-          items:
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
             type: string
-          collectionFormat: multi
-        - name: threshold
-          in: query
-          description: threshold
-          required: false
-          type: number
-          default: 0.3
-          format: double
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /detectSimilarityReqReq:
-    post:
-      tags:
-        - detection-controller
-      summary: Detect similarity between two requirements using UPC Similarity Detection
-      description: '<b>Functionality</b>: Two given requirements are posted to UPC Similarity Detection in order to detect similarity between them.<br><b>Precondition</b>: The two requirements have been cached in Mallikas.<br><b>Postcondition</b>: After successful detection, the similarity, if above treshold, is stored in Mallikas using the similarity dependency type and proposed status.<br><b>Parameters:</b><br>reqId1: The id of the requirement that is compared to other requirement (reqId2).<br>reqId2: The id of the requirement that is compared to other requirement (reqId1).'
-      operationId: postRequirementsToUPCSimilarityDetectionReqReqUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: compare
-          in: query
-          description: compare
-          required: true
-          type: boolean
-        - name: requirementId1
-          in: query
-          description: requirementId1
-          required: true
-          type: string
-        - name: requirementId2
-          in: query
-          description: requirementId2
-          required: true
-          type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-        '201':
-          description: Created
         '401':
           description: Unauthorized
         '403':
@@ -337,35 +136,6 @@ paths:
           description: Not Found
         '409':
           description: Conflict
-  /getDetectedFromServices:
-    post:
-      tags:
-        - detection-controller
-      summary: Get results from all detection services for the requirement id
-      operationId: getDetectedFromServicesUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: requirementId
-          in: query
-          description: requirementId
-          required: true
-          type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: string
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
   /getJiraAuthorizationAddress:
     get:
       tags:
@@ -382,75 +152,6 @@ paths:
           description: OK
           schema:
             type: string
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-  /getProposedDependenciesOfRequirement:
-    get:
-      tags:
-        - qt-controller
-      summary: Get top X proposed dependencies of a requirement saved in Mallikas
-      description: Get the top dependencies
-      operationId: getProposedDependenciesOfRequirementUsingGET
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: requirementId
-          in: query
-          description: requirementId
-          required: true
-          type: array
-          items:
-            type: string
-          collectionFormat: multi
-        - name: maxResults
-          in: query
-          description: maxResults
-          required: false
-          type: integer
-          default: 20
-          format: int32
-      responses:
-        '200':
-          description: 'Success, returns JSON model'
-          schema:
-            type: string
-        '400':
-          description: 'Failure, ex. model not found'
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
-        '409':
-          description: Conflict
-  /getResponse:
-    get:
-      tags:
-        - detection-controller
-      summary: Fetch the result from UPC detection service
-      operationId: getResponseFromUPCUsingGET
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: responseId
-          in: query
-          description: responseId
-          required: false
-          type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
         '401':
           description: Unauthorized
         '403':
@@ -540,7 +241,43 @@ paths:
           description: Not Found
         '409':
           description: Conflict
-  /postProjectToServices:
+  /projectToORSI:
+    post:
+      tags:
+        - detection-controller
+      summary: Post a project to ORSI cluster computation
+      operationId: postProjectToORSIUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: projectId
+          in: query
+          description: projectId
+          required: true
+          type: string
+        - name: threshold
+          in: query
+          description: threshold
+          required: false
+          type: number
+          default: 0.3
+          format: double
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /projectToServices:
     post:
       tags:
         - detection-controller
@@ -725,6 +462,11 @@ paths:
           description: includeProposed
           required: false
           type: boolean
+        - name: requirementsOnly
+          in: query
+          description: requirementsOnly
+          required: false
+          type: boolean
       responses:
         '200':
           description: OK
@@ -757,7 +499,7 @@ paths:
         '200':
           description: OK
           schema:
-            type: object
+            type: string
         '201':
           description: Created
         '401':
@@ -835,7 +577,9 @@ paths:
           description: dependencies
           required: true
           schema:
-            type: string
+            type: array
+            items:
+              $ref: '#/definitions/Dependency'
       responses:
         '200':
           description: 'Success, returns JSON model'
@@ -915,6 +659,43 @@ paths:
         '404':
           description: Not Found
 definitions:
+  Dependency:
+    type: object
+    properties:
+      created_at:
+        type: integer
+        format: int64
+      dependency_score:
+        type: number
+        format: double
+      dependency_type:
+        type: string
+        enum:
+          - CONTRIBUTES
+          - DAMAGES
+          - REFINES
+          - REQUIRES
+          - INCOMPATIBLE
+          - DECOMPOSITION
+          - SIMILAR
+          - DUPLICATES
+          - REPLACES
+      description:
+        type: array
+        items:
+          type: string
+      fromid:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+        enum:
+          - PROPOSED
+          - ACCEPTED
+          - REJECTED
+      toid:
+        type: string
   RequestParams:
     type: object
     properties:
