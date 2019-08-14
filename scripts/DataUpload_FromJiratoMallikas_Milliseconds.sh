@@ -1,9 +1,10 @@
 #!/bin/bash
 
 projects=("QTPLAYGROUND"  "QTWB"  "QTSOLBUG"  "QTSYSADM"  "QTJIRA"  "QSR"  "QDS"  "QTVSADDINBUG"  "QTWEBSITE"  "AUTOSUITE" "PYSIDE"  "QTCOMPONENTS"  "QTIFW"  "QBS"  "QTMOBILITY"  "QTQAINFRA"  "QT3DS" "QTCREATORBUG" "QTBUG")
-
-URL=https://api.openreq.eu/milla
-#URL="217.172.12.199"
+#projects=("QTBUG")
+#URL=https://api.openreq.eu/milla
+#URL="217.172.12.199:9203"
+URL="http://localhost:9203"
 
 
 #Get data from Jira to Mallikas
