@@ -63,7 +63,7 @@ public class MillaController {
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return mulperiService.postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaaS");
+		return mulperiService.postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaas");
 	}
 
 	/**

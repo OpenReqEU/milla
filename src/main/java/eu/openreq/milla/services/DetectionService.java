@@ -130,7 +130,6 @@ public class DetectionService {
 			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 			HttpEntity<String> entity = new HttpEntity<String>(jsonString, headers);
-			
 			try {
 				ResponseEntity<String> response = rt.postForEntity(url, entity, String.class);	
 				if(response==null) {
@@ -188,7 +187,7 @@ public class DetectionService {
 	
 		String receiveAddress = millaAddress + "/receiveAddReqResponse";
 		
-		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/BuildClustersAndCompute";
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/BuildClusters";
 		
 		Map<String, String> formParams = new HashMap<>();
 		
@@ -235,7 +234,6 @@ public class DetectionService {
 		}
 		
 		ResponseEntity<String> serviceResponse;
-	
 		serviceResponse = postStringToService(jsonString, url);
 
 		String mallikasResponse = mallikasService.convertAndUpdateDependencies(serviceResponse.getBody(), true, false);

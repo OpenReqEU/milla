@@ -92,6 +92,6 @@ public class UpdateServiceTest {
 		
 		ResponseEntity<String> response = updateService.getAllUpdatedIssues("TEST", authService);
 		System.out.println("Body: " + response.getBody().toString());
-		assertEquals(response.getBody().length(), 1981);
+		assertEquals(response.getBody().length(), 1963);
 	}
 }
