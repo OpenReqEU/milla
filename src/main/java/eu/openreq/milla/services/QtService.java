@@ -1,6 +1,7 @@
 package eu.openreq.milla.services;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import org.springframework.web.util.NestedServletException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 import eu.openreq.milla.models.TotalDependencyScore;
 import eu.openreq.milla.models.json.Dependency;
@@ -145,14 +147,14 @@ public class QtService {
 		List<Dependency> proposed = new ArrayList<Dependency>();		
 		List<String> acceptedAndRejectedIds = new ArrayList<String>();
 		
+		//Get from Mallikas
+		
 		String detectedFromMallikasString = mallikasService.requestWithParams(params,
 				"dependencies");
 		
 		if (detectedFromMallikasString==null) {
 			return new ResponseEntity<String>("Search failed, no requirements found", HttpStatus.NOT_FOUND);
 		}
-		
-		//Get from Mallikas
 		
 		OpenReqJSONParser parser = null;
 		try {
@@ -250,12 +252,14 @@ public class QtService {
 		return new ResponseEntity<>(results.toString(), HttpStatus.OK);
 	}
 	
-	public ResponseEntity<String> updateProposed(List<Dependency> dependencies) throws IOException, NestedServletException {
+	public ResponseEntity<String> updateProposed(String dependenciesJson) throws IOException, NestedServletException {
 		try {
+			Type depListType = new TypeToken<ArrayList<Dependency>>(){}.getType();	
+			List<Dependency> dependencies = new Gson().fromJson(dependenciesJson, depListType);
 			String updated = mallikasService.updateDependencies(dependencies, false, true);
 			ResponseEntity<String> orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies);
-			System.out.println(orsiResponse);
-			return new ResponseEntity<>(updated, HttpStatus.OK);
+			return new ResponseEntity<>("Mallikas update response: " + updated + 
+					"\nOrsi update response: " + orsiResponse, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Error:\n\n" + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

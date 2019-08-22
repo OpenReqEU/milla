@@ -15,7 +15,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.NestedServletException;
 
-import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.services.QtService;
 import eu.openreq.milla.services.ImportService;
 import eu.openreq.milla.services.MallikasService;
@@ -150,10 +149,10 @@ public class QtController {
 	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the "
 			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
-	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
 		try {
-			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);			
-			if (response!=null) {
+			ResponseEntity<String> response = millaController.importUpdatedFromQtJira(projectId);			
+			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
 				return mulperiService.postToMulperi(response.getBody(), "/models/updateMurmeliModelInKeljuCaas");
 			}
 			return response;
@@ -178,7 +177,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@PostMapping(value = "updateProposedDependencies")
-	public ResponseEntity<String> updateProposedDependencies(@RequestBody List<Dependency> dependencies) throws NestedServletException, IOException {
+	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) throws NestedServletException, IOException {
 		return qtService.updateProposed(dependencies);
 	}
 
