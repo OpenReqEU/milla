@@ -378,7 +378,7 @@ public class FormatTransformerService {
 		dependency.setFromid(reqFrom);
 		dependency.setToid(reqTo);
 		setDependencyType(dependency, jiraType);
-		dependency.setId(reqFrom + "_" + reqTo + "_" + dependency.getDependency_type());
+		dependency.setId(reqFrom + "_" + reqTo);
 		setStatusForDependency(dependency, "accepted");
 		dependency.setDependency_score(1.0);
 		dependency.setCreated_at(new Date().getTime());

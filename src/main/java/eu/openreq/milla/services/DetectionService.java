@@ -20,9 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.json.Dependency;
 
@@ -127,10 +130,9 @@ public class DetectionService {
 	 */
 	public ResponseEntity<String> postStringToService(String jsonString, String url) {
 			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 			HttpEntity<String> entity = new HttpEntity<String>(jsonString, headers);
-			
 			try {
 				ResponseEntity<String> response = rt.postForEntity(url, entity, String.class);	
 				if(response==null) {
@@ -188,7 +190,7 @@ public class DetectionService {
 	
 		String receiveAddress = millaAddress + "/receiveAddReqResponse";
 		
-		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/BuildClustersAndCompute";
+		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/BuildClusters";
 		
 		Map<String, String> formParams = new HashMap<>();
 		
@@ -214,18 +216,22 @@ public class DetectionService {
 		
 		String completeAddress = upcSimilarityAddress + "/upc/similarity-detection/TreatAcceptedAndRejectedDependencies?organization=Qt";
 		
-		String jsonString = new Gson().toJson(dependencies);	
-		jsonString = jsonString.replaceAll("[\\[\\]]","");
+		JsonElement depsArray = new Gson().toJsonTree(dependencies);	
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add("dependencies", depsArray);
 		
-		HttpEntity<String> entity = new HttpEntity<String>(jsonString, headers);
+		HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
 
 		try {
 			ResponseEntity<String> response = rt.postForEntity(completeAddress, entity, String.class);
 			
 			return new ResponseEntity<String>(response.getBody() + "", response.getStatusCode());
 			
-		} catch (HttpClientErrorException e) {
-			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+		} catch (HttpClientErrorException|HttpServerErrorException e) {
+			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			
 		}
 	}	
 	
@@ -234,9 +240,7 @@ public class DetectionService {
 			jsonString = mallikasService.getAllRequirementsInProject(projectId, true, false);
 		}
 		
-		ResponseEntity<String> serviceResponse;
-	
-		serviceResponse = postStringToService(jsonString, url);
+		ResponseEntity<String> serviceResponse = postStringToService(jsonString, url);;
 
 		String mallikasResponse = mallikasService.convertAndUpdateDependencies(serviceResponse.getBody(), true, false);
 		

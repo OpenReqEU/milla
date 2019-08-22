@@ -1,10 +1,8 @@
 package eu.openreq.milla.controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.NestedServletException;
 
-import eu.openreq.milla.models.json.Dependency;
-import eu.openreq.milla.models.json.RequestParams;
 import eu.openreq.milla.services.QtService;
 import eu.openreq.milla.services.ImportService;
 import eu.openreq.milla.services.MallikasService;
@@ -31,9 +26,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 public class QtController {
-	
-	@Value("${milla.mulperiAddress}")
-	private String mulperiAddress;
 
 	@Autowired
 	QtService qtService;
@@ -50,8 +42,6 @@ public class QtController {
 	@Autowired
 	MillaController millaController;
 	
-	@Autowired
-	RestTemplate rt;
 	
 	@ApiOperation(value = "Get the transitive closure of a requirement",
 			notes = "Returns the transitive closure of a given requirement up to the depth of 5. "
@@ -64,19 +54,7 @@ public class QtController {
 	@GetMapping(value = "/getTransitiveClosureOfRequirement")
 	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false) Integer layerCount) throws IOException {
-
-		String completeAddress = mulperiAddress + "/models/findTransitiveClosureOfRequirement";
-		
-		if (layerCount!=null) {
-			completeAddress += "?layerCount=" + layerCount;
-		}
-				
-		try {
-			String response = rt.postForObject(completeAddress, requirementId, String.class);		
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (HttpClientErrorException|HttpServerErrorException e) {
-			return new ResponseEntity<>("Error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
+		return qtService.getTransitiveClosureOfRequirement(requirementId, layerCount);
 	}
 	
 	@ApiOperation(value = "Get the dependencies of a requirement", notes = "Get the dependencies of a requirement, with "
@@ -90,22 +68,7 @@ public class QtController {
 	public ResponseEntity<?> getDependenciesOfRequirement(@RequestParam String requirementId, 
 			@RequestParam(required = false) Double scoreThreshold, 
 			@RequestParam(required = false) Integer maxResults) throws IOException {
-		
-		RequestParams params = new RequestParams();
-		List<String> reqIds = new ArrayList<String>();
-		reqIds.add(requirementId);
-		params.setRequirementIds(reqIds);
-		params.setScoreThreshold(scoreThreshold);
-		params.setMaxDependencies(maxResults);
-
-		String reqsWithDependencyType = mallikasService.requestWithParams(params, "dependencies");
-
-		if (reqsWithDependencyType == null || reqsWithDependencyType.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found", HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<>(reqsWithDependencyType, HttpStatus.OK);
-		
-
+		return qtService.getDependenciesOfRequirement(requirementId, scoreThreshold, maxResults);
 	}
 	
 	@ApiOperation(value = "Get consistency check for the transitive closure of a requirement", notes = "First the transitive closure is created,"
@@ -119,22 +82,8 @@ public class QtController {
 	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam List<String> requirementId, @RequestParam
 			(required = false) Integer layerCount, @RequestParam(required = false) boolean analysisOnly, 
 			@RequestParam(required = false, defaultValue = "0") Integer timeOut) throws IOException {
-
-		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=" + analysisOnly + 
-				"&timeOut=" + timeOut;
-		
-		if (layerCount!=null) {
-			completeAddress += "&layerCount=" + layerCount;
-		}
-		
-		try {
-			String response = rt.postForObject(completeAddress, requirementId, String.class);
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (HttpClientErrorException|HttpServerErrorException e) {
-			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
-		}
-		
-
+		return qtService.getConsistencyCheckForRequirement(requirementId, layerCount, 
+				analysisOnly, timeOut);
 	}
 	
 	@ApiOperation(value = "Get top X proposed dependencies of a requirement saved in Mallikas", notes = "Get the top dependencies", 
@@ -147,21 +96,7 @@ public class QtController {
 	@ApiIgnore
 	public ResponseEntity<?> getProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
-		
-		RequestParams params = new RequestParams();
-		params.setRequirementIds(requirementId);
-		params.setProposedOnly(true);
-		if (maxResults!=null) {
-			params.setMaxDependencies(maxResults);
-		}
-		
-		String reqWithTopProposed = mallikasService.requestWithParams(params,
-				"dependencies");
-
-		if (reqWithTopProposed == null || reqWithTopProposed.equals("")) {
-			return new ResponseEntity<>("Search failed, requirements not found", HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<>(reqWithTopProposed, HttpStatus.OK);
+		return qtService.getProposedDependenciesOfRequirement(requirementId, maxResults);
 
 	}
 	
@@ -175,15 +110,7 @@ public class QtController {
 	@GetMapping(value = "/getTopProposedDependenciesOfRequirement")
 	public ResponseEntity<?> getTopProposedDependencies(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
-		
-		RequestParams params = new RequestParams();
-		params.setRequirementIds(requirementId);
-		params.setProposedOnly(true);
-		if (maxResults!=null) {
-			params.setMaxDependencies(maxResults);
-		}
-		
-		return qtService.sumScoresAndGetTopProposed(params);
+		return qtService.sumScoresAndGetTopProposed(requirementId, maxResults);
 	}
 	
 
@@ -222,10 +149,10 @@ public class QtController {
 	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the "
 			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
-	public ResponseEntity<?> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
 		try {
-			ResponseEntity<?> response = millaController.importUpdatedFromQtJira(projectId);			
-			if (response!=null) {
+			ResponseEntity<String> response = millaController.importUpdatedFromQtJira(projectId);			
+			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
 				return mulperiService.postToMulperi(response.getBody(), "/models/updateMurmeliModelInKeljuCaas");
 			}
 			return response;
@@ -250,7 +177,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@PostMapping(value = "updateProposedDependencies")
-	public ResponseEntity<String> updateProposedDependencies(@RequestBody List<Dependency> dependencies) throws NestedServletException, IOException {
+	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) throws NestedServletException, IOException {
 		return qtService.updateProposed(dependencies);
 	}
 

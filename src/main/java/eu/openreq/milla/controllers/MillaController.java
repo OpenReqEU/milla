@@ -63,7 +63,7 @@ public class MillaController {
 		if (reqsInProject == null) {
 			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
 		}
-		return mulperiService.postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaaS");
+		return mulperiService.postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaas");
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJiraUpdated")
-	public ResponseEntity<?> importUpdatedFromQtJira(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<String> importUpdatedFromQtJira(@RequestParam String projectId) throws IOException {
 		return importService.importUpdatedIssues(projectId, authService);
 	}
 	

@@ -98,7 +98,6 @@ public class DetectionController {
 	@PostMapping(value = "projectToService")
 	private ResponseEntity<String> postRequirementsToDetectionService( 
 			@RequestParam String projectId, @RequestParam String url) throws IOException {
-		
 		return detectionService.postProjectToService(projectId, url, null);
 	}
 	

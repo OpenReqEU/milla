@@ -223,7 +223,7 @@ public class DetectionControllerTest {
 				+ "&requirementsOnly=false")).andRespond(withSuccess("{\"dummy\":\"test\"}", 
 						MediaType.APPLICATION_JSON));
 		
-		mockServer.expect(requestTo(upcSimilarityAddress + "/upc/similarity-detection/BuildClustersAndCompute"))
+		mockServer.expect(requestTo(upcSimilarityAddress + "/upc/similarity-detection/BuildClusters"))
 				.andRespond(withSuccess("{\"response\":\"test\"}", MediaType.APPLICATION_JSON_UTF8));
 		
 		mockMvc.perform(post("/projectToORSI")

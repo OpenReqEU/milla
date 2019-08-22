@@ -106,7 +106,8 @@ public class ImportService {
 		try {
 			String response = mallikasService.getListOfProjects();
 			if (response==null || !response.contains(projectId)) {
-				mallikasService.postProject(transformer.createProject(projectId, new ArrayList<String>()));
+				return new ResponseEntity<String>("No such project found, must import first before updating", 
+						HttpStatus.NOT_FOUND);
 			}			
 			return updateService.getAllUpdatedIssues(projectId, authService);
 		} catch (Exception e) {
