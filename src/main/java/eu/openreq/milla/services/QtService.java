@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.NestedServletException;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -53,6 +54,8 @@ public class QtService {
 	
 	@Autowired
 	RestTemplate rt;
+	
+	private Gson gson = new Gson();
 	
 	public ResponseEntity<String> getTransitiveClosureOfRequirement(List<String> requirementId, 
 			Integer layerCount) throws IOException {
@@ -183,9 +186,12 @@ public class QtService {
 			}
 		}
 		
+		JsonObject results = new JsonObject();
 		
 		if (proposed.isEmpty()) {
-			return new ResponseEntity<String>(detectedFromMallikasString, HttpStatus.OK);
+			results.add("dependencies", new JsonArray());;
+			results.add("requirements", gson.toJsonTree(parser.getRequirements()));;
+			return new ResponseEntity<String>(results.toString(), HttpStatus.OK);
 		}
 		
 		//Sum the scores (& descriptions)
@@ -236,15 +242,13 @@ public class QtService {
 			reqIds.add(score.getFromid());
 			reqIds.add(score.getToid());
 		}
-		
-		JsonObject results = new JsonObject();
-		results.add("dependencies", new Gson().toJsonTree(topDependencies));
-		
-		String requirementJson = mallikasService.getSelectedRequirements(reqIds);
+	
+		String requirementJson = mallikasService.getSelectedRequirements(reqIds);	
 		
 		try {
 			parser = new OpenReqJSONParser(requirementJson);
-			results.add("requirements", new Gson().toJsonTree(parser.getRequirements()));
+			results.add("dependencies", gson.toJsonTree(topDependencies));
+			results.add("requirements", gson.toJsonTree(parser.getRequirements()));
 		} catch (com.google.gson.JsonSyntaxException e) {
 			System.out.println("Couldn't get requirements from Mallikas");
 		}
@@ -255,7 +259,7 @@ public class QtService {
 	public ResponseEntity<String> updateProposed(String dependenciesJson) throws IOException, NestedServletException {
 		try {
 			Type depListType = new TypeToken<ArrayList<Dependency>>(){}.getType();	
-			List<Dependency> dependencies = new Gson().fromJson(dependenciesJson, depListType);
+			List<Dependency> dependencies = gson.fromJson(dependenciesJson, depListType);
 			String updated = mallikasService.updateDependencies(dependencies, false, true);
 			ResponseEntity<String> orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies);
 			return new ResponseEntity<>("Mallikas update response: " + updated + 
