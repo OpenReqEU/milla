@@ -66,8 +66,8 @@ public class UpdateServiceTest {
 		Mockito.when(mallikasService.getSelectedRequirements(new ArrayList<String>()))
 			.thenReturn(mapper.writeValueAsString(req));
 		
-		Mockito.when(detectionService.postUpdatesToService(Mockito.anyString()))
-			.thenReturn("Detection successful (big lie)");
+		Mockito.when(detectionService.postUpdatesToService(Mockito.anyString(), Mockito.anyString()))
+			.thenReturn("Detection successful (supposedly)");
 		
 	}
 	
@@ -91,7 +91,6 @@ public class UpdateServiceTest {
 
 		
 		ResponseEntity<String> response = updateService.getAllUpdatedIssues("TEST", authService);
-		System.out.println("Body: " + response.getBody().toString());
 		assertEquals(response.getBody().length(), 1963);
 	}
 }

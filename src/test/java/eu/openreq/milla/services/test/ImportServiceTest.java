@@ -57,7 +57,7 @@ public class ImportServiceTest {
 			.thenReturn("test");
     	
     	Mockito.when(mallikasService.getListOfProjects())
-		.thenReturn("TEST");
+			.thenReturn("TEST");
     	
     	Mockito.when(updateService.getAllUpdatedIssues("TEST", authService))
 			.thenReturn(new ResponseEntity<String>("Success", HttpStatus.OK));

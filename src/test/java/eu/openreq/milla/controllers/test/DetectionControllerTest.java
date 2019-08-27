@@ -54,8 +54,8 @@ public class DetectionControllerTest {
 	@Value("${milla.detectionGetAddresses}")
 	private String[] detectionGetAddresses;
 	
-	@Value("${milla.detectionGetPostAddress}")
-	private String detectionGetPostAddress;
+	@Value("${milla.detectionGetPostAddresses}")
+	private String detectionGetPostAddresses;
 	
 	@Value("${milla.detectionPostAddresses}")
 	private String[] detectionPostAddresses;
@@ -116,7 +116,7 @@ public class DetectionControllerTest {
 					.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		}
 		
-		mockServer.expect(requestTo(detectionGetPostAddress + "testId"))
+		mockServer.expect(requestTo(detectionGetPostAddresses + "testId"))
 			.andExpect(method(HttpMethod.POST))
 			.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
@@ -135,7 +135,7 @@ public class DetectionControllerTest {
 					.andRespond(withSuccess(":\"test\"}", MediaType.APPLICATION_JSON));
 		}
 		
-		mockServer.expect(requestTo(detectionGetPostAddress + "testId"))
+		mockServer.expect(requestTo(detectionGetPostAddresses + "testId"))
 			.andExpect(method(HttpMethod.POST))
 			.andRespond(withSuccess(":\"test\"}", MediaType.APPLICATION_JSON));
 		

@@ -3,6 +3,7 @@ package eu.openreq.milla.services;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,14 +43,17 @@ public class DetectionService {
 	@Value("${milla.detectionGetAddresses}")
 	private String[] detectionGetAddresses;
 	
-	@Value("${milla.detectionGetPostAddress}")
-	private String detectionGetPostAddress;
+	@Value("${milla.detectionGetPostAddresses}")
+	private String detectionGetPostAddresses;
 	
 	@Value("${milla.detectionPostAddresses}")
 	private String[] detectionPostAddresses;
 	
 	@Value("${milla.detectionUpdateAddresses}")
 	private String[] detectionUpdateAddresses;
+	
+	@Value("${milla.detectionLargeUpdateAddresses}")
+	private String[] detectionLargeUpdateAddresses;
 	
 	@Value("${milla.ownAddress}")
 	private String millaAddress;
@@ -71,51 +75,43 @@ public class DetectionService {
 		}	
 	}
 	
-	public List<Dependency> getDetectedFromServices(String requirementId)
-	{
+	public List<Dependency> getDetectedFromServices(String requirementId) {
 		List<Dependency> dependencies = new ArrayList<>();
-		for (String url : detectionGetAddresses) {
-			ResponseEntity<String> detectionResult = getDetectedFromService(requirementId, url);
-			try {
-				OpenReqJSONParser parser = new OpenReqJSONParser(detectionResult.getBody().toString());
-				List<Dependency> foundDeps = parser.getDependencies();
-				if (foundDeps!=null) {
-					dependencies.addAll(foundDeps);
-				}
-			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
-				System.out.println("Did not receive valid JSON from " + url + " :\n" + detectionResult.getBody());
-			} catch (Exception e) {
-				System.out.println("Error: " + e.getMessage());
-			}
-		}	
-		
-		dependencies.addAll(getPostDetected(requirementId));
+		dependencies.addAll(getDetectedByGetOrPost(requirementId, Arrays.asList(detectionGetAddresses), false));
+		dependencies.addAll(getDetectedByGetOrPost(requirementId, Arrays.asList(detectionGetPostAddresses), true));
 
 		return dependencies;
 	}
 	
-	private List<Dependency> getPostDetected(String requirementId) {
-		String responseBody = "No response";
-		try {
-			ResponseEntity<String> serviceResponse = rt.postForEntity(detectionGetPostAddress + 
-				requirementId, null, String.class);
-			
-			responseBody = serviceResponse.getBody();
-			
-			OpenReqJSONParser parser = new OpenReqJSONParser(responseBody.toString());
-			List<Dependency> foundDeps = parser.getDependencies();
-			if (foundDeps!=null) {
-				return foundDeps;
+	private List<Dependency> getDetectedByGetOrPost(String requirementId, List<String> urls, boolean byPost) {
+		List<Dependency> dependencies = new ArrayList<>();
+
+		for (String url : urls) {
+			String responseBody = "No response";
+			try {
+				ResponseEntity<String> serviceResponse;
+				if (byPost) {
+					serviceResponse = rt.postForEntity(url + requirementId, null, String.class);
+				} else {
+					serviceResponse = rt.getForEntity(url + requirementId, String.class);
+				}
+				
+				responseBody = serviceResponse.getBody();
+				OpenReqJSONParser parser = new OpenReqJSONParser(responseBody);
+				List<Dependency> foundDeps = parser.getDependencies();
+				if (foundDeps!=null) {
+					dependencies.addAll(foundDeps);
+				}	
+			} catch (JSONException|com.google.gson.JsonSyntaxException e) {
+				System.out.println("Did not receive valid JSON from " + 
+						url + " :\n" + responseBody);
+			} catch (Exception e) {
+				System.out.println("Error connecting to address " + url + " :\n" + e.getMessage());
 			}
-			return new ArrayList<Dependency>();
-		} catch (JSONException|com.google.gson.JsonSyntaxException e) {
-			System.out.println("Did not receive valid JSON from " + 
-					detectionGetPostAddress + " :\n" + responseBody);
-			return new ArrayList<Dependency>();
-		} catch (Exception e) {
-			System.out.println("Error: " + e.getMessage());
-			return new ArrayList<Dependency>();
 		}
+		
+		return dependencies;
+		
 	}
 	
 	/**
@@ -129,20 +125,19 @@ public class DetectionService {
 	 * @throws IOException
 	 */
 	public ResponseEntity<String> postStringToService(String jsonString, String url) {
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-			HttpEntity<String> entity = new HttpEntity<String>(jsonString, headers);
-			try {
-				ResponseEntity<String> response = rt.postForEntity(url, entity, String.class);	
-				if(response==null) {
-					return new ResponseEntity<String>("No response", HttpStatus.NOT_FOUND);
-				}
-				return new ResponseEntity<String>(response.getBody() + "", response.getStatusCode());
-			} catch (Exception e) {
-				return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		HttpEntity<String> entity = new HttpEntity<String>(jsonString, headers);
+		try {
+			ResponseEntity<String> response = rt.postForEntity(url, entity, String.class);	
+			if(response==null) {
+				return new ResponseEntity<String>("No response", HttpStatus.NOT_FOUND);
 			}
-
+			return new ResponseEntity<String>(response.getBody() + "", response.getStatusCode());
+		} catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	/**
@@ -266,10 +261,13 @@ public class DetectionService {
 		return new ResponseEntity<String>(results, HttpStatus.OK);
 	}
 	
-	public String postUpdatesToService(String content) {
+	public String postUpdatesToService(String projectId, String content) {
 		String response = "";
 		for (String url : detectionUpdateAddresses) {
 			response += postStringToService(content, url) + "\n";
+		}
+		for (String url : detectionLargeUpdateAddresses) {
+			response += "Response status from " + url + " : " + postProjectToService(projectId, url, null).getStatusCode();
 		}
 		return response;
 	}

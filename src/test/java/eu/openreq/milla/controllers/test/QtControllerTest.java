@@ -63,8 +63,8 @@ public class QtControllerTest {
 	@Value("${milla.detectionGetAddresses}")
 	private String[] detectionGetAddresses;
 	
-	@Value("${milla.detectionGetPostAddress}")
-	private String detectionGetPostAddress;
+	@Value("${milla.detectionGetPostAddresses}")
+	private String detectionGetPostAddresses;
 	
 	@Autowired
 	QtController controller;
@@ -227,14 +227,14 @@ public class QtControllerTest {
 					.andRespond(withSuccess(content, MediaType.APPLICATION_JSON));
 		}
 		
-		mockServer.expect(requestTo(detectionGetPostAddress + "testId"))
+		mockServer.expect(requestTo(detectionGetPostAddresses + "testId"))
 			.andExpect(method(HttpMethod.POST))
 			.andRespond(withSuccess(content, MediaType.APPLICATION_JSON));
 		
 		mockServer.expect(requestTo(mallikasAddress + "/selectedReqs"))
 		.andRespond(withSuccess(reqContent, MediaType.APPLICATION_JSON));
 		
-		int score = 1 + 1 * detectionGetAddresses.length + (detectionGetPostAddress!=null ? 1 : 0);
+		int score = 1 + 1 * detectionGetAddresses.length + (detectionGetPostAddresses!=null ? 1 : 0);
 		
 		mockMvc.perform(get("/getTopProposedDependenciesOfRequirement")
 				.param("requirementId", "testId"))
