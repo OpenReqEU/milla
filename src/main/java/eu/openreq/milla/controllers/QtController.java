@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.NestedServletException;
 
 import eu.openreq.milla.services.QtService;
@@ -52,7 +49,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTransitiveClosureOfRequirement")
-	public ResponseEntity<?> getTransitiveClosureOfRequirement(@RequestParam List<String> requirementId, 
+	public ResponseEntity<String> getTransitiveClosureOfRequirement(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false) Integer layerCount) throws IOException {
 		return qtService.getTransitiveClosureOfRequirement(requirementId, layerCount);
 	}
@@ -65,7 +62,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getDependenciesOfRequirement")
-	public ResponseEntity<?> getDependenciesOfRequirement(@RequestParam String requirementId, 
+	public ResponseEntity<String> getDependenciesOfRequirement(@RequestParam String requirementId, 
 			@RequestParam(required = false) Double scoreThreshold, 
 			@RequestParam(required = false) Integer maxResults) throws IOException {
 		return qtService.getDependenciesOfRequirement(requirementId, scoreThreshold, maxResults);
@@ -79,7 +76,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getConsistencyCheckForRequirement")
-	public ResponseEntity<?> getConsistencyCheckForRequirement(@RequestParam List<String> requirementId, @RequestParam
+	public ResponseEntity<String> getConsistencyCheckForRequirement(@RequestParam List<String> requirementId, @RequestParam
 			(required = false) Integer layerCount, @RequestParam(required = false) boolean analysisOnly, 
 			@RequestParam(required = false, defaultValue = "0") Integer timeOut) throws IOException {
 		return qtService.getConsistencyCheckForRequirement(requirementId, layerCount, 
@@ -94,7 +91,7 @@ public class QtController {
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getProposedDependenciesOfRequirement")
 	@ApiIgnore
-	public ResponseEntity<?> getProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, 
+	public ResponseEntity<String> getProposedDependenciesOfRequirement(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
 		return qtService.getProposedDependenciesOfRequirement(requirementId, maxResults);
 
@@ -108,7 +105,7 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@GetMapping(value = "/getTopProposedDependenciesOfRequirement")
-	public ResponseEntity<?> getTopProposedDependencies(@RequestParam List<String> requirementId, 
+	public ResponseEntity<String> getTopProposedDependencies(@RequestParam List<String> requirementId, 
 			@RequestParam(required = false, defaultValue = "20") Integer maxResults) throws IOException {
 		return qtService.sumScoresAndGetTopProposed(requirementId, maxResults);
 	}
@@ -125,16 +122,8 @@ public class QtController {
 	@ApiOperation(value = "Fetch whole project from Qt Jira to Mallikas and update the graph in KeljuCaas", 
 			notes = "Post a Project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateProject")
-	public ResponseEntity<?> updateWholeProject(@RequestParam String projectId) throws Exception {
-		try {
-			ResponseEntity<?> response = millaController.importFromQtJira(projectId);
-			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
-				return millaController.sendProjectToMulperi(projectId);
-			}
-			return response;
-		} catch (HttpClientErrorException|HttpServerErrorException e) {
-			return new ResponseEntity<>("Error in updating the whole project " + e.getResponseBodyAsString(), e.getStatusCode());
-		}
+	public ResponseEntity<String> updateWholeProject(@RequestParam String projectId) throws Exception {
+		return qtService.updateWholeProject(projectId);
 	}
 	
 	
@@ -150,15 +139,7 @@ public class QtController {
 			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
 	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
-		try {
-			ResponseEntity<String> response = millaController.importUpdatedFromQtJira(projectId);			
-			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
-				return mulperiService.postToMulperi(response.getBody(), "/models/updateMurmeliModelInKeljuCaas");
-			}
-			return response;
-		} catch (HttpClientErrorException|HttpServerErrorException e) {
-			return new ResponseEntity<>("Error in updating the most recent issues " + e.getResponseBodyAsString(), e.getStatusCode());
-		}
+		return qtService.updateMostRecentIssuesInProject(projectId);
 	}
 	
 	/**

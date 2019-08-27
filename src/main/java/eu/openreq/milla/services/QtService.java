@@ -74,7 +74,7 @@ public class QtService {
 		}
 	}
 	
-	public ResponseEntity<?> getDependenciesOfRequirement(String requirementId, 
+	public ResponseEntity<String> getDependenciesOfRequirement(String requirementId, 
 			 Double scoreThreshold, Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
@@ -92,7 +92,7 @@ public class QtService {
 		return new ResponseEntity<>(reqsWithDependencyType, HttpStatus.OK);
 	}
 	
-	public ResponseEntity<?> getConsistencyCheckForRequirement(List<String> requirementId,
+	public ResponseEntity<String> getConsistencyCheckForRequirement(List<String> requirementId,
 			Integer layerCount, boolean analysisOnly, Integer timeOut) throws IOException {
 
 		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=" + analysisOnly + 
@@ -110,7 +110,7 @@ public class QtService {
 		}
 	}
 	
-	public ResponseEntity<?> getProposedDependenciesOfRequirement(List<String> requirementId, 
+	public ResponseEntity<String> getProposedDependenciesOfRequirement(List<String> requirementId, 
 			Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
@@ -269,15 +269,27 @@ public class QtService {
 		}
 	}
 	
-	public ResponseEntity<?> updateWholeProject(@RequestParam String projectId) throws Exception {
+	public ResponseEntity<String> updateWholeProject(@RequestParam String projectId) throws Exception {
 		try {
-			ResponseEntity<?> response = importService.importProjectIssues(projectId, authService);
+			ResponseEntity<String> response = importService.importProjectIssues(projectId, authService);
 			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
-				return mulperiService.postToMulperi(projectId, "/models/murmeliModelToKeljuCaas");
+				return mulperiService.sendProjectToMulperi(projectId);
 			}
 			return response;
 		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Error in updating the whole project " + e.getResponseBodyAsString(), e.getStatusCode());
+		}
+	}
+	
+	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
+		try {
+			ResponseEntity<String> response = importService.importUpdatedIssues(projectId, authService);			
+			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
+				return mulperiService.sendProjectUpdatesToMulperi(response.getBody());
+			}
+			return response;
+		} catch (HttpClientErrorException|HttpServerErrorException e) {
+			return new ResponseEntity<>("Error in updating the most recent issues " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 }

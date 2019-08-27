@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,9 @@ public class MulperiService {
 	private String mulperiAddress;
 	
 	@Autowired
+	MallikasService mallikasService;
+	
+	@Autowired
 	RestTemplate rt;
 	
 	/**
@@ -29,7 +33,7 @@ public class MulperiService {
 	 * @return
 	 * @throws IOException
 	 */
-	public ResponseEntity<String> postToMulperi(Object data, String urlTail) throws IOException {
+	private ResponseEntity<String> postToMulperi(Object data, String urlTail) throws IOException {
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -42,6 +46,20 @@ public class MulperiService {
 			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
 		}
 
+	}
+	
+	public ResponseEntity<String> sendProjectToMulperi(String projectId) throws IOException {
+
+		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false, false);
+		
+		if (reqsInProject == null) {
+			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
+		}
+		return postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaas");
+	}
+	
+	public ResponseEntity<String> sendProjectUpdatesToMulperi(String updates) throws IOException {
+		return postToMulperi(updates, "/models/updateMurmeliModelInKeljuCaas");
 	}
 	
 }

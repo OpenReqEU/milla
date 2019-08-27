@@ -57,13 +57,7 @@ public class MillaController {
 			+ "<br>projectId: The project id in Mallikas (e.g., QTWB).")
 	@PostMapping(value = "sendProjectToMulperi")
 	public ResponseEntity<String> sendProjectToMulperi(@RequestParam String projectId) throws IOException {
-
-		String reqsInProject = mallikasService.getAllRequirementsInProject(projectId, false, false);
-		
-		if (reqsInProject == null) {
-			return new ResponseEntity<>("Requirements not found", HttpStatus.NOT_FOUND);
-		}
-		return mulperiService.postToMulperi(reqsInProject, "/models/murmeliModelToKeljuCaas");
+		return mulperiService.sendProjectToMulperi(projectId);
 	}
 
 	/**

@@ -94,7 +94,7 @@ public class UpdateService {
 			object.add("requirements", gson.toJsonTree(totalRequirements));
 			object.add("dependencies", gson.toJsonTree(totalDependencies));
 			
-			System.out.println(detectionService.postUpdatesToService(object.toString()));
+			System.out.println(detectionService.postUpdatesToService(projectId, object.toString()));
 			
 			return new ResponseEntity<>(object.toString(), HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
