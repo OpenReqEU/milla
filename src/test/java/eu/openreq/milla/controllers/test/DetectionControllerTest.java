@@ -27,6 +27,7 @@ import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.Dependency_status;
 import eu.openreq.milla.services.FileService;
 import eu.openreq.milla.services.MallikasService;
+import eu.openreq.milla.services.UpdateService;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -71,6 +72,9 @@ public class DetectionControllerTest {
 
 	@Autowired
 	DetectionController controller;	
+	
+	@Autowired
+	UpdateService updateService;
 
 	@Autowired
 	private RestTemplate rt;

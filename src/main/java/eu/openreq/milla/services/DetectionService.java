@@ -52,9 +52,6 @@ public class DetectionService {
 	@Value("${milla.detectionUpdateAddresses}")
 	private String[] detectionUpdateAddresses;
 	
-	@Value("${milla.detectionLargeUpdateAddresses}")
-	private String[] detectionLargeUpdateAddresses;
-	
 	@Value("${milla.ownAddress}")
 	private String millaAddress;
 	
@@ -141,11 +138,13 @@ public class DetectionService {
 	}
 	
 	/**
-	 * Posts the requirements to UPC detection
-	 * @param projectId
-	 * @param urlTail
+	 * Post the string as a file to a detection service
+	 * @param name
+	 * @param file
+	 * @param formParams
+	 * @param completeAddress
 	 * @return
-	 * @throws UnsupportedEncodingException 
+	 * @throws UnsupportedEncodingException
 	 */
 	public ResponseEntity<String> postFileToService(String name, String file, Map<String, String> formParams, String completeAddress) throws UnsupportedEncodingException {
 		
@@ -236,7 +235,7 @@ public class DetectionService {
 		}
 		
 		ResponseEntity<String> serviceResponse = postStringToService(jsonString, url);;
-
+		
 		String mallikasResponse = mallikasService.convertAndUpdateDependencies(serviceResponse.getBody(), true, false);
 		
 		return new ResponseEntity<String>(mallikasResponse + "\n" + serviceResponse.getBody(), serviceResponse.getStatusCode());	
@@ -261,14 +260,14 @@ public class DetectionService {
 		return new ResponseEntity<String>(results, HttpStatus.OK);
 	}
 	
-	public String postUpdatesToService(String projectId, String content) {
+	public String postUpdatesToServices(String projectId, String content) {
 		String response = "";
 		for (String url : detectionUpdateAddresses) {
-			response += postStringToService(content, url) + "\n";
-		}
-		for (String url : detectionLargeUpdateAddresses) {
-			response += "Response status from " + url + " : " + postProjectToService(projectId, url, null).getStatusCode();
+			ResponseEntity<String> updateResponse = postStringToService(content, url);
+			mallikasService.convertAndUpdateDependencies(updateResponse.getBody(), true, false);
+			response += "Update response from address " + url + " : " + updateResponse.getBody() + "\n";
 		}
 		return response;
 	}
+	
 }

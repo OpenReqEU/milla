@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,6 @@ public class UpdateServiceTest {
 	@Before
     public void setUp() throws Exception {
 		mapper = new ObjectMapper();
-		
     	authService.setJiraBaseUrl(JIRA_BASE_URL);
     	
     	Mockito.when(mallikasService.updateRequirements(new ArrayList<Requirement>(), "TEST"))
@@ -66,7 +66,7 @@ public class UpdateServiceTest {
 		Mockito.when(mallikasService.getSelectedRequirements(new ArrayList<String>()))
 			.thenReturn(mapper.writeValueAsString(req));
 		
-		Mockito.when(detectionService.postUpdatesToService(Mockito.anyString(), Mockito.anyString()))
+		Mockito.when(mallikasService.updateDependencies(Matchers.any(), Matchers.anyBoolean(), Matchers.anyBoolean()))
 			.thenReturn("Detection successful (supposedly)");
 		
 	}
