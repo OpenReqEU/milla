@@ -136,11 +136,11 @@ public class QtService {
 	 * @return
 	 * @throws IOException
 	 */
-	public ResponseEntity<String> sumScoresAndGetTopProposed(List<String> requirementId, 
+	public ResponseEntity<String> sumScoresAndGetTopProposed(List<String> requirementIds, 
 			Integer maxResults) throws IOException {
 		
 		RequestParams params = new RequestParams();
-		params.setRequirementIds(requirementId);
+		params.setRequirementIds(requirementIds);
 		params.setProposedOnly(false);
 		params.setIncludeRejected(true);
 		if (maxResults!=null) {
@@ -189,8 +189,11 @@ public class QtService {
 		JsonObject results = new JsonObject();
 		
 		if (proposed.isEmpty()) {
-			results.add("dependencies", new JsonArray());;
-			results.add("requirements", gson.toJsonTree(parser.getRequirements()));;
+			String reqs = mallikasService.getSelectedRequirements(requirementIds);
+			parser = new OpenReqJSONParser(reqs);
+			
+			results.add("dependencies", new JsonArray());
+			results.add("requirements", gson.toJsonTree(parser.getRequirements()));
 			return new ResponseEntity<String>(results.toString(), HttpStatus.OK);
 		}
 		

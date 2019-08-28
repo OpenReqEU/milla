@@ -32,6 +32,9 @@ public class UpdateService {
 	
 	@Value("${milla.jiraAddress}")
 	private String jiraAddress;
+	
+	@Value("${milla.detectionUpdateAddresses}")
+	private String[] detectionUpdateAddresses;
 
 	private UpdatedIssues updatedIssues;
 
@@ -94,9 +97,11 @@ public class UpdateService {
 			object.add("requirements", gson.toJsonTree(totalRequirements));
 			object.add("dependencies", gson.toJsonTree(totalDependencies));
 			
-			System.out.println(detectionService.postUpdatesToService(projectId, object.toString()));
+			String detectionUpdates = detectionService.postUpdatesToServices(projectId, object.toString());
 			
-			return new ResponseEntity<>(object.toString(), HttpStatus.OK);
+			System.out.println(detectionUpdates);
+			
+			return new ResponseEntity<String>(object.toString(), HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
