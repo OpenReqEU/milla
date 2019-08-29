@@ -60,6 +60,8 @@ public class ImportService {
 		List<String> requirementIds = new ArrayList<>();
 		Collection<JsonElement> projectIssuesAsJson;
 		
+		System.out.println("Importing " + projectId + " from Jira");
+		
 		try {
 			while (true) { // a loop needed for sending large projects in chunks to Mallikas
 				if (end >= issueCount + divided) {

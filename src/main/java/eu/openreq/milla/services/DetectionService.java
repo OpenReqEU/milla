@@ -261,11 +261,11 @@ public class DetectionService {
 	}
 	
 	public String postUpdatesToServices(String projectId, String content) {
-		String response = "";
+		String response = "Update responses from services:";
 		for (String url : detectionUpdateAddresses) {
 			ResponseEntity<String> updateResponse = postStringToService(content, url);
 			mallikasService.convertAndUpdateDependencies(updateResponse.getBody(), true, false);
-			response += "Update response from address " + url + " : " + updateResponse.getBody() + "\n";
+			response += "\n" + url + " : " + updateResponse.getBody();
 		}
 		return response;
 	}
