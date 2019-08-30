@@ -157,7 +157,8 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@PostMapping(value = "updateProposedDependencies")
-	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) throws NestedServletException, IOException {
+	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) 
+			throws NestedServletException, IOException {
 		return qtService.updateProposed(dependencies);
 	}
 

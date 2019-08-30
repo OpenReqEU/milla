@@ -44,6 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes=MillaApplication.class)
@@ -88,7 +91,11 @@ public class QtControllerTest {
 	
 	private MockRestServiceServer mockServer;
 	
+	private List<Dependency> depsList;
+	
 	private String depsJson;
+	
+	private ObjectMapper mapper;
 	
 	@Before
 	public void setup() throws Exception {
@@ -109,10 +116,11 @@ public class QtControllerTest {
 		dep.setStatus(Dependency_status.ACCEPTED);
 		
 		Dependency dep2 = new Dependency();
-		dep.setId("test2");
-		dep.setStatus(Dependency_status.REJECTED);
+		dep2.setId("test2");
+		dep2.setStatus(Dependency_status.REJECTED);
 		
-		ObjectMapper mapper = new ObjectMapper();
+		mapper = new ObjectMapper();
+		depsList = Arrays.asList(dep, dep2);
 		depsJson = mapper.writeValueAsString(Arrays.asList(dep, dep2));
 	}
 	
@@ -305,9 +313,14 @@ public class QtControllerTest {
 	}
 
 	@Test
-	public void updateProposedTest() throws Exception {	
+	public void updateProposedTest() throws Exception {			
+		Map<String, List<Dependency>> depsMap = new HashMap<>();
+		depsMap.put("test", depsList);
 		
-		System.out.println(depsJson);
+		mockServer.expect(requestTo(mallikasAddress + "/correctDependenciesAndProjects"))
+				.andExpect(method(HttpMethod.POST))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andRespond(withSuccess(mapper.writeValueAsString(depsMap), MediaType.APPLICATION_JSON));
 
 		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
 				.andExpect(method(HttpMethod.POST))
@@ -319,6 +332,11 @@ public class QtControllerTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
 		
+		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
+				.andExpect(method(HttpMethod.POST))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
+			
 		mockMvc.perform(post("/updateProposedDependencies")
 				.content(depsJson)
 				.contentType(MediaType.APPLICATION_JSON))
@@ -328,8 +346,9 @@ public class QtControllerTest {
 	
 	@Test
 	public void updateProposedTestError() throws Exception {		
-		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
+		mockServer.expect(requestTo(mallikasAddress + "/correctDependenciesAndProjects"))
 				.andRespond(withServerError());
+		
 		
 		mockMvc.perform(post("/updateProposedDependencies")
 				.content(depsJson)

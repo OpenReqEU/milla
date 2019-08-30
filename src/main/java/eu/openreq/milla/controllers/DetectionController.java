@@ -167,8 +167,6 @@ public class DetectionController {
 		return detectionService.acceptedAndRejectedToORSI(dependencies);
 	}
 	
-
-
 	/**
 	 * Receive the confirmation that adding requirements to similarity detection has begun
 	 * @param result
