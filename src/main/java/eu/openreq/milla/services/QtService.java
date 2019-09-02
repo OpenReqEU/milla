@@ -265,18 +265,20 @@ public class QtService {
 		try {
 			Type depListType = new TypeToken<List<Dependency>>(){}.getType();
 			List<Dependency> dependencies = gson.fromJson(dependenciesJson, depListType);
+			ResponseEntity<String> updateResponse = mallikasService.updateDependencies(dependencies, false, true);
+			
+			if (updateResponse.getStatusCode()!=HttpStatus.OK) {
+				return new ResponseEntity<String>(updateResponse.getBody(), updateResponse.getStatusCode());
+			}
+			
+			String orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies).getBody();	
+			
 			Map<String, List<Dependency>> correctDepsInProjects = mallikasService.correctDependenciesAndProjects(dependencies);
 			
-			String response = "";
+			String mulperiResponse = "";
 			
-			for (String projectId : correctDepsInProjects.keySet()) {
+			for (String projectId : correctDepsInProjects.keySet()) {				
 				dependencies = correctDepsInProjects.get(projectId);
-				ResponseEntity<String> updateResponse = mallikasService.updateDependencies(dependencies, false, true);
-				if (updateResponse.getStatusCode()!=HttpStatus.OK) {
-					return new ResponseEntity<String>(updateResponse.getBody(), updateResponse.getStatusCode());
-				}
-				
-				String orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies).getBody();
 				List<Dependency> acceptedDependencies = new ArrayList<Dependency>();
 				
 				for (Dependency dep : dependencies) {
@@ -284,25 +286,24 @@ public class QtService {
 						acceptedDependencies.add(dep);
 				}
 				
-				JsonObject object = new JsonObject();
-				Project project = new Project();
-				project.setId(projectId);
-				
-				object.add("projects", gson.toJsonTree(Arrays.asList(project)));
-				object.add("requirements", gson.toJsonTree(new ArrayList<>()));
-				object.add("dependencies", gson.toJsonTree(acceptedDependencies));
-				
-				String mulperiResponse = "No accepted dependencies to send";
-				
 				if (!acceptedDependencies.isEmpty()) {
-					mulperiResponse = mulperiService.sendProjectUpdatesToMulperi(object.toString()).toString();
+					JsonObject object = new JsonObject();
+					Project project = new Project();
+					project.setId(projectId);
+					
+					object.add("projects", gson.toJsonTree(Arrays.asList(project)));
+					object.add("requirements", gson.toJsonTree(new ArrayList<>()));
+					object.add("dependencies", gson.toJsonTree(acceptedDependencies));
+
+					mulperiResponse += "Project " + projectId + ": " + mulperiService.sendProjectUpdatesToMulperi(object.toString()).toString() + "\n";
+				} else {
+					mulperiResponse += "No accepted dependencies for " + projectId + "\n";
 				}
-				
-				response += "Update responses for project: " + projectId +
-						"\nMallikas response: " + updateResponse.getBody() + 
-						"\nOrsi response: " + orsiResponse + 
-						"\nMulperi/Caas response: " + mulperiResponse + "\n";
 			}
+			
+			String response = "Mallikas response: " + updateResponse.getBody() + 
+					"\nOrsi response: " + orsiResponse + 
+					"\nMulperi/Caas response(s):\n" + mulperiResponse + "\n";
 			
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
