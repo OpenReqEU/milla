@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -67,7 +68,7 @@ public class UpdateServiceTest {
 			.thenReturn(mapper.writeValueAsString(req));
 		
 		Mockito.when(mallikasService.updateDependencies(Matchers.any(), Matchers.anyBoolean(), Matchers.anyBoolean()))
-			.thenReturn("Detection successful (supposedly)");
+			.thenReturn(new ResponseEntity<String>("Detection successful (supposedly)", HttpStatus.OK));
 		
 	}
 	

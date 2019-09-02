@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -132,7 +134,7 @@ public class MallikasService {
 	 * @param userInput
 	 * @return
 	 */
-	public String updateDependencies(Collection<Dependency> dependencies, Boolean proposed, Boolean userInput) {
+	public ResponseEntity<String> updateDependencies(Collection<Dependency> dependencies, Boolean proposed, Boolean userInput) {
 		
 		String completeAddress = mallikasAddress + "/updateDependencies";
 		
@@ -146,19 +148,19 @@ public class MallikasService {
 		}
 
 		try {
-			return rt.postForObject(completeAddress, dependencies, String.class);
+			return rt.postForEntity(completeAddress, dependencies, String.class);
 		} catch (HttpClientErrorException e) {
-			return errorResponse(e);
+			return new ResponseEntity<String>(errorResponse(e), HttpStatus.BAD_REQUEST);
 		}
 	}
 	
-	public String convertAndUpdateDependencies(String dependencies, Boolean proposed, Boolean userInput) {
+	public ResponseEntity<String> convertAndUpdateDependencies(String dependencies, Boolean proposed, Boolean userInput) {
 		try {
 			Type type = new TypeToken<List<Dependency>>(){}.getType();
 			List<Dependency> convertedDependencies = new Gson().fromJson(dependencies, type);
 			return updateDependencies(convertedDependencies, proposed, userInput);
 		} catch (Exception e) {
-			return e.getMessage();
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
 	
@@ -170,14 +172,21 @@ public class MallikasService {
 	 */
 	public String updateReqIds(Collection<String> reqIds, String projectId) {
 		Map<String, Collection<String>> updatedReqs = new HashMap<String, Collection<String>>();
-		updatedReqs.put(projectId, reqIds);
-		
+		updatedReqs.put(projectId, reqIds);	
 		try {	
-			return rt.postForObject(mallikasAddress + "/updateProjectSpecifiedRequirements?projectId=" + projectId, updatedReqs, String.class);
+			return rt.postForObject(mallikasAddress + "/updateProjectSpecifiedRequirements?projectId=" + projectId, 
+					updatedReqs, String.class);
 		} catch (HttpClientErrorException e) {
 			return errorResponse(e);
 		}
 		
+	}
+	
+	public Map<String, List<Dependency>> correctDependenciesAndProjects(List<Dependency> dependencies) {
+		String response = rt.postForObject(mallikasAddress + "/correctDependenciesAndProjects", dependencies, String.class);
+		Map<String, List<Dependency>> depMap = new Gson().fromJson(
+			    response, new TypeToken<HashMap<String, List<Dependency>>>() {}.getType());
+		return depMap;
 	}
 
 	private String errorResponse(HttpClientErrorException e) {

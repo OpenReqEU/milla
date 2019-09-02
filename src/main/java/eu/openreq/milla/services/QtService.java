@@ -3,6 +3,7 @@ package eu.openreq.milla.services;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import eu.openreq.milla.models.TotalDependencyScore;
+import eu.openreq.milla.models.jira.Project;
 import eu.openreq.milla.models.json.Dependency;
 import eu.openreq.milla.models.json.Dependency_status;
 import eu.openreq.milla.models.json.RequestParams;
@@ -261,14 +263,51 @@ public class QtService {
 	
 	public ResponseEntity<String> updateProposed(String dependenciesJson) throws IOException, NestedServletException {
 		try {
-			Type depListType = new TypeToken<ArrayList<Dependency>>(){}.getType();	
+			Type depListType = new TypeToken<List<Dependency>>(){}.getType();
 			List<Dependency> dependencies = gson.fromJson(dependenciesJson, depListType);
-			String updated = mallikasService.updateDependencies(dependencies, false, true);
-			ResponseEntity<String> orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies);
-			return new ResponseEntity<>("Mallikas update response: " + updated + 
-					"\nOrsi update response: " + orsiResponse, HttpStatus.OK);
+			Map<String, List<Dependency>> correctDepsInProjects = mallikasService.correctDependenciesAndProjects(dependencies);
+			
+			String response = "";
+			
+			for (String projectId : correctDepsInProjects.keySet()) {
+				dependencies = correctDepsInProjects.get(projectId);
+				ResponseEntity<String> updateResponse = mallikasService.updateDependencies(dependencies, false, true);
+				if (updateResponse.getStatusCode()!=HttpStatus.OK) {
+					return new ResponseEntity<String>(updateResponse.getBody(), updateResponse.getStatusCode());
+				}
+				
+				String orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies).getBody();
+				List<Dependency> acceptedDependencies = new ArrayList<Dependency>();
+				
+				for (Dependency dep : dependencies) {
+					if (dep.getStatus()==Dependency_status.ACCEPTED)
+						acceptedDependencies.add(dep);
+				}
+				
+				JsonObject object = new JsonObject();
+				Project project = new Project();
+				project.setId(projectId);
+				
+				object.add("projects", gson.toJsonTree(Arrays.asList(project)));
+				object.add("requirements", gson.toJsonTree(new ArrayList<>()));
+				object.add("dependencies", gson.toJsonTree(acceptedDependencies));
+				
+				String mulperiResponse = "No accepted dependencies to send";
+				
+				if (!acceptedDependencies.isEmpty()) {
+					mulperiResponse = mulperiService.sendProjectUpdatesToMulperi(object.toString()).toString();
+				}
+				
+				response += "Update responses for project: " + projectId +
+						"\nMallikas response: " + updateResponse.getBody() + 
+						"\nOrsi response: " + orsiResponse + 
+						"\nMulperi/Caas response: " + mulperiResponse + "\n";
+			}
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
-			return new ResponseEntity<>("Error:\n\n" + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>("Error:\n" + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	

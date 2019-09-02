@@ -3,7 +3,6 @@ package eu.openreq.milla.controllers;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -158,7 +157,8 @@ public class QtController {
 			@ApiResponse(code = 400, message = "Failure, ex. model not found"), 
 			@ApiResponse(code = 409, message = "Conflict")}) 
 	@PostMapping(value = "updateProposedDependencies")
-	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) throws NestedServletException, IOException {
+	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) 
+			throws NestedServletException, IOException {
 		return qtService.updateProposed(dependencies);
 	}
 

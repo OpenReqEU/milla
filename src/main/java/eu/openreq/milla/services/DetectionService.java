@@ -172,9 +172,7 @@ public class DetectionService {
 		
 		try {
 			ResponseEntity<String> response = rt.postForEntity(completeAddress, entity, String.class);
-			
-			return new ResponseEntity<String>(response.getBody() + "", HttpStatus.ACCEPTED);
-			
+			return new ResponseEntity<String>(response.getBody() + "", HttpStatus.ACCEPTED);			
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
@@ -218,14 +216,11 @@ public class DetectionService {
 
 		try {
 			ResponseEntity<String> response = rt.postForEntity(completeAddress, entity, String.class);
-			
 			return new ResponseEntity<String>(response.getBody() + "", response.getStatusCode());
-			
 		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-			
 		}
 	}	
 	
@@ -236,9 +231,10 @@ public class DetectionService {
 		
 		ResponseEntity<String> serviceResponse = postStringToService(jsonString, url);;
 		
-		String mallikasResponse = mallikasService.convertAndUpdateDependencies(serviceResponse.getBody(), true, false);
+		String mallikasResponse = mallikasService.convertAndUpdateDependencies(serviceResponse.getBody(), true, false).getBody();
 		
-		return new ResponseEntity<String>(mallikasResponse + "\n" + serviceResponse.getBody(), serviceResponse.getStatusCode());	
+		return new ResponseEntity<String>("\nService response: " + serviceResponse.getBody() + 
+				"\nMallikas response: " + mallikasResponse, serviceResponse.getStatusCode());	
 	}
 	
 	public ResponseEntity<String> postProjectToServices(String projectId) {	
@@ -261,11 +257,11 @@ public class DetectionService {
 	}
 	
 	public String postUpdatesToServices(String projectId, String content) {
-		String response = "";
+		String response = "Update responses from services:";
 		for (String url : detectionUpdateAddresses) {
 			ResponseEntity<String> updateResponse = postStringToService(content, url);
 			mallikasService.convertAndUpdateDependencies(updateResponse.getBody(), true, false);
-			response += "Update response from address " + url + " : " + updateResponse.getBody() + "\n";
+			response += "\n" + url + " : " + updateResponse.getBody();
 		}
 		return response;
 	}
