@@ -292,7 +292,11 @@ public class QtService {
 				object.add("requirements", gson.toJsonTree(new ArrayList<>()));
 				object.add("dependencies", gson.toJsonTree(acceptedDependencies));
 				
-				String mulperiResponse = mulperiService.sendProjectUpdatesToMulperi(object.toString()).toString();
+				String mulperiResponse = "No accepted dependencies to send";
+				
+				if (!acceptedDependencies.isEmpty()) {
+					mulperiResponse = mulperiService.sendProjectUpdatesToMulperi(object.toString()).toString();
+				}
 				
 				response += "Update responses for project: " + projectId +
 						"\nMallikas response: " + updateResponse.getBody() + 
