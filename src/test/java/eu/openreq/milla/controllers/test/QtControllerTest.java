@@ -317,11 +317,6 @@ public class QtControllerTest {
 		Map<String, List<Dependency>> depsMap = new HashMap<>();
 		depsMap.put("test", depsList);
 		
-		mockServer.expect(requestTo(mallikasAddress + "/correctDependenciesAndProjects"))
-				.andExpect(method(HttpMethod.POST))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andRespond(withSuccess(mapper.writeValueAsString(depsMap), MediaType.APPLICATION_JSON));
-
 		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -331,6 +326,11 @@ public class QtControllerTest {
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
+		
+		mockServer.expect(requestTo(mallikasAddress + "/correctDependenciesAndProjects"))
+				.andExpect(method(HttpMethod.POST))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andRespond(withSuccess(mapper.writeValueAsString(depsMap), MediaType.APPLICATION_JSON));
 		
 		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
 				.andExpect(method(HttpMethod.POST))
@@ -346,9 +346,8 @@ public class QtControllerTest {
 	
 	@Test
 	public void updateProposedTestError() throws Exception {		
-		mockServer.expect(requestTo(mallikasAddress + "/correctDependenciesAndProjects"))
+		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
 				.andRespond(withServerError());
-		
 		
 		mockMvc.perform(post("/updateProposedDependencies")
 				.content(depsJson)
