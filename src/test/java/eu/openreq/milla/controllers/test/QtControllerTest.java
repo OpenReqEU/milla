@@ -240,7 +240,7 @@ public class QtControllerTest {
 			.andRespond(withSuccess(content, MediaType.APPLICATION_JSON));
 		
 		mockServer.expect(requestTo(mallikasAddress + "/selectedReqs"))
-		.andRespond(withSuccess(reqContent, MediaType.APPLICATION_JSON));
+			.andRespond(withSuccess(reqContent, MediaType.APPLICATION_JSON));
 		
 		int score = 1 + 1 * detectionGetAddresses.length + (detectionGetPostAddresses!=null ? 1 : 0);
 		
@@ -316,22 +316,28 @@ public class QtControllerTest {
 	public void updateProposedTest() throws Exception {			
 		Map<String, List<Dependency>> depsMap = new HashMap<>();
 		depsMap.put("test", depsList);
-		
+
 		mockServer.expect(requestTo(mallikasAddress + "/updateDependencies?userInput=true"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
+		
+		mockServer.expect(requestTo(mallikasAddress + "/correctIdsForDependencies"))
+				.andExpect(method(HttpMethod.POST))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andRespond(withSuccess(mapper.writeValueAsString(depsList), MediaType.APPLICATION_JSON));
 		
 		mockServer.expect(requestTo(upcSimilarityAddress + "/upc/similarity-detection/TreatAcceptedAndRejectedDependencies?organization=Qt"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
 		
-		mockServer.expect(requestTo(mallikasAddress + "/correctDependenciesAndProjects"))
+
+		mockServer.expect(requestTo(mallikasAddress + "/projectsForDependencies"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andRespond(withSuccess(mapper.writeValueAsString(depsMap), MediaType.APPLICATION_JSON));
-		
+				
 		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))

@@ -271,14 +271,14 @@ public class QtService {
 				return new ResponseEntity<String>(updateResponse.getBody(), updateResponse.getStatusCode());
 			}
 			
-			String orsiResponse = detectionService.acceptedAndRejectedToORSI(dependencies).getBody();	
-			
-			Map<String, List<Dependency>> correctDepsInProjects = mallikasService.correctDependenciesAndProjects(dependencies);
+			List<Dependency> correctDependencies = mallikasService.correctIdsForDependencies(dependencies);
+			String orsiResponse = detectionService.acceptedAndRejectedToORSI(correctDependencies).getBody();	
+			HashMap<String, List<Dependency>> depMap = mallikasService.projectsForDependencies(correctDependencies);
 			
 			String mulperiResponse = "";
 			
-			for (String projectId : correctDepsInProjects.keySet()) {				
-				dependencies = correctDepsInProjects.get(projectId);
+			for (String projectId : depMap.keySet()) {				
+				dependencies = depMap.get(projectId);
 				List<Dependency> acceptedDependencies = new ArrayList<Dependency>();
 				
 				for (Dependency dep : dependencies) {
@@ -295,7 +295,8 @@ public class QtService {
 					object.add("requirements", gson.toJsonTree(new ArrayList<>()));
 					object.add("dependencies", gson.toJsonTree(acceptedDependencies));
 
-					mulperiResponse += "Project " + projectId + ": " + mulperiService.sendProjectUpdatesToMulperi(object.toString()).toString() + "\n";
+					mulperiResponse += "Project " + projectId + ": " + mulperiService.sendProjectUpdatesToMulperi(
+							object.toString()).getBody() + "\n";
 				} else {
 					mulperiResponse += "No accepted dependencies for " + projectId + "\n";
 				}

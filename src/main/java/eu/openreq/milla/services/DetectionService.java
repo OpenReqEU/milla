@@ -216,7 +216,7 @@ public class DetectionService {
 
 		try {
 			ResponseEntity<String> response = rt.postForEntity(completeAddress, entity, String.class);
-			return new ResponseEntity<String>(response.getBody() + "", response.getStatusCode());
+			return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
 		} catch (Exception e) {

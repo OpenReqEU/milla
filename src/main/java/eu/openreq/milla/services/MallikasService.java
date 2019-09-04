@@ -34,13 +34,10 @@ public class MallikasService {
 	@Autowired
 	FileService fs;
 	
+	Gson gson = new Gson();
+	
 	public String getListOfProjects() {
-		try {
-			return rt.getForObject(mallikasAddress + "/listOfProjects", String.class);
-		}
-		catch (HttpClientErrorException e) {
-			return errorResponse(e);
-		}
+		return getFromMallikas("/listOfProjects");
 	}
 	
 	/**
@@ -48,12 +45,7 @@ public class MallikasService {
 	 * @return
 	 */
 	public String getAllRequirements() {
-		try {
-			return rt.getForObject(mallikasAddress + "/allRequirements", String.class);
-		}
-		catch (HttpClientErrorException e) {
-			return errorResponse(e);
-		}
+		return getFromMallikas("/allRequirements");
 	}
 		
 	/**
@@ -62,12 +54,7 @@ public class MallikasService {
 	 * @return
 	 */
 	public String getSelectedRequirements(Collection<String> ids) {
-		try {
-			return rt.postForObject(mallikasAddress + "/selectedReqs", ids, String.class);
-		}
-		catch (HttpClientErrorException e) { 
-			return errorResponse(e);
-		}
+		return postObjectToMallikas(ids, "/selectedReqs");
 	}
 	
 	/**
@@ -77,13 +64,11 @@ public class MallikasService {
 	 * @return String containing all requirements and their dependencies in the same project
 	 */
 	public String getAllRequirementsInProject(String projectId, boolean includeProposed, boolean requirementsOnly) {	
-		try {
-			return rt.getForObject(mallikasAddress + "/projectRequirements?projectId=" + projectId + 
-					"&includeProposed=" + includeProposed + "&requirementsOnly=" + requirementsOnly, String.class);	
-		} catch (HttpClientErrorException e) {
-			return errorResponse(e);
-		}
+		return getFromMallikas("/projectRequirements?projectId=" + projectId + 
+				"&includeProposed=" + includeProposed + "&requirementsOnly=" + requirementsOnly);	
+
 	}
+	
 	/**
 	 * Send a request to Mallikas contained within a RequestParams object
 	 * @param params
@@ -91,11 +76,7 @@ public class MallikasService {
 	 * @return
 	 */
 	public String requestWithParams(RequestParams params, String objectType) {	
-		try {
-			return rt.postForObject(mallikasAddress + "/" + objectType + "ByParams", params, String.class);		
-		} catch (HttpClientErrorException e) {
-			return errorResponse(e);
-		}
+		return postObjectToMallikas(params, "/" + objectType + "ByParams");		
 	}
 	
 	/**
@@ -104,12 +85,7 @@ public class MallikasService {
 	 * @return
 	 */
 	public String postProject(Project project) {
-		try {
-			return rt.postForObject(mallikasAddress + "/importProject", project, String.class);
-
-		} catch (HttpClientErrorException e) {
-			return errorResponse(e);
-		}
+		return postObjectToMallikas(project, "/importProject");		
 	}
 	
 	/**
@@ -119,12 +95,7 @@ public class MallikasService {
 	 * @return
 	 */
 	public String updateRequirements(Collection<Requirement> requirements, String projectId) {
-		try {
-			return rt.postForObject(mallikasAddress + "/updateRequirements?projectId=" + projectId, requirements, String.class);	
-		} catch (HttpClientErrorException e) {
-			return errorResponse(e);
-		}
-			
+		return postObjectToMallikas(requirements, "/updateRequirements?projectId=" + projectId);			
 	}
 	
 	/**
@@ -154,6 +125,13 @@ public class MallikasService {
 		}
 	}
 	
+	/**
+	 * Converts a string to dependencies before sending it for update
+	 * @param dependencies
+	 * @param proposed
+	 * @param userInput
+	 * @return
+	 */
 	public ResponseEntity<String> convertAndUpdateDependencies(String dependencies, Boolean proposed, Boolean userInput) {
 		try {
 			Type type = new TypeToken<List<Dependency>>(){}.getType();
@@ -173,22 +151,58 @@ public class MallikasService {
 	public String updateReqIds(Collection<String> reqIds, String projectId) {
 		Map<String, Collection<String>> updatedReqs = new HashMap<String, Collection<String>>();
 		updatedReqs.put(projectId, reqIds);	
-		try {	
-			return rt.postForObject(mallikasAddress + "/updateProjectSpecifiedRequirements?projectId=" + projectId, 
-					updatedReqs, String.class);
+		return postObjectToMallikas(updatedReqs, "/updateProjectSpecifiedRequirements?projectId=" + projectId);
+	}
+	
+	/**
+	 * Returns the dependencies with their from/to IDs corrected, would they have been the wrong way around
+	 * @param dependencies
+	 * @return
+	 */
+	public List<Dependency> correctIdsForDependencies(List<Dependency> dependencies) {
+		String response = postObjectToMallikas(dependencies, "/correctIdsForDependencies");
+		Type depListType = new TypeToken<List<Dependency>>(){}.getType();
+		return gson.fromJson(response, depListType);
+	}
+
+	/**
+	 * Sends the dependencies to Mallikas, gets a HasAmap where the dependencies are labeled under their respective projects
+	 * @param dependencies
+	 * @return
+	 */
+	public HashMap<String, List<Dependency>> projectsForDependencies(List<Dependency> dependencies) {
+		String response = postObjectToMallikas(dependencies, "/projectsForDependencies");
+		Type mapType = new TypeToken<HashMap<String, List<Dependency>>>() {}.getType();
+		return gson.fromJson(response, mapType);
+	}
+	
+	/**
+	 * Get object from Mallikas (as a string)
+	 * @param urlTail
+	 * @return
+	 */
+	private String getFromMallikas(String urlTail) {
+		try {
+			return rt.getForObject(mallikasAddress + urlTail, String.class);
 		} catch (HttpClientErrorException e) {
 			return errorResponse(e);
 		}
-		
 	}
 	
-	public Map<String, List<Dependency>> correctDependenciesAndProjects(List<Dependency> dependencies) {
-		String response = rt.postForObject(mallikasAddress + "/correctDependenciesAndProjects", dependencies, String.class);
-		Map<String, List<Dependency>> depMap = new Gson().fromJson(
-			    response, new TypeToken<HashMap<String, List<Dependency>>>() {}.getType());
-		return depMap;
+	/**
+	 * Posts the object to Mallikas
+	 * @param object
+	 * @param urlTail
+	 * @return
+	 */
+	private String postObjectToMallikas(Object object, String urlTail) {
+		try {
+			return rt.postForObject(mallikasAddress + urlTail, object, String.class);
+		} catch (HttpClientErrorException e) {
+			return errorResponse(e);
+		}
 	}
-
+	
 	private String errorResponse(HttpClientErrorException e) {
 		System.out.println("Error " + e);
 		e.printStackTrace();
