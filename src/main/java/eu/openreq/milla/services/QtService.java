@@ -183,7 +183,8 @@ public class QtService {
 		for (String reqId : params.getRequirementIds()) {
 			List<Dependency> detectedFromServices = detectionService.getDetectedFromServices(reqId);
 			for (Dependency dep : detectedFromServices) {
-				if (!acceptedAndRejectedIds.contains(dep.getId()) && 
+				String id = dep.getFromid() + "_" + dep.getToid();
+				if (!acceptedAndRejectedIds.contains(id) && 
 						dep.getStatus()==Dependency_status.PROPOSED)
 					proposed.add(dep);	
 			}
