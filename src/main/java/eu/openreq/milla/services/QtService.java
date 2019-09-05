@@ -169,7 +169,8 @@ public class QtService {
 				if (dep.getStatus()==Dependency_status.PROPOSED) {
 					proposed.add(dep);
 				} else{
-					acceptedAndRejectedIds.add(dep.getId());
+					acceptedAndRejectedIds.add(dep.getFromid() + "_" + dep.getToid());
+					acceptedAndRejectedIds.add(dep.getToid() + "_" + dep.getFromid());
 				}
 			}
 	        
