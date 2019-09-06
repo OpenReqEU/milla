@@ -327,7 +327,7 @@ public class QtService {
 		}
 	}
 	
-	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam List<String> projectId) throws IOException {
 		try {
 			ResponseEntity<String> response = importService.importUpdatedIssues(projectId, authService);			
 			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
@@ -337,5 +337,13 @@ public class QtService {
 		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Error in updating the most recent issues " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
+	}
+	
+	public ResponseEntity<String> updateRecentForAllProjects() throws IOException {
+		String mapString = mallikasService.getListOfProjects();
+		Type mapType = new TypeToken<HashMap<String, Integer>>(){}.getType();
+		HashMap<String, Integer> map = gson.fromJson(mapString, mapType);
+		Set<String> ids = map.keySet();
+		return updateMostRecentIssuesInProject(new ArrayList<String>(ids));
 	}
 }

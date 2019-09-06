@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ImportServiceTest {	
@@ -57,9 +58,9 @@ public class ImportServiceTest {
 			.thenReturn("test");
     	
     	Mockito.when(mallikasService.getListOfProjects())
-			.thenReturn("TEST");
+			.thenReturn("{\"TEST\":10}");
     	
-    	Mockito.when(updateService.getAllUpdatedIssues("TEST", authService))
+    	Mockito.when(updateService.getAllUpdatedIssues(Arrays.asList("TEST"), authService))
 			.thenReturn(new ResponseEntity<String>("Success", HttpStatus.OK));
     	
     }
@@ -90,7 +91,7 @@ public class ImportServiceTest {
     
     @Test
     public void testUpdateImport() throws IOException {    	
-    	ResponseEntity<String> response = importService.importUpdatedIssues("TEST", authService);
+    	ResponseEntity<String> response = importService.importUpdatedIssues(Arrays.asList("TEST"), authService);
     	
     	assertEquals(response.getBody(), "Success");
     }

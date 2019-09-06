@@ -105,7 +105,7 @@ public class QtControllerTest {
 		Mockito.when(importService.importProjectIssues("testId", authService))
 				.thenReturn(new ResponseEntity<String>("Success", HttpStatus.OK));
 		
-		Mockito.when(importService.importUpdatedIssues("testId", authService))
+		Mockito.when(importService.importUpdatedIssues(Arrays.asList("testId"), authService))
 				.thenReturn(new ResponseEntity<String>("Success", HttpStatus.OK));
 		
 		Mockito.when(fs.logDependencies(new ArrayList<Dependency>()))
@@ -309,6 +309,22 @@ public class QtControllerTest {
 		mockMvc.perform(post("/updateRecentInProject")
 				.param("projectId", "testId"))
 				.andExpect(status().is5xxServerError());
+		mockServer.verify();
+	}
+	
+	@Test
+	public void updateRecentForAllProjectsTest() throws Exception {
+		mockServer.expect(requestTo(mallikasAddress + "/listOfProjects"))
+				.andExpect(method(HttpMethod.GET))
+				.andRespond(withSuccess("{\"testId\":10}", MediaType.TEXT_PLAIN));
+		
+		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
+				.andExpect(method(HttpMethod.POST))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
+		
+		mockMvc.perform(post("/updateRecentForAllProjects"))
+				.andExpect(status().isOk());
 		mockServer.verify();
 	}
 

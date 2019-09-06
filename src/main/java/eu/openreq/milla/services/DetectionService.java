@@ -256,7 +256,7 @@ public class DetectionService {
 		return new ResponseEntity<String>(results, HttpStatus.OK);
 	}
 	
-	public String postUpdatesToServices(String projectId, String content) {
+	public String postUpdatesToServices(String content) {
 		String response = "Update responses from services:";
 		for (String url : detectionUpdateAddresses) {
 			ResponseEntity<String> updateResponse = postStringToService(content, url);

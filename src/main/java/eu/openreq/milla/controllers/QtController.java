@@ -137,7 +137,7 @@ public class QtController {
 	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the "
 			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
-	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam List<String> projectId) throws IOException {
 		return qtService.updateMostRecentIssuesInProject(projectId);
 	}
 	
@@ -160,6 +160,23 @@ public class QtController {
 	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) 
 			throws NestedServletException, IOException {
 		return qtService.updateProposed(dependencies);
+	}
+	
+	/**
+	 * Updates the type and status of the proposed dependencies provided
+	 * 
+	 * @param dependencies
+	 * @return ResponseEntity
+	 * @throws IOException
+	 * @throws NestedServletException 
+	 */
+	@ApiOperation(value = "Fetch recent issues for all projects", notes = "Post recent issues in a project to Mallikas database "
+			+ "and KeljuCaas, and various detection services",
+			response = String.class)
+	@PostMapping(value = "updateRecentForAllProjects")
+	public ResponseEntity<String> updateRecentForAllProjects() 
+			throws NestedServletException, IOException {
+		return qtService.updateRecentForAllProjects();
 	}
 
 }

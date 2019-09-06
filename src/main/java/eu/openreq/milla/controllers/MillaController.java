@@ -2,6 +2,7 @@ package eu.openreq.milla.controllers;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -213,7 +214,7 @@ public class MillaController {
 			@ApiResponse(code = 400, message = "Failure, ex. malformed JSON"),
 			@ApiResponse(code = 500, message = "Failure, ex. invalid URLs") })
 	@PostMapping(value = "qtJiraUpdated")
-	public ResponseEntity<String> importUpdatedFromQtJira(@RequestParam String projectId) throws IOException {
+	public ResponseEntity<String> importUpdatedFromQtJira(@RequestParam List<String> projectId) throws IOException {
 		return importService.importUpdatedIssues(projectId, authService);
 	}
 	

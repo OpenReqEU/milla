@@ -3,6 +3,7 @@ package eu.openreq.milla.services.test;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
@@ -91,7 +92,7 @@ public class UpdateServiceTest {
 			    .withHeader("Content-Type", "text/html").withBody(jsonString)));
 
 		
-		ResponseEntity<String> response = updateService.getAllUpdatedIssues("TEST", authService);
+		ResponseEntity<String> response = updateService.getAllUpdatedIssues(Arrays.asList("TEST"), authService);
 		assertEquals(response.getBody().length(), 1963);
 	}
 }

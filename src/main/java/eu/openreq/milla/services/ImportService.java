@@ -1,8 +1,11 @@
 package eu.openreq.milla.services;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 
 import eu.openreq.milla.models.jira.Issue;
 import eu.openreq.milla.models.json.Dependency;
@@ -30,6 +35,8 @@ public class ImportService {
 	
 	@Autowired
 	FormatTransformerService transformer;
+	
+	Gson gson = new Gson();
 
 	public ResponseEntity<String> importProjectIssues(String projectId, OAuthService authService) throws Exception {
 		
@@ -103,18 +110,24 @@ public class ImportService {
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
 	}
 	
-	
-	public ResponseEntity<String> importUpdatedIssues(String projectId, OAuthService authService) {
-		try {
-			String response = mallikasService.getListOfProjects();
-			if (response==null || !response.contains(projectId)) {
-				return new ResponseEntity<String>("No such project found, must import first before updating", 
-						HttpStatus.NOT_FOUND);
-			}			
+	public ResponseEntity<String> importUpdatedIssues(List<String> projectId, OAuthService authService) {
+		try { 
+			String projectList = mallikasService.getListOfProjects();
+			Type mapType = new TypeToken<HashMap<String, Integer>>(){}.getType();
+			HashMap<String, Integer> map = gson.fromJson(projectList, mapType);
+			Set<String> ids = map.keySet();
+			
+			for (String id : projectId) {
+				if (ids==null || !ids.contains(id)) {
+					return new ResponseEntity<String>("No project " + id + " found, must import first before updating", 
+							HttpStatus.NOT_FOUND);
+				}
+			}	
 			return updateService.getAllUpdatedIssues(projectId, authService);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+		
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
 	}
 

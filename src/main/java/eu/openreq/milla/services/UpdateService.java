@@ -56,48 +56,54 @@ public class UpdateService {
 	 * @return 
 	 * @throws Exception
 	 */
-	public ResponseEntity<String> getAllUpdatedIssues(String projectId, OAuthService authService) throws Exception {		
-		Person person = new Person();
-		person.setUsername("user_" + projectId);
-		person.setEmail("dummyEmail");
+	public ResponseEntity<String> getAllUpdatedIssues(List<String> projectId, OAuthService authService) throws Exception {		
+		Set<Project> totalProjects = new HashSet<Project>();
+		Set<Requirement> totalRequirements = new HashSet<Requirement>();
+		Set<Dependency> totalDependencies = new HashSet<Dependency>();
 		
 		try {
-			updatedIssues = new UpdatedIssues(projectId, authService);
-			int amount = getNumberOfUpdatedIssues(projectId, person);
-			Set<Requirement> totalRequirements = new HashSet<Requirement>();
-			Set<Dependency> totalDependencies = new HashSet<Dependency>();
-			Set<String> totalReqIds = new HashSet<String>();
-			for (int current = 0; current<=amount; current = current + 1000) {
-				updatedIssues.collectAllUpdatedIssues(projectId, current);
-				processJsonElementsToRequirements(updatedIssues.getProjectIssues(), projectId, person);
-				if (requirements!=null && !requirements.isEmpty()) {
-					mallikasService.updateRequirements(requirements, projectId);
-					totalRequirements.addAll(requirements);
-				}
-				if (dependencies!=null && !dependencies.isEmpty()) {
-					mallikasService.updateDependencies(dependencies, false, false);
-					totalDependencies.addAll(dependencies);
-				}
-				if (reqIds!=null && !reqIds.isEmpty()) {
-					mallikasService.updateReqIds(reqIds, projectId);
-					totalReqIds.addAll(reqIds);
+			for (String id : projectId) {
+				Person person = new Person();
+				person.setUsername("user_" + projectId);
+				person.setEmail("dummyEmail");
+			
+				List<String> totalReqIds = new ArrayList<>();
+			
+				updatedIssues = new UpdatedIssues(id, authService);
+				int amount = getNumberOfUpdatedIssues(id, person);
+				for (int current = 0; current<=amount; current = current + 1000) {
+					updatedIssues.collectAllUpdatedIssues(id, current);
+					processJsonElementsToRequirements(updatedIssues.getProjectIssues(), id, person);
+					if (requirements!=null && !requirements.isEmpty()) {
+						mallikasService.updateRequirements(requirements, id);
+						totalRequirements.addAll(requirements);
+					}
+					if (dependencies!=null && !dependencies.isEmpty()) {
+						mallikasService.updateDependencies(dependencies, false, false);
+						totalDependencies.addAll(dependencies);
+					}
+					if (reqIds!=null && !reqIds.isEmpty()) {
+						mallikasService.updateReqIds(reqIds, id);
+						totalReqIds.addAll(reqIds);
+					}
 				}
 				updatedIssues.clearIssues();
+				Project project = new Project();
+				
+				project.setId(id);
+				project.setSpecifiedRequirements(new ArrayList<String>(totalReqIds));
+				totalProjects.add(project);
 			}
-			
-			Project project = new Project();
-			
-			project.setId(projectId);
-			project.setSpecifiedRequirements(new ArrayList<String>(totalReqIds));
 			
 			Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();	
 			
 			JsonObject object = new JsonObject();
-			object.add("projects", gson.toJsonTree(Arrays.asList(project)));
 			object.add("requirements", gson.toJsonTree(totalRequirements));
 			object.add("dependencies", gson.toJsonTree(totalDependencies));
 			
-			String detectionUpdates = detectionService.postUpdatesToServices(projectId, object.toString());
+			String detectionUpdates = detectionService.postUpdatesToServices(object.toString());
+			
+			object.add("projects", gson.toJsonTree(totalProjects));
 			
 			System.out.println(detectionUpdates);
 			

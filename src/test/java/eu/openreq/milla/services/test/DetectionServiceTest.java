@@ -75,7 +75,7 @@ public class DetectionServiceTest {
 				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		}
 		
-		String result = detectionService.postUpdatesToServices("TEST", jsonString);
+		String result = detectionService.postUpdatesToServices(jsonString);
 		
 		System.out.println(result);
 		
