@@ -127,11 +127,10 @@ public class QtController {
 	
 	
 	/**
-	 * Fetches recent issues of the specified project from Qt Jira and sends them to Mallikas.
+	 * Fetches recent issues of the specified project(s) from Qt Jira and sends them to Mallikas and detection services.
 	 * 
 	 * @param projectId
-	 *            Project received as a parameter
-	 * @return ResponseEntity<?>
+	 * @return
 	 * @throws IOException
 	 */
 	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the "
@@ -139,6 +138,22 @@ public class QtController {
 	@PostMapping(value = "updateRecentInProject")
 	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam List<String> projectId) throws IOException {
 		return qtService.updateMostRecentIssuesInProject(projectId);
+	}
+	
+	/**
+	 * Update recent for all projects at once
+	 * 
+	 * @return
+	 * @throws NestedServletException
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Fetch recent issues for all projects", notes = "Post recent issues in a project to Mallikas database "
+			+ "and KeljuCaas, and various detection services",
+			response = String.class)
+	@PostMapping(value = "updateRecentForAllProjects")
+	public ResponseEntity<String> updateRecentForAllProjects() 
+			throws NestedServletException, IOException {
+		return qtService.updateRecentForAllProjects();
 	}
 	
 	/**
@@ -160,23 +175,6 @@ public class QtController {
 	public ResponseEntity<String> updateProposedDependencies(@RequestBody String dependencies) 
 			throws NestedServletException, IOException {
 		return qtService.updateProposed(dependencies);
-	}
-	
-	/**
-	 * Updates the type and status of the proposed dependencies provided
-	 * 
-	 * @param dependencies
-	 * @return ResponseEntity
-	 * @throws IOException
-	 * @throws NestedServletException 
-	 */
-	@ApiOperation(value = "Fetch recent issues for all projects", notes = "Post recent issues in a project to Mallikas database "
-			+ "and KeljuCaas, and various detection services",
-			response = String.class)
-	@PostMapping(value = "updateRecentForAllProjects")
-	public ResponseEntity<String> updateRecentForAllProjects() 
-			throws NestedServletException, IOException {
-		return qtService.updateRecentForAllProjects();
 	}
 
 }
