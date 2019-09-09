@@ -1,5 +1,6 @@
 package eu.openreq.milla;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,10 +15,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
+	
+	@Value("${milla.swaggerHost}")
+	private String swaggerHost;
+	
     @Bean
     public Docket productApi() {
         return new Docket(DocumentationType.SWAGGER_2)
-        		//.host("api.openreq.eu/milla")
+        		.host(swaggerHost)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("eu.openreq.milla.controllers"))    
                 .paths(PathSelectors.any())
