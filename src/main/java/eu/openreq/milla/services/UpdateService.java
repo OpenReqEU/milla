@@ -106,7 +106,7 @@ public class UpdateService {
 				object.add("dependencies", gson.toJsonTree(dependencies));
 				
 				mulperiResponses += id + ": " 
-						+ mulperiService.sendProjectUpdatesToMulperi(object.toString() + "\n");
+						+ mulperiService.sendProjectUpdatesToMulperi(object.toString()).getBody() + "\n";
 				
 			}
 			
