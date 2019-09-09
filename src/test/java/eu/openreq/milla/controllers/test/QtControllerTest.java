@@ -287,28 +287,9 @@ public class QtControllerTest {
 	
 	@Test
 	public void updateRecentInProjectTest() throws Exception {
-		
-		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
-				.andExpect(method(HttpMethod.POST))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
-		
 		mockMvc.perform(post("/updateRecentInProject")
 				.param("projectId", "testId"))
 				.andExpect(status().isOk());
-		mockServer.verify();
-	}
-	
-	@Test
-	public void updateRecentInProjectTestError() throws Exception {
-		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
-				.andExpect(method(HttpMethod.POST))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andRespond(withServerError());
-		
-		mockMvc.perform(post("/updateRecentInProject")
-				.param("projectId", "testId"))
-				.andExpect(status().is5xxServerError());
 		mockServer.verify();
 	}
 	
@@ -317,11 +298,6 @@ public class QtControllerTest {
 		mockServer.expect(requestTo(mallikasAddress + "/listOfProjects"))
 				.andExpect(method(HttpMethod.GET))
 				.andRespond(withSuccess("{\"testId\":10}", MediaType.TEXT_PLAIN));
-		
-		mockServer.expect(requestTo(mulperiAddress + "/models/updateMurmeliModelInKeljuCaas"))
-				.andExpect(method(HttpMethod.POST))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andRespond(withSuccess("Dummy success", MediaType.TEXT_PLAIN));
 		
 		mockMvc.perform(post("/updateRecentForAllProjects"))
 				.andExpect(status().isOk());

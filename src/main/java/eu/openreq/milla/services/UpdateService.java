@@ -44,11 +44,16 @@ public class UpdateService {
 	@Autowired
 	private DetectionService detectionService;
 	
+	@Autowired
+	private MulperiService mulperiService;
+	
 	private List<String> reqIds;
 	
 	private Collection<Requirement> requirements;
 	
 	private Collection<Dependency> dependencies;
+	
+	Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();	
 	
 	/**
 	 * Downloads at least 100 (latest) updated issues from Qt Jira and sends them as OpenReq JSON Requirements to Mallikas
@@ -57,11 +62,12 @@ public class UpdateService {
 	 * @throws Exception
 	 */
 	public ResponseEntity<String> getAllUpdatedIssues(List<String> projectId, OAuthService authService) throws Exception {		
-		Set<Project> totalProjects = new HashSet<Project>();
 		Set<Requirement> totalRequirements = new HashSet<Requirement>();
 		Set<Dependency> totalDependencies = new HashSet<Dependency>();
 		
 		try {
+			String mulperiResponses = "Mulperi/Caas responses:\n";
+			
 			for (String id : projectId) {
 				Person person = new Person();
 				person.setUsername("user_" + projectId);
@@ -88,26 +94,29 @@ public class UpdateService {
 					}
 				}
 				updatedIssues.clearIssues();
+				
 				Project project = new Project();
 				
 				project.setId(id);
-				project.setSpecifiedRequirements(new ArrayList<String>(totalReqIds));
-				totalProjects.add(project);
+				project.setSpecifiedRequirements(new ArrayList<String>(reqIds));
+				
+				JsonObject object = new JsonObject();
+				object.add("projects", gson.toJsonTree(Arrays.asList(project)));
+				object.add("requirements", gson.toJsonTree(requirements));
+				object.add("dependencies", gson.toJsonTree(dependencies));
+				
+				mulperiResponses += id + ": " 
+						+ mulperiService.sendProjectUpdatesToMulperi(object.toString() + "\n");
+				
 			}
-			
-			Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();	
 			
 			JsonObject object = new JsonObject();
 			object.add("requirements", gson.toJsonTree(totalRequirements));
 			object.add("dependencies", gson.toJsonTree(totalDependencies));
 			
-			String detectionUpdates = detectionService.postUpdatesToServices(object.toString());
+			String detectionResponses = detectionService.postUpdatesToServices(object.toString());			
 			
-			object.add("projects", gson.toJsonTree(totalProjects));
-			
-			System.out.println(detectionUpdates);
-			
-			return new ResponseEntity<String>(object.toString(), HttpStatus.OK);
+			return new ResponseEntity<String>(mulperiResponses + detectionResponses, HttpStatus.OK);
 		} catch (HttpClientErrorException e) {
 			return new ResponseEntity<>("Mallikas error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}

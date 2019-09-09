@@ -133,8 +133,8 @@ public class QtController {
 	 * @return
 	 * @throws IOException
 	 */
-	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas and update the "
-			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database and KeljuCaas")
+	@ApiOperation(value = "Fetch only the most recent issues of a project from Qt Jira to Mallikas, and update the "
+			+ "graph in KeljuCaas", notes = "Post recent issues in a project to Mallikas database, detection services and KeljuCaas")
 	@PostMapping(value = "updateRecentInProject")
 	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam List<String> projectId) throws IOException {
 		return qtService.updateMostRecentIssuesInProject(projectId);

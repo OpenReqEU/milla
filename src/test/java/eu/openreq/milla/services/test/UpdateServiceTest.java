@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,6 +27,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.DetectionService;
 import eu.openreq.milla.services.MallikasService;
+import eu.openreq.milla.services.MulperiService;
 import eu.openreq.milla.services.OAuthService;
 import eu.openreq.milla.services.UpdateService;
 
@@ -42,6 +43,9 @@ public class UpdateServiceTest {
 	
 	@Mock
 	DetectionService detectionService = new DetectionService();
+	
+	@Mock
+	MulperiService mulperiService = new MulperiService();
 	
 	@InjectMocks
 	private UpdateService updateService = new UpdateService();
@@ -71,6 +75,9 @@ public class UpdateServiceTest {
 		Mockito.when(mallikasService.updateDependencies(Matchers.any(), Matchers.anyBoolean(), Matchers.anyBoolean()))
 			.thenReturn(new ResponseEntity<String>("Detection successful (supposedly)", HttpStatus.OK));
 		
+		Mockito.when(mulperiService.sendProjectUpdatesToMulperi(Matchers.anyString())).thenReturn(
+				new ResponseEntity<String>("Caas updated successfully", HttpStatus.OK));
+		
 	}
 	
 	@Test
@@ -93,6 +100,7 @@ public class UpdateServiceTest {
 
 		
 		ResponseEntity<String> response = updateService.getAllUpdatedIssues(Arrays.asList("TEST"), authService);
-		assertEquals(response.getBody().length(), 1963);
+		System.out.println(response.getBody());
+		assertTrue(response.getBody().contains("Caas updated successfully"));
 	}
 }

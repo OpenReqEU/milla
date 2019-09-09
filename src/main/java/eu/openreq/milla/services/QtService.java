@@ -329,11 +329,7 @@ public class QtService {
 	
 	public ResponseEntity<String> updateMostRecentIssuesInProject(@RequestParam List<String> projectId) throws IOException {
 		try {
-			ResponseEntity<String> response = importService.importUpdatedIssues(projectId, authService);			
-			if (response!=null && response.getStatusCode()==HttpStatus.OK) {
-				return mulperiService.sendProjectUpdatesToMulperi(response.getBody());
-			}
-			return response;
+			return importService.importUpdatedIssues(projectId, authService);			
 		} catch (HttpClientErrorException|HttpServerErrorException e) {
 			return new ResponseEntity<>("Error in updating the most recent issues " + e.getResponseBodyAsString(), e.getStatusCode());
 		}
