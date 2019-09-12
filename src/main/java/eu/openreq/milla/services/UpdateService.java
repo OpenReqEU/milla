@@ -136,7 +136,7 @@ public class UpdateService {
 		int start = 0;
 		int number = -1;
 		int sum = 0;
-		while (number != 0) {
+		while (true) {
 			JsonElement element = updatedIssues.getLatestUpdatedIssue(start);	
 			if (element==null) {
 				break;
@@ -146,7 +146,7 @@ public class UpdateService {
 				break;
 			}
 			number = compareUpdatedIssueWithTheIssueInMallikas(reqs.get(0));
-			if (number<=0) {
+			if (number==0) {
 				break;
 			}
 			sum++;
