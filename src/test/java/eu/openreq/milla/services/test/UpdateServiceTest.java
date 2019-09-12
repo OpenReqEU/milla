@@ -20,9 +20,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.DetectionService;
@@ -52,11 +53,8 @@ public class UpdateServiceTest {
 
 	private static OAuthService authService = new OAuthService();
 	
-	private ObjectMapper mapper;
-	
 	@Before
     public void setUp() throws Exception {
-		mapper = new ObjectMapper();
     	authService.setJiraBaseUrl(JIRA_BASE_URL);
     	
     	Mockito.when(mallikasService.updateRequirements(new ArrayList<Requirement>(), "TEST"))
@@ -68,9 +66,13 @@ public class UpdateServiceTest {
 		Requirement req = new Requirement();
 		req.setName("QTWB-35");
 		req.setId("265267");
+		req.setModified_at(0L);
 		
-		Mockito.when(mallikasService.getSelectedRequirements(new ArrayList<String>()))
-			.thenReturn(mapper.writeValueAsString(req));
+		JsonObject testObject = new JsonObject();
+		testObject.add("requirements", new Gson().toJsonTree(Arrays.asList(req)));
+		
+		Mockito.when(mallikasService.getSelectedRequirements(Matchers.any()))
+			.thenReturn(testObject.toString());
 		
 		Mockito.when(mallikasService.updateDependencies(Matchers.any(), Matchers.anyBoolean(), Matchers.anyBoolean()))
 			.thenReturn(new ResponseEntity<String>("Detection successful (supposedly)", HttpStatus.OK));
@@ -82,8 +84,10 @@ public class UpdateServiceTest {
 	
 	@Test
 	public void updateIssuesTest() throws Exception {
+		updateService.setUpdateFetchSize(10);
+		
 		String newestIssueUrl = "/rest/api/2/search?jql=project%3DTEST%20order%20by%20updated%20DESC&maxResults=1&startAt=0";
-		String projectIssuesUrl = "/rest/api/2/search?jql=project%3DTEST%20order%20by%20updated%20DESC&maxResults=1000&startAt=0";
+		String projectIssuesUrl = "/rest/api/2/search?jql=project%3DTEST%20order%20by%20updated%20DESC&maxResults=10&startAt=0";
 		
 		String dirPath = System.getProperty("user.dir") + "/src/test/resources/";
 		String jsonString = new String(Files.readAllBytes(Paths.get(dirPath.toString() + 
@@ -100,7 +104,6 @@ public class UpdateServiceTest {
 
 		
 		ResponseEntity<String> response = updateService.getAllUpdatedIssues(Arrays.asList("TEST"), authService);
-		System.out.println(response.getBody());
 		assertTrue(response.getBody().contains("Caas updated successfully"));
 	}
 }

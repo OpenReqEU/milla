@@ -62,9 +62,9 @@ public class UpdatedIssues {
 	 * @param current
 	 * @throws IOException
 	 */
-	public void collectAllUpdatedIssues(String project, int current) throws IOException {
+	public void collectAllUpdatedIssues(String project, int current, int maxResults) throws IOException {
 		String projectIssuesUrl = "/rest/api/2/search?jql=project%3D" + project
-				+ "+order+by+updated+DESC&maxResults=1000&startAt=" + current;
+				+ "+order+by+updated+DESC&maxResults=" + maxResults + "&startAt=" + current;
 
 		String responseJSON = authService.authorizedJiraRequest(projectIssuesUrl);
 		if(responseJSON!=null) {
