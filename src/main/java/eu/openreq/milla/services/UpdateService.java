@@ -36,6 +36,9 @@ public class UpdateService {
 	@Value("${milla.detectionUpdateAddresses}")
 	private String[] detectionUpdateAddresses;
 
+	@Value("${milla.updateFetchSize}")
+	private Integer updateFetchSize;
+	
 	private UpdatedIssues updatedIssues;
 
 	@Autowired
@@ -77,8 +80,8 @@ public class UpdateService {
 			
 				updatedIssues = new UpdatedIssues(id, authService);
 				int amount = getNumberOfUpdatedIssues(id, person);
-				for (int current = 0; current<=amount; current = current + 1000) {
-					updatedIssues.collectAllUpdatedIssues(id, current);
+				for (int current = 0; current<amount; current += updateFetchSize) {
+					updatedIssues.collectAllUpdatedIssues(id, current, updateFetchSize);
 					processJsonElementsToRequirements(updatedIssues.getProjectIssues(), id, person);
 					if (requirements!=null && !requirements.isEmpty()) {
 						mallikasService.updateRequirements(requirements, id);
@@ -143,12 +146,15 @@ public class UpdateService {
 				break;
 			}
 			number = compareUpdatedIssueWithTheIssueInMallikas(reqs.get(0));
+			if (number<=0) {
+				break;
+			}
 			sum++;
 			//System.out.println("Sum (how many times 100 updated issues must be fetched): " + sum);
-			start = start + 100;
+			start += updateFetchSize;
 		}
 
-		return sum*100;
+		return sum*updateFetchSize;
 	}
 
 	/**
@@ -209,5 +215,8 @@ public class UpdateService {
 		return requirements;
 	}
 	
+	public void setUpdateFetchSize(Integer size) {
+		this.updateFetchSize = size;
+	}
 
 }
