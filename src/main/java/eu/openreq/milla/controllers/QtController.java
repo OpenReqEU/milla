@@ -77,9 +77,10 @@ public class QtController {
 	@GetMapping(value = "/getConsistencyCheckForRequirement")
 	public ResponseEntity<String> getConsistencyCheckForRequirement(@RequestParam List<String> requirementId, @RequestParam
 			(required = false) Integer layerCount, @RequestParam(required = false) boolean analysisOnly, 
-			@RequestParam(required = false, defaultValue = "0") Integer timeOut) throws IOException {
+			@RequestParam(required = false, defaultValue = "0") Integer timeOut, 
+			@RequestParam(required = false) boolean omitCrossProject) throws IOException {
 		return qtService.getConsistencyCheckForRequirement(requirementId, layerCount, 
-				analysisOnly, timeOut);
+				analysisOnly, timeOut, omitCrossProject);
 	}
 	
 	@ApiOperation(value = "Get top X proposed dependencies of a requirement saved in Mallikas", notes = "Get the top dependencies", 
@@ -177,4 +178,10 @@ public class QtController {
 		return qtService.updateProposed(dependencies);
 	}
 
+	@ApiIgnore
+	@PostMapping(value = "/transitiveClosureWithUpdate")
+	public ResponseEntity<String> transitiveClosureWithUpdate(@RequestParam String requirementId, 
+			@RequestParam String projectId, @RequestParam(required = false) Integer layerCount) throws Exception {
+		return qtService.transitiveClosureWithUpdate(requirementId, projectId, layerCount);
+	}
 }

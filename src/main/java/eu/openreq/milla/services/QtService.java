@@ -72,7 +72,7 @@ public class QtService {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);		
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (HttpClientErrorException|HttpServerErrorException e) {
-			return new ResponseEntity<>("Error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 	
@@ -95,10 +95,10 @@ public class QtService {
 	}
 	
 	public ResponseEntity<String> getConsistencyCheckForRequirement(List<String> requirementId,
-			Integer layerCount, boolean analysisOnly, Integer timeOut) throws IOException {
+			Integer layerCount, boolean analysisOnly, Integer timeOut, boolean omitCrossProject) throws IOException {
 
 		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=" + analysisOnly + 
-				"&timeOut=" + timeOut;
+				"&timeOut=" + timeOut + "&omitCrossProject=" + omitCrossProject;
 		
 		if (layerCount!=null) {
 			completeAddress += "&layerCount=" + layerCount;
@@ -108,7 +108,7 @@ public class QtService {
 			String response = rt.postForObject(completeAddress, requirementId, String.class);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (HttpClientErrorException|HttpServerErrorException e) {
-			return new ResponseEntity<>("Error:\n\n" + e.getResponseBodyAsString(), e.getStatusCode());
+			return new ResponseEntity<>("Error:\n" + e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 	
@@ -341,5 +341,15 @@ public class QtService {
 		HashMap<String, Integer> map = gson.fromJson(mapString, mapType);
 		Set<String> ids = map.keySet();
 		return updateMostRecentIssuesInProject(new ArrayList<String>(ids));
+	}
+	
+	public ResponseEntity<String> transitiveClosureWithUpdate(String requirementId, String projectId, 
+			Integer layerCount) throws Exception {
+		String response = mallikasService.getSelectedRequirements(Arrays.asList(requirementId));
+		if (response == null) {
+			System.out.println("Updating " + projectId + " (did not find " + requirementId + ")"); 
+			System.out.println(updateWholeProject(projectId));
+		}
+		return getTransitiveClosureOfRequirement(Arrays.asList(requirementId), layerCount);
 	}
 }
