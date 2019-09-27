@@ -78,9 +78,10 @@ public class QtController {
 	public ResponseEntity<String> getConsistencyCheckForRequirement(@RequestParam List<String> requirementId, @RequestParam
 			(required = false) Integer layerCount, @RequestParam(required = false) boolean analysisOnly, 
 			@RequestParam(required = false, defaultValue = "0") Integer timeOut, 
-			@RequestParam(required = false) boolean omitCrossProject) throws IOException {
+			@RequestParam(required = false) boolean omitCrossProject,
+			@RequestParam(required = false) boolean omitReqRelDiag) throws IOException {
 		return qtService.getConsistencyCheckForRequirement(requirementId, layerCount, 
-				analysisOnly, timeOut, omitCrossProject);
+				analysisOnly, timeOut, omitCrossProject, omitReqRelDiag);
 	}
 	
 	@ApiOperation(value = "Get top X proposed dependencies of a requirement saved in Mallikas", notes = "Get the top dependencies", 

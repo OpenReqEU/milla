@@ -95,10 +95,11 @@ public class QtService {
 	}
 	
 	public ResponseEntity<String> getConsistencyCheckForRequirement(List<String> requirementId,
-			Integer layerCount, boolean analysisOnly, Integer timeOut, boolean omitCrossProject) throws IOException {
+			Integer layerCount, boolean analysisOnly, Integer timeOut, boolean omitCrossProject, boolean omitReqRelDiag) throws IOException {
 
 		String completeAddress = mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=" + analysisOnly + 
-				"&timeOut=" + timeOut + "&omitCrossProject=" + omitCrossProject;
+				"&timeOut=" + timeOut + "&omitCrossProject=" + omitCrossProject
+				+ "&omitReqRelDiag=" + omitReqRelDiag;
 		
 		if (layerCount!=null) {
 			completeAddress += "&layerCount=" + layerCount;
