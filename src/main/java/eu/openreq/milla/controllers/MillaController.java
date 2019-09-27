@@ -287,5 +287,17 @@ public class MillaController {
 		String result = authService.authorizedJiraRequest("/rest/auth/latest/session");
 		return new ResponseEntity<String>(result, HttpStatus.OK);
 	}
-	 
+	
+	/**
+	 * Import project from OpenReq JSON String 
+	 * @param jsonString
+	 * @param sendToMulperi
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "Import custom project", notes = "Import a custom project from OpenReq JSON string")
+	@PostMapping(value = "importProjectFromString")
+	public ResponseEntity<String> addProject(@RequestBody String jsonString, @RequestParam(defaultValue = "true") boolean sendToMulperi) throws IOException {
+		return importService.importFromString(jsonString, sendToMulperi);
+	}
 }

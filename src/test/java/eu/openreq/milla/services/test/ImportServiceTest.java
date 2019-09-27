@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import eu.openreq.milla.models.json.Requirement;
 import eu.openreq.milla.services.FormatTransformerService;
 import eu.openreq.milla.services.ImportService;
 import eu.openreq.milla.services.MallikasService;
+import eu.openreq.milla.services.MulperiService;
 import eu.openreq.milla.services.OAuthService;
 import eu.openreq.milla.services.UpdateService;
 
@@ -45,6 +47,9 @@ public class ImportServiceTest {
 	@Mock
 	UpdateService updateService = new UpdateService();
 	
+	@Mock
+	MulperiService mulperiService = new MulperiService();
+	
 	@InjectMocks
 	private ImportService importService = new ImportService();
 	
@@ -59,6 +64,9 @@ public class ImportServiceTest {
     	
     	Mockito.when(mallikasService.getListOfProjects())
 			.thenReturn("{\"TEST\":10}");
+    	
+    	Mockito.when(mulperiService.sendProjectToMulperi(Matchers.anyString()))
+    		.thenReturn(new ResponseEntity<String>("Model saved and graph updated", HttpStatus.OK));
     	
     	Mockito.when(updateService.getAllUpdatedIssues(Arrays.asList("TEST"), authService))
 			.thenReturn(new ResponseEntity<String>("Success", HttpStatus.OK));
@@ -94,6 +102,17 @@ public class ImportServiceTest {
     	ResponseEntity<String> response = importService.importUpdatedIssues(Arrays.asList("TEST"), authService);
     	
     	assertEquals(response.getBody(), "Success");
+    }
+    
+    @Test
+    public void testStringImport() throws IOException {  
+    	String dirPath = System.getProperty("user.dir") + "/src/test/resources/";
+    	String jsonString = new String(Files.readAllBytes(Paths.get(dirPath.toString() + 
+				"testOpenReqJson.json")));
+    	
+    	ResponseEntity<String> response = importService.importFromString(jsonString, true);
+    	
+    	assertEquals(response.getBody(), "Project Brussels2018 added\nModel saved and graph updated");
     }
     
 }

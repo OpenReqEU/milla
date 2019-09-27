@@ -1,0 +1,67 @@
+{
+ "projects": [
+ 	{ 
+ 	"id": "Brussels2018",
+ 	"name": "Brussels example project",
+ 	"specifiedRequirements": ["REQ1", "REQ2", "REQ3", "REQ4", "REQ5"]
+ 	}
+ ],
+ "requirements": [
+   {
+   	"id": "REQ1",
+   	"name": "Requirement example 1",
+   	"effort": 2,
+   	"created_at": 0
+   },   
+   {
+   	"id": "REQ2",
+   	"name": "Requirement example 2",
+   	"effort": 2,
+   	"created_at": 0
+   },
+   {
+   	"id": "REQ3",
+   	"name": "Requirement example 3",
+   	"effort": 2,
+   	"created_at": 0
+   },
+   {
+   	"id": "REQ4",
+   	"name": "Requirement example 4",
+   	"effort": 2,
+   	"created_at": 0
+   },
+   {
+   	"id": "REQ5",
+   	"name": "Requirement example 5",
+   	"effort": 2,
+   	"created_at": 0
+   }  
+ ],  
+ "releases": [
+   {
+   	"id": 1,
+   	"capacity": 6,
+   	"status": "new",
+   	"requirements": ["REQ1", "REQ2", "REQ3"]
+   },
+   {
+   	"id": 2,
+   	"capacity": 4,
+   	"status": "new",
+   	"requirements": ["REQ4", "REQ5"]
+   }
+ ],
+ "dependencies": [
+   {
+    "dependency_type": "REQUIRES",
+    "fromid": "REQ4",
+    "toid": "REQ5"
+   },
+   {
+   	"dependency_type": "REQUIRES",
+   	"fromid": "REQ1",
+   	"toid": "REQ2"
+   }
+ ]
+}

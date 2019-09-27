@@ -1,5 +1,6 @@
 package eu.openreq.milla.services;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +36,9 @@ public class ImportService {
 	
 	@Autowired
 	FormatTransformerService transformer;
+	
+	@Autowired
+	MulperiService mulperiService;
 	
 	Gson gson = new Gson();
 
@@ -129,6 +133,30 @@ public class ImportService {
 		}
 		
 		return new ResponseEntity<>("Download failed", HttpStatus.BAD_REQUEST);
+	}
+	
+	public ResponseEntity<String> importFromString(String jsonString, boolean sendToMulperi) throws IOException {
+		OpenReqJSONParser parser = new OpenReqJSONParser(jsonString);
+		Project project = parser.getProject();
+		if (project == null) {
+			List<Project> projects = parser.getProjects();
+			if (projects == null || projects.size()!=1) {
+				return new ResponseEntity<String>("Must send exactly 1 project", HttpStatus.BAD_REQUEST);		
+			}
+			project = projects.get(0);
+		}
+		
+		String projectId = project.getId();
+		mallikasService.updateRequirements(parser.getRequirements(), projectId);
+		mallikasService.updateDependencies(parser.getDependencies(), false, false);
+		mallikasService.updateReqIds(project.getSpecifiedRequirements(), projectId);
+		System.out.println(mallikasService.postProject(project));
+		String mulperiResponse = "";
+		if (sendToMulperi) {
+			mulperiResponse = mulperiService.sendProjectToMulperi(projectId).getBody();
+		}
+		return new ResponseEntity<String>("Project " + project.getId() + " added\n" + mulperiResponse , HttpStatus.OK);
+		
 	}
 
 }
