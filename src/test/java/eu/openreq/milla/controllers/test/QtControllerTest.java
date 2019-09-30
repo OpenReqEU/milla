@@ -164,7 +164,7 @@ public class QtControllerTest {
 	@Test
 	public void consistencyCheckForRequirementTestError() throws Exception {
 		mockServer.expect(requestTo(mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=false"
-				+ "&timeOut=0&omitCrossProject=false"))
+				+ "&timeOut=0&omitCrossProject=false&omitReqRelDiag=false"))
 				.andRespond(withServerError());
 		
 		mockMvc.perform(get("/getConsistencyCheckForRequirement")
@@ -176,7 +176,7 @@ public class QtControllerTest {
 	@Test
 	public void consistencyCheckForRequirementTest() throws Exception {
 		mockServer.expect(requestTo(mulperiAddress + "/models/consistencyCheckForTransitiveClosure?analysisOnly=false"
-				+ "&timeOut=0&omitCrossProject=false"))
+				+ "&timeOut=0&omitCrossProject=false&omitReqRelDiag=false"))
 				.andRespond(withSuccess("{\"dummy\":\"test\"}", MediaType.APPLICATION_JSON));
 		
 		mockMvc.perform(get("/getConsistencyCheckForRequirement")
